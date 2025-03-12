@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
-import sequelize from "../config/database.js";
+import db from "../config/database.js";
 
-const user = sequelize.define(
+const user = db.define(
   "User",
   {
     name: {
@@ -18,7 +18,7 @@ const user = sequelize.define(
       allowNull: false,
     },
     role: {
-      type: DataTypes.ENUM("admin", "user", "author"),
+      type: DataTypes.ENUM("admin", "user"),
       allowNull: false,
     },
     username: {

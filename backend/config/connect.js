@@ -1,8 +1,8 @@
-import sequelize from "./database.js";
+import db from "./database.js";
 
 const connectDB = async () => {
   try {
-    await sequelize.authenticate();
+    await db.authenticate();
     console.log("koneksi ke database berhasil");
   } catch (error) {
     console.error("koneksi ke database gagal", error);
