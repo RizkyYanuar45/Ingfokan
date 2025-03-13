@@ -1,7 +1,7 @@
 import { DataTypes, Sequelize } from "sequelize";
 import db from "../config/database.js";
-import Category from "./category.js";
-import Author from "./author.js";
+import category from "./category.js";
+import author from "./author.js";
 
 const article = db.define("Article", {
   title: {
@@ -13,16 +13,18 @@ const article = db.define("Article", {
     allowNull: false,
   },
   category_id: {
+    type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: Category,
+      model: category,
       key: "id",
     },
   },
   author_id: {
+    type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: Author,
+      model: author,
       key: "id",
     },
   },
@@ -42,8 +44,8 @@ const article = db.define("Article", {
 });
 
 article.associate = (models) => {
-  article.belongsTo(models.Category, { foreignKey: "category_id" });
-  article.belongsTo(models.Author, { foreignKey: "author_id" });
+  article.belongsTo(models.category, { foreignKey: "category_id" });
+  article.belongsTo(models.author, { foreignKey: "author_id" });
 };
 
 export default article;

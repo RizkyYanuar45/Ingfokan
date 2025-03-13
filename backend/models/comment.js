@@ -1,6 +1,6 @@
 // models/Comment.js
 import { DataTypes } from "sequelize";
-import { db } from "../config/database.js";
+import db from "../config/database.js";
 import Article from "./article.js";
 import User from "./user.js";
 
