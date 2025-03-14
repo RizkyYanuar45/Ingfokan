@@ -22,6 +22,8 @@ const seeder = async () => {
     return console.log("berhasil seed ke database");
   } catch (error) {
     return console.log(error);
+  } finally {
+    await sequelize.close();
   }
 };
 
