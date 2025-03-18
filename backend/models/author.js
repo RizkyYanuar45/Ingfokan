@@ -13,6 +13,10 @@ const author = db.define("author", {
   avatar: {
     type: DataTypes.STRING,
   },
+  slug: {
+    type: DataTypes.STRING(100),
+    unique: true,
+  },
 });
 
 export default author;

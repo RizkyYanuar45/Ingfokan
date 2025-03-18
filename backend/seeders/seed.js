@@ -1,4 +1,5 @@
 import sequelize from "../config/database.js";
+import bcrypt from "bcrypt";
 import user from "../models/user.js";
 
 import banner from "../models/banner.js";
