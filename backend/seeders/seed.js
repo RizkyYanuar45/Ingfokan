@@ -12,11 +12,14 @@ import article from "../models/article.js";
 const seeder = async () => {
   try {
     await sequelize.sync({ force: true }); //ini agar bila ada tabel sebelumnya akan dihapus kemudian dibuatkan
+
     console.log("tabel direstart");
+
+    const encryptedPassword = await bcrypt.hash("password123", 10);
     await user.create({
       name: "Jane Doe",
       email: "jane.doe@example.com",
-      password: "password123",
+      password: encryptedPassword,
       role: "admin",
       username: "JD",
     });

@@ -2,9 +2,10 @@ import jwt from "jsonwebtoken";
 import ResponseAPI from "../helper/response.js";
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
-import path from "path";
 
 import fs from "fs";
+import { log } from "console";
+import { where } from "sequelize";
 
 const registerUser = async (req, res) => {
   try {
@@ -59,7 +60,7 @@ const loginUser = async (req, res) => {
     if (!email || !password) {
       return ResponseAPI.error(res, "pastikan semua form wajib terisi");
     }
-    const user = await User.findOne({ where: email });
+    const user = await User.findOne({ where: { email: email } });
     if (!user) {
       return ResponseAPI.error(res, "User Tidak Terdaftar");
     }
@@ -67,7 +68,7 @@ const loginUser = async (req, res) => {
     if (!isValidPassword) {
       return ResponseAPI.error(res, "Password Salah");
     }
-    const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, {
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
       expiresIn: "20h",
     });
     return ResponseAPI.success(res, "User Berhasil Login", {
@@ -92,7 +93,7 @@ const getAllUser = async (req, res) => {
 const getUserById = async (req, res) => {
   try {
     const id = req.params.id;
-    const user = await User.findOne({ where: id });
+    const user = await User.findOne({ where: { id: id } });
     if (!user) {
       return ResponseAPI.error(res, "User Tidak Terdaftar");
     }
@@ -125,18 +126,26 @@ const deleteUser = async (req, res) => {
 const editUser = async (req, res) => {
   try {
     const id = req.params.id;
-    const { name, email, password, username } = req.body;
-    const user = await User.update(
-      { name, email, password, username },
-      {
-        where: { id: id },
-      }
-    );
+    const updates = { ...req.body };
+    console.log(updates);
+
+    if (req.file) {
+      const oldAvatar = await User.findOne({ where: { id: id } });
+      fs.unlinkSync(oldAvatar.avatar);
+      updates.avatar = req.file.path;
+    }
+
+    const user = await User.update(updates, {
+      where: { id: id },
+    });
+
+    const newData = await User.findOne({ where: { id: id } });
+
     if (!user) {
       return ResponseAPI.error(res, "User Tidak Terdaftar");
     }
     return ResponseAPI.success(res, "Data User Berhasil Diubah", {
-      data: user,
+      data: newData,
     });
   } catch (error) {
     console.log(error);

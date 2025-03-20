@@ -16,6 +16,6 @@ router.post("/register", upload.single("avatar"), registerUser);
 router.delete("/delete/:id", deleteUser);
 router.get("/", getAllUser);
 router.get("/:id", getUserById);
-router.patch("/:id", protect, editUser);
+router.patch("/:id", protect, upload.single("avatar"), editUser);
 
 export default router;

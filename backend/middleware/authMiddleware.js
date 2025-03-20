@@ -9,7 +9,7 @@ const protect = async (req, res, next) => {
     if (!token) return ResponseApi.error(res, "Tidak ada token");
 
     // Memverifikasi token
-    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Mengambil pengguna berdasarkan ID dari token
     const user = await User.findByPk(decoded.id);
