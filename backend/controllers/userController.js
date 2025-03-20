@@ -2,18 +2,31 @@ import jwt from "jsonwebtoken";
 import ResponseAPI from "../helper/response.js";
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
+import path from "path";
+
+import fs from "fs";
 
 const registerUser = async (req, res) => {
   try {
     const { username, email, password, name } = req.body;
 
+    const avatarPath = req.file ? req.file.path : null;
+    // console.log(req.body);
+
     if (!username || !email || !password || !name) {
-      return ResponseAPI.error(res, "pastikan semua form wajib terisi");
+      if (req.file) fs.unlinkSync(req.file.path);
+      return ResponseAPI.error(res, "Pastikan semua form wajib terisi");
     }
 
-    const userExist = await User.findOne({ where: email });
+    const userExist = await User.findOne({ where: { email } });
     if (userExist) {
-      return ResponseAPI.error(res, "User Sudah Terdaftar");
+      if (req.file) fs.unlinkSync(req.file.path);
+      return ResponseAPI.error(res, "User sudah terdaftar");
+    }
+    const usernameExist = await User.findOne({ where: { username } });
+    if (usernameExist) {
+      if (req.file) fs.unlinkSync(req.file.path);
+      return ResponseAPI.error(res, "Username Sudah Ada");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -23,17 +36,20 @@ const registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       name,
+      avatar: avatarPath,
     });
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "20h",
-    });
+    // const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+    //   expiresIn: "20h",
+    // });
 
-    return ResponseAPI.success(res, "User Berhasil Terdaftar", {
-      token: token,
+    return ResponseAPI.success(res, "User berhasil terdaftar", {
+      data: user,
     });
   } catch (error) {
+    if (req.file) fs.unlinkSync(req.file.path);
     console.log(error);
+    return ResponseAPI.error(res, "Terjadi kesalahan saat mendaftar");
   }
 };
 
@@ -52,7 +68,7 @@ const loginUser = async (req, res) => {
       return ResponseAPI.error(res, "Password Salah");
     }
     const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, {
-      expiresIn: "1h",
+      expiresIn: "20h",
     });
     return ResponseAPI.success(res, "User Berhasil Login", {
       token: token,
@@ -91,11 +107,16 @@ const getUserById = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     const id = req.params.id;
-    const user = await User.destroy({ where: { id: id } });
+    const user = await User.findOne({ where: { id: id } });
     if (!user) {
       return ResponseAPI.error(res, "User Tidak Terdaftar");
     }
-    return ResponseAPI.success(res, "User Berhasil Dihapus");
+    user.destroy({ where: { id: id } });
+    if (user.avatar) {
+      fs.unlinkSync(user.avatar);
+      console.log(user.avatar);
+    }
+    return ResponseAPI.success(res, "user berhasil dihapus", { data: user });
   } catch (error) {
     console.log(error);
   }

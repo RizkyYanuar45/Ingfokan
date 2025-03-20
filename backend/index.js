@@ -1,19 +1,24 @@
-import express from "express";
+import express, { urlencoded } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/connect.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 connectDB();
 const app = express();
 const port = process.env.PORT;
 
+app.use(express.json());
+app.use(urlencoded({ extended: true }));
 app.use(cors());
 
-app.get("/", (req, res) => {
-  res.send("Hello World");
-});
+app.use("/api/user", userRoutes);
+
+// app.get("/", (req, res) => {
+//   res.send("Hello World");
+// });
 
 app.listen(port, (req, res) => {
-  console.log("Server is running on port 3000");
+  console.log(`Server is running on http://localhost:${port}`);
 });

@@ -1,5 +1,5 @@
 class ResponseAPI {
-  static success(res, data = null, message = "Success", statusCode = 200) {
+  static success(res, message = "Success", data = null, statusCode = 200) {
     return res.status(statusCode).json({
       success: true,
       message,

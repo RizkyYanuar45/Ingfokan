@@ -29,6 +29,7 @@ const user = db.define(
     },
     avatar: {
       type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {

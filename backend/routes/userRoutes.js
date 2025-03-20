@@ -8,11 +8,14 @@ import {
   editUser,
 } from "./../controllers/userController.js";
 import protect from "../middleware/authMiddleware.js";
+import upload from "../middleware/upload.js";
 const router = express.Router();
 
 router.post("/login", loginUser);
-router.post("/register", registerUser);
+router.post("/register", upload.single("avatar"), registerUser);
 router.delete("/delete/:id", deleteUser);
 router.get("/", getAllUser);
 router.get("/:id", getUserById);
 router.patch("/:id", protect, editUser);
+
+export default router;
