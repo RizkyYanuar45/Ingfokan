@@ -24,4 +24,16 @@ const protect = async (req, res, next) => {
   }
 };
 
-export default protect;
+const admin = (req, res, next) => {
+  try {
+    if (req.User && req.User.role === "admin") {
+      next();
+    } else {
+      return ResponseApi.unauthorized(res, "kamu bukan admin");
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export { protect, admin };

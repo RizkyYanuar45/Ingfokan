@@ -4,8 +4,6 @@ import User from "../models/user.js";
 import bcrypt from "bcrypt";
 
 import fs from "fs";
-import { log } from "console";
-import { where } from "sequelize";
 
 const registerUser = async (req, res) => {
   try {

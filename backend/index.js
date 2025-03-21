@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/connect.js";
 import userRoutes from "./routes/userRoutes.js";
+import bannerRoutes from "./routes/bannerRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -14,6 +15,7 @@ app.use(urlencoded({ extended: true }));
 app.use(cors());
 
 app.use("/api/user", userRoutes);
+app.use("/api/user", bannerRoutes);
 
 // app.get("/", (req, res) => {
 //   res.send("Hello World");

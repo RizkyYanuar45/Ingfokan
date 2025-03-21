@@ -7,7 +7,7 @@ import {
   getUserById,
   editUser,
 } from "./../controllers/userController.js";
-import protect from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
 import upload from "../middleware/upload.js";
 const router = express.Router();
 
