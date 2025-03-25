@@ -43,9 +43,9 @@ const createBanner = async (req, res) => {
   try {
     const { is_active, link } = req.body;
     const thumbnail = req.file ? req.file.path : null;
-    const banner = await banner.create({ is_active, thumbnail, link });
+    const newBanner = await banner.create({ is_active, thumbnail, link });
     return ResponseAPI.success(res, "berhasil membuat banner", {
-      data: banner,
+      data: newBanner,
     });
   } catch (error) {
     return ResponseAPI.error(res, "gagal membuat banner", 400, error.message);

@@ -4,6 +4,7 @@ import cors from "cors";
 import connectDB from "./config/connect.js";
 import userRoutes from "./routes/userRoutes.js";
 import bannerRoutes from "./routes/bannerRoutes.js";
+import authorRoutes from "./routes/authorRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -15,7 +16,8 @@ app.use(urlencoded({ extended: true }));
 app.use(cors());
 
 app.use("/api/user", userRoutes);
-app.use("/api/user", bannerRoutes);
+app.use("/api/banner", bannerRoutes);
+app.use("/api/author", authorRoutes);
 
 // app.get("/", (req, res) => {
 //   res.send("Hello World");
