@@ -83,7 +83,9 @@ const updateBanner = async (req, res) => {
     const banner = await banner.findOne({ where: { id: id } });
     if (banner) {
       if (newThumbnailPath) {
-        fs.unlinkSync(banner.thumbnail);
+        if (fs.existsSync(banner.thumbnail)) {
+          fs.unlinkSync(banner.thumbnail);
+        }
         banner.thumbnail = newThumbnailPath;
       }
       banner.is_active = is_active;

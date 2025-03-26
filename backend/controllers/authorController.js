@@ -77,7 +77,10 @@ const updateAuthor = async (req, res) => {
     }
     if (author) {
       if (avatarPath) {
-        fs.unlinkSync(author.avatar);
+        if (fs.existsSync(author.avatar)) {
+          fs.unlinkSync(author.avatar);
+        }
+
         author.avatar = avatarPath;
       }
     }
@@ -94,7 +97,10 @@ const deleteAuthor = async (req, res) => {
     const id = req.params.id;
     const author = await Author.findOne({ where: { id: id } });
     if (author) {
-      fs.unlinkSync(author.avatar);
+      if (fs.existsSync(author.avatar)) {
+        fs.unlinkSync(author.avatar);
+      }
+
       await author.destroy();
       return ResponseAPI.success(res, "berhasil menghapus author");
     } else {
