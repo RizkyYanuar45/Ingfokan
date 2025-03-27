@@ -82,7 +82,10 @@ const deleteCategory = async (req, res) => {
     if (!category)
       return ResponseAPI.error(res, "data category tidak ditemukan");
     if (category) {
-      fs.unlinkSync(category.thumbnail);
+      if (fs.existsSync(category.thumbnail)) {
+        fs.unlinkSync(category.thumbnail);
+      }
+
       await category.destroy();
     }
     return ResponseAPI.success(res, "Berhasil menghapus kategori", {
