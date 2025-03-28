@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { decode } from "jsonwebtoken";
 import User from "./../models/user.js";
 import ResponseApi from "./../helper/response.js";
 
@@ -12,21 +12,29 @@ const protect = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Mengambil pengguna berdasarkan ID dari token
-    const user = await User.findByPk(decoded.id);
+    console.log("User ID from Token:", decoded.id);
+    console.log("User Email from Token:", decoded.email);
+    console.log("User decoded from Token:", decoded);
+    const user = await User.findOne({ where: { email: decoded.email } });
     if (!user) return ResponseApi.error(res, "User tidak ditemukan");
 
     // Menyimpan informasi pengguna di request untuk digunakan di rute berikutnya
     req.user = user;
-    next(); // Melanjutkan ke middleware atau rute berikutnya
+    next();
   } catch (error) {
     console.error(error);
     return ResponseApi.error(res, "Token tidak valid");
   }
 };
 
-const admin = (req, res, next) => {
+const admin = async (req, res, next) => {
   try {
-    if (req.User && req.User.role === "admin") {
+    // console.log("req.user = " + req.User);
+    // let token = req.header("Authorization")?.replace("Bearer ", "");
+    // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // const user = await User.findOne({ where: { email: decoded.email } });
+
+    if (req.user && req.user.role == "admin") {
       next();
     } else {
       return ResponseApi.unauthorized(res, "kamu bukan admin");

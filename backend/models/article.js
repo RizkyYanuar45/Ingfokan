@@ -4,6 +4,11 @@ import category from "./category.js";
 import author from "./author.js";
 
 const article = db.define("Article", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
   title: {
     type: DataTypes.STRING,
     allowNull: false,

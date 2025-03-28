@@ -4,6 +4,11 @@ import user from "../models/user.js";
 import article from "../models/article.js";
 
 const favorite = db.define("favorite", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
   user_id: {
     type: DataTypes.INTEGER,
     allowNull: false,

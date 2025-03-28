@@ -15,6 +15,6 @@ router.get("/", getAllCategory);
 router.get("/:id", getCategoryById);
 router.post("/", protect, upload.single("thumbnail"), createCategory);
 router.patch("/:id", upload.single("thumbnail"), updateCategory);
-router.delete("/:id", protect, admin, deleteCategory);
+router.delete("/delete/:id", protect, admin, deleteCategory);
 
 export default router;

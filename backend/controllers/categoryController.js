@@ -6,7 +6,9 @@ const getAllCategory = async (req, res) => {
   try {
     const category = await Category.findAll();
     if (!category) return ResponseAPI.error(res, "data category masih kosong");
-    return ResponseAPI.success(res, "Berhasil mendapatkan semua kategori");
+    return ResponseAPI.success(res, "Berhasil mendapatkan semua kategori", {
+      category,
+    });
   } catch (error) {
     return ResponseAPI.error(res, error.message);
   }
@@ -20,7 +22,8 @@ const getCategoryById = async (req, res) => {
       return ResponseAPI.error(res, "data category tidak ditemukan");
     return ResponseAPI.success(
       res,
-      "Berhasil mendapatkan kategori dengan id " + id
+      "Berhasil mendapatkan kategori dengan id ",
+      category
     );
   } catch (error) {
     return ResponseAPI.error(res, error.message);
@@ -30,7 +33,7 @@ const getCategoryById = async (req, res) => {
 const createCategory = async (req, res) => {
   try {
     const { name } = req.body;
-    const newThumbnail = req.file ? req.file.thumbnail : null;
+    const newThumbnail = req.file ? req.file.path : null;
     const category = await Category.create({
       name: name,
       thumbnail: newThumbnail,
@@ -39,6 +42,7 @@ const createCategory = async (req, res) => {
       category,
     });
   } catch (error) {
+    if (req.file) fs.unlinkSync(req.file.path);
     return ResponseAPI.error(res, error.message);
   }
 };

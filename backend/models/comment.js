@@ -5,6 +5,11 @@ import Article from "./article.js";
 import User from "./user.js";
 
 const Comment = db.define("Comment", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
   content: {
     type: DataTypes.STRING,
     allowNull: false,

@@ -1,11 +1,11 @@
 import jwt from "jsonwebtoken";
 import ResponseAPI from "../helper/response.js";
-import banner from "./../models/banner.js";
+import Banner from "./../models/banner.js";
 import fs from "fs";
 
 const getAllBanner = async (req, res) => {
   try {
-    const bannerData = await banner.findAll();
+    const bannerData = await Banner.findAll();
     if (bannerData.length == 0) {
       return ResponseAPI.notFound(res, "tidak ada banner yang terbuat");
     }
@@ -25,7 +25,7 @@ const getAllBanner = async (req, res) => {
 const getBannerById = async (req, res) => {
   try {
     const id = req.params.id;
-    const banner = await banner.findOne({ where: { id: id } });
+    const banner = await Banner.findOne({ where: { id: id } });
     return ResponseAPI.success(res, "berhasil mendapatkan banner", {
       data: banner,
     });
@@ -43,7 +43,7 @@ const createBanner = async (req, res) => {
   try {
     const { is_active, link } = req.body;
     const thumbnail = req.file ? req.file.path : null;
-    const newBanner = await banner.create({ is_active, thumbnail, link });
+    const newBanner = await Banner.create({ is_active, thumbnail, link });
     return ResponseAPI.success(res, "berhasil membuat banner", {
       data: newBanner,
     });
@@ -55,7 +55,7 @@ const createBanner = async (req, res) => {
 const deleteBanner = async (req, res) => {
   try {
     const id = req.params.id;
-    const banner = await banner.findOne({ where: { id: id } });
+    const banner = await Banner.findOne({ where: { id: id } });
     if (banner) {
       fs.unlinkSync(banner.thumbnail);
       await banner.destroy();
@@ -80,7 +80,7 @@ const updateBanner = async (req, res) => {
     const id = req.params.id;
     const { is_active, link } = req.body;
     const newThumbnailPath = req.file ? req.file.path : null;
-    const banner = await banner.findOne({ where: { id: id } });
+    const banner = await Banner.findOne({ where: { id: id } });
     if (banner) {
       if (newThumbnailPath) {
         if (fs.existsSync(banner.thumbnail)) {

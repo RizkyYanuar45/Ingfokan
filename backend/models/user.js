@@ -4,6 +4,11 @@ import db from "../config/database.js";
 const user = db.define(
   "User",
   {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
     name: {
       type: DataTypes.STRING(100),
       allowNull: false,

@@ -4,6 +4,7 @@ import User from "../models/user.js";
 import bcrypt from "bcrypt";
 
 import fs from "fs";
+import { log } from "console";
 
 const registerUser = async (req, res) => {
   try {
@@ -55,25 +56,47 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Validasi input
     if (!email || !password) {
-      return ResponseAPI.error(res, "pastikan semua form wajib terisi");
+      return ResponseAPI.error(res, "Pastikan semua form wajib terisi", 400);
     }
+
+    // Mencari pengguna berdasarkan email
     const user = await User.findOne({ where: { email: email } });
+    const idUser = user.id;
+    console.log(idUser);
+
     if (!user) {
-      return ResponseAPI.error(res, "User Tidak Terdaftar");
+      return ResponseAPI.error(res, "User Tidak Terdaftar", 404);
     }
+
+    // Memeriksa kecocokan password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      return ResponseAPI.error(res, "Password Salah");
+      return ResponseAPI.error(res, "Password Salah", 401);
     }
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "20h",
-    });
+
+    // Membuat token dengan informasi pengguna
+
+    const token = jwt.sign(
+      {
+        email: user.email, // Menyertakan email
+        role: user.role, // Menyertakan role
+      },
+      process.env.JWT_SECRET, // Kunci rahasia dari variabel lingkungan
+      {
+        expiresIn: "20h", // Waktu kedaluwarsa token
+      }
+    );
+
+    // Mengembalikan respons sukses dengan token
     return ResponseAPI.success(res, "User Berhasil Login", {
       token: token,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return ResponseAPI.error(res, "Terjadi kesalahan pada server", 500);
   }
 };
 
