@@ -32,7 +32,7 @@ const getAllById = async (req, res) => {
   }
 };
 
-const createArticle = async (res, res) => {
+const createArticle = async (req, res) => {
   try {
     const { title, content, category_id, author_id, published_date } = req.body;
     const thumbnailPath = req.file ? req.file.thumbnail : null;
@@ -58,7 +58,7 @@ const createArticle = async (res, res) => {
   }
 };
 
-const updateArticle = async (res, res) => {
+const updateArticle = async (req, res) => {
   try {
     const id = req.params.id;
     const article = await Article.findOne({ where: { id: id } });
