@@ -1,4 +1,4 @@
-import express, { Router } from "express";
+import express from "express";
 import {
   getAllAuthor,
   getAuthorById,
@@ -13,7 +13,7 @@ const router = express.Router();
 router.post("/", upload.single("avatar"), createAuthor);
 router.get("/", getAllAuthor);
 router.get("/:id", getAuthorById);
-router.patch("/update/:id", upload.single("avatar"), updateAuthor);
-router.delete("/:id", deleteAuthor);
+router.patch("/:id", upload.single("avatar"), updateAuthor);
+router.delete("/delete/:id", deleteAuthor);
 
 export default router;

@@ -46,7 +46,13 @@ const createAuthor = async (req, res) => {
   try {
     const { name, email } = req.body;
     const avatarPath = req.file ? req.file.path : null;
-    const slugged = slugify(name);
+    const slugged = slugify(name, {
+      replacement: "-",
+      lower: true,
+      strict: true,
+    });
+    console.log(slugged);
+
     const author = await Author.create({
       name,
       email,
@@ -59,7 +65,7 @@ const createAuthor = async (req, res) => {
   } catch (error) {
     return ResponseAPI.error(
       res,
-      "gagal menambahkan author",
+      "gagal menambahkan author catch",
       400,
       error.message
     );
@@ -70,23 +76,29 @@ const updateAuthor = async (req, res) => {
   try {
     const id = req.params.id;
     const { name, email } = req.body;
-    const avatarPath = req.file ? req.file.path : null;
+    const newAvatar = req.file ? req.file.path : null;
+
     const author = await Author.findOne({ where: { id: id } });
     if (!author) {
-      return ResponseAPI.notFound(res, "author tidak ditemukan");
+      return ResponseAPI.error(res, "Data kategori tidak ditemukan");
     }
-    if (author) {
-      if (avatarPath) {
-        if (fs.existsSync(author.avatar)) {
-          fs.unlinkSync(author.avatar);
-        }
 
-        author.avatar = avatarPath;
+    if (newAvatar) {
+      if (fs.existsSync(author.avatar)) {
+        fs.unlinkSync(author.avatar);
       }
     }
-    author.name = name;
-    author.email = email;
-    author.avatar = avatarPath;
+
+    await Author.update(
+      { name: name, email: email, avatar: newAvatar || author.avatar },
+      { where: { id: id } }
+    );
+
+    const updatedAuthor = await Author.findOne({ where: { id: id } });
+
+    return ResponseAPI.success(res, "Berhasil mengupdate kategori", {
+      author: updatedAuthor,
+    });
   } catch (error) {
     return ResponseAPI.error(res, error.message);
   }

@@ -19,7 +19,7 @@ const author = db.define("author", {
     type: DataTypes.STRING,
   },
   slug: {
-    type: DataTypes.STRING(100),
+    type: DataTypes.STRING,
     unique: true,
   },
 });

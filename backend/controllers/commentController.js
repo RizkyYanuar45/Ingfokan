@@ -3,7 +3,7 @@ import ResponseAPI from "../helper/response.js";
 
 const getAllComment = async (req, res) => {
   try {
-    const { user_id, article_id } = req.body;
+    const { article_id } = req.body;
     const comment = await Comment.findAll({
       where: { article_id: article_id },
     });

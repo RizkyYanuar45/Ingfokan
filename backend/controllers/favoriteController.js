@@ -6,7 +6,7 @@ const getAllFavorite = async (req, res) => {
     const { user_id } = req.body;
     const result = await Favorite.findAll({ where: { user_id: user_id } });
     if (!result) {
-      return ResponseAPI.notFound(res, "belum ada yang di favortkan");
+      return ResponseAPI.notFound(res, "belum ada yang di favoritkan");
     }
     return ResponseAPI.success(res, "success", {
       result,

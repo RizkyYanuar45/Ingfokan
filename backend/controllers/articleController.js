@@ -34,8 +34,9 @@ const getAllById = async (req, res) => {
 
 const createArticle = async (req, res) => {
   try {
-    const { title, content, category_id, author_id, published_date } = req.body;
-    const thumbnailPath = req.file ? req.file.thumbnail : null;
+    const { title, content, category_id, author_id } = req.body;
+    const thumbnailPath = req.file ? req.file.path : null;
+    const dateNow = Date.now();
     const slugged = slugify(title, {
       replacement: "-",
       lower: true,
@@ -47,7 +48,7 @@ const createArticle = async (req, res) => {
       content,
       category_id,
       author_id,
-      published_date,
+      published_date: dateNow,
       slug: slugged,
     });
     return ResponseAPI.success(res, "Artikel berhasil dibuat", {
@@ -59,29 +60,71 @@ const createArticle = async (req, res) => {
 };
 
 const updateArticle = async (req, res) => {
+  // try {
+  //   const id = req.params.id;
+  //   const article = await Article.findOne({ where: { id: id } });
+  //   if (!article) {
+  //     ResponseAPI.notFound(res, "article tidak ditemukan");
+  //   }
+  //   const { title, content, category_id, article_id, published_date } = req.body;
+  //   const thumbnailPath = req.file ? req.file.thumbnail : null;
+  //   const slugged = slugify(title, {
+  //     replacement: "-",
+  //     lower: true,
+  //     strict: true,
+  //   });
+  //   article.title = title;
+  //   article.thumbnail = thumbnailPath;
+  //   article.content = content;
+  //   article.category_id = category_id;
+  //   article.article_id = article_id;
+  //   article.published_date = published_date;
+  //   article.slug = slugged;
+  //   await article.save();
+  //   return ResponseAPI.success(res, "Artikel berhasil diupdate", {
+  //     article,
+  //   });
+  // } catch (error) {
+  //   return ResponseAPI.error(res, error.message);
+  // }
   try {
     const id = req.params.id;
+    const { title, content, category_id, author_id } = req.body;
+    const newThumbnail = req.file ? req.file.path : null;
+    const timeNow = Date.now();
+
     const article = await Article.findOne({ where: { id: id } });
     if (!article) {
-      ResponseAPI.notFound(res, "article tidak ditemukan");
+      return ResponseAPI.error(res, "Data article tidak ditemukan");
     }
-    const { title, content, category_id, author_id, published_date } = req.body;
-    const thumbnailPath = req.file ? req.file.thumbnail : null;
-    const slugged = slugify(title, {
-      replacement: "-",
-      lower: true,
-      strict: true,
-    });
-    article.title = title;
-    article.thumbnail = thumbnailPath;
-    article.content = content;
-    article.category_id = category_id;
-    article.author_id = author_id;
-    article.published_date = published_date;
-    article.slug = slugged;
-    await article.save();
-    return ResponseAPI.success(res, "Artikel berhasil diupdate", {
-      article,
+
+    if (newThumbnail) {
+      if (fs.existsSync(article.avatar)) {
+        fs.unlinkSync(article.avatar);
+      }
+    }
+
+    await Article.update(
+      {
+        title,
+        content,
+        category_id,
+        author_id,
+        published_date: timeNow,
+        slug: slugify(title, {
+          replacement: "-",
+          lower: true,
+          strict: true,
+        }),
+        thumbnail: newThumbnail || article.thumbnail,
+      },
+      { where: { id: id } }
+    );
+
+    const updatedArticle = await Article.findOne({ where: { id: id } });
+
+    return ResponseAPI.success(res, "Berhasil mengupdate Article", {
+      article: updatedArticle,
     });
   } catch (error) {
     return ResponseAPI.error(res, error.message);

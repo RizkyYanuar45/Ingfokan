@@ -65,7 +65,7 @@ const updateCategory = async (req, res) => {
     }
 
     await Category.update(
-      { name: name, thumbnail: newThumbnail },
+      { name: name, thumbnail: newThumbnail || category.thumbnail },
       { where: { id: id } }
     );
 
