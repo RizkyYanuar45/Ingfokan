@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import Office from "./../assets/Office.jpg";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail } from "lucide-react";
 
-function Login() {
-  const [showPassword, setShowPassword] = useState(false);
-
+function ForgetPassword() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primarycus to-secondarycus p-6 md:p-8">
       <div className="flex justify-center items-center">
@@ -32,8 +30,10 @@ function Login() {
             {/* Right side with form */}
             <div className="w-full md:w-1/3 p-8 md:p-12 bg-white">
               <div className="text-center mb-8">
-                <h1 className="text-4xl font-bold text-blackcus mb-2">Login</h1>
-                <p className="text-gray-600">Please sign in to continue</p>
+                <h1 className="text-4xl font-bold text-blackcus mb-2">
+                  Reset Password
+                </h1>
+                <p className="text-gray-600">Please insert your email</p>
               </div>
 
               <form className="space-y-6">
@@ -57,51 +57,11 @@ function Login() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label
-                    htmlFor="password"
-                    className="block text-sm font-medium text-blackcus"
-                  >
-                    Password
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      id="password"
-                      placeholder="Enter your password"
-                      className="w-full pl-10 pr-12 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primarycus focus:border-transparent transition-colors"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                      ) : (
-                        <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <a
-                    href="#"
-                    className="text-sm font-medium text-primarycus hover:text-secondarycus transition-colors"
-                  >
-                    Forgot password?
-                  </a>
-                </div>
-
                 <button
                   type="submit"
                   className="w-full bg-gradient-to-r from-primarycus to-secondarycus text-white py-2.5 rounded-lg font-medium hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-primarycus focus:ring-offset-2"
                 >
-                  Sign in
+                  Send OTP
                 </button>
               </form>
             </div>
@@ -112,4 +72,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default ForgetPassword;
