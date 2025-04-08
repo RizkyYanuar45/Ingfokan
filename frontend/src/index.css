@@ -1,7 +1,13 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes: light --default;
+}
 @theme {
   --color-primarycus: #f81539;
   --color-secondarycus: #fc4308;
   --color-blackcus: #3e3232;
 }
+
+/* Importing the default styles for slick */
+@import "slick-carousel/slick/slick.css";
+@import "slick-carousel/slick/slick-theme.css";
