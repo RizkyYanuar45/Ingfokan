@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Office from "./../assets/Office.jpg";
 
 const items = [
   {
     id: 1,
     title: "Item 1",
-    image: "/api/placeholder/300/200",
+    image: Office,
   },
   {
     id: 2,
@@ -113,8 +114,8 @@ function CategoriesBar() {
   const translateValue = `-${startIndex * (100 / itemsToShow)}%`;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="h-40 bg-gray-100 p-8">
+      <div className="max-w-[90rem] mx-auto">
         <div className="relative overflow-hidden">
           {/* Carousel container */}
           <div
@@ -126,16 +127,16 @@ function CategoriesBar() {
                 key={item.id}
                 className="w-1/7 flex-shrink-0 px-2 min-w-[14.28%]"
               >
-                <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
+                <div className="relative bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
                   <img
                     src={item.image}
                     alt={item.title}
-                    className="w-full h-40 object-cover"
+                    className="w-full h-20 object-cover blur-[2px]"
                   />
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold text-gray-800">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <h2 className="text-white text-lg font-bold">
                       {item.title}
-                    </h3>
+                    </h2>
                   </div>
                 </div>
               </div>

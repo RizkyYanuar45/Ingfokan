@@ -3,46 +3,6 @@ import { ChevronDown, Bookmark, Search } from "lucide-react";
 
 function Navbar() {
   return (
-    // <div className="navbar bg-white shadow-sm">
-    //   <div className="flex-1">
-    //     <a className="btn btn-ghost text-secondarycus text-xl">Ingfokan News</a>
-    //   </div>
-    //   <div className="flex gap-2">
-    //     <input
-    //       type="text"
-    //       placeholder="Search"
-    //       className="input input-bordered w-24 md:w-auto"
-    //     />
-    //     <div className="dropdown dropdown-end">
-    //       <div
-    //         tabIndex={0}
-    //         role="button"
-    //         className="btn btn-ghost btn-circle avatar"
-    //       >
-    //         <div className="w-10 rounded-full">
-    //           <img
-    //             alt="Tailwind CSS Navbar component"
-    //             src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-    //           />
-    //         </div>
-    //       </div>
-    //       <ul
-    //         tabIndex={0}
-    //         className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow text-secondarycus"
-    //       >
-    //         <li>
-    //           <a className="justify-between">Profile</a>
-    //         </li>
-    //         <li>
-    //           <a>Settings</a>
-    //         </li>
-    //         <li>
-    //           <a>Logout</a>
-    //         </li>
-    //       </ul>
-    //     </div>
-    //   </div>
-    // </div>
     <header className="flex justify-between items-center px-5 py-7 mx-auto my-0 h-12 max-w-[1512px] max-md:px-4 max-md:py-0 shadow-sm">
       <div className="flex gap-16 items-center max-md:gap-10">
         <img
@@ -93,10 +53,23 @@ function Navbar() {
             className="object-cover w-12 h-12 rounded-xl max-sm:-ml-0.5"
             alt="User avatar"
           />
-          <button className="flex gap-2 items-center">
-            <span className="text-base font-medium text-black">Behzad</span>
-            <ChevronDown />
-          </button>
+          <span className="text-base font-medium text-black">Behzad</span>
+          <div className="dropdown dropdown-bottom dropdown-end">
+            <div tabIndex={0} role="button" className="m-1">
+              <ChevronDown />
+            </div>
+            <ul
+              tabIndex={0}
+              className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm"
+            >
+              <li>
+                <a>Update Profile</a>
+              </li>
+              <li>
+                <a className=" text-red-500">Log Out</a>
+              </li>
+            </ul>
+          </div>
         </div>
         <button
           className="flex justify-center items-center w-12 h-12 rounded-xl bg-neutral-100"
