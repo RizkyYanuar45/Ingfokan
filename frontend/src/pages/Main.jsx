@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import CategoriesBar from "../components/CategoriesBar";
 import Carousel from "../components/Carousel";
 import Footer from "../components/Footer";
+import PopularPost from "../components/PopularPost";
+import NewPost from "../components/NewPost";
+
 function Main() {
   return (
     <div>
@@ -11,8 +14,11 @@ function Main() {
       <CategoriesBar />
 
       {/* carousel */}
-
       <Carousel />
+
+      <PopularPost />
+      <NewPost />
+
       <Footer />
     </div>
   );
