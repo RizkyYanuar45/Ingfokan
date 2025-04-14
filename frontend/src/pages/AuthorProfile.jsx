@@ -5,6 +5,7 @@ import {
   MessageCircle,
   ChevronLeft,
   ChevronRight,
+  Newspaper,
   Clock,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
@@ -338,10 +339,37 @@ function AuthorProfile() {
   return (
     <div>
       <Navbar />
-      <div className="bg-gray-200 w-full flex ">
-        <div className="flex-1 p-4">
-          <img src={Office} alt="" width={44} height={44} />
-          <h1 className="text-3xl font-bold">Anton</h1>
+      <div className="breadcrumbs text-sm p-5">
+        <ul>
+          <li>
+            <a>Home</a>
+          </li>
+          <li>
+            <a>Authors</a>
+          </li>
+        </ul>
+      </div>
+      <div className="p-6 flex items-center justify-center">
+        <div className="w-[1440px] h-32 bg-yellow-400 text-center  ">
+          Banner
+        </div>
+      </div>
+
+      <div className="bg-gray-200 w-full flex items-center justify-evenly ">
+        <div className="p-4 flex items-center">
+          <img
+            src={Office}
+            alt=""
+            width={44}
+            height={44}
+            className=" rounded-md"
+          />
+          <p className="">Anton</p>
+        </div>
+        <div className="flex">
+          <Newspaper />
+          <p> Total Post :</p>
+          <p> 21</p>
         </div>
       </div>
       <div className="min-h-screen bg-gray-50 pb-8">
