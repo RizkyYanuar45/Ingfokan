@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import RelatedPost from "../components/RelatedPost";
 
 export default function Article() {
   const [isLiked, setIsLiked] = useState(false);
@@ -347,6 +348,7 @@ export default function Article() {
           </div>
         </div>
       </div>
+      <RelatedPost />
       <Footer />
     </div>
   );

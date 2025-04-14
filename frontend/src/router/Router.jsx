@@ -6,6 +6,8 @@ import ForgetPassword from "../pages/ForgetPassword";
 
 import Main from "../pages/Main";
 import Article from "../pages/Article";
+import AuthorProfile from "../pages/AuthorProfile";
+
 export const Router = createBrowserRouter([
   {
     path: "/",
@@ -23,5 +25,9 @@ export const Router = createBrowserRouter([
   {
     path: "/article",
     element: <Article />,
+  },
+  {
+    path: "/author-profile",
+    element: <AuthorProfile />,
   },
 ]);
