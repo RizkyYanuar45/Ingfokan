@@ -9,6 +9,9 @@ import Article from "../pages/Article";
 import AuthorProfile from "../pages/AuthorProfile";
 import CategoryPage from "../pages/CategoryPage";
 import ContactUs from "../pages/ContactUs";
+import AboutUs from "../pages/AboutUs";
+import NotFound from "../pages/NotFound";
+import NotAuthorized from "../pages/NotAuthorized";
 
 export const Router = createBrowserRouter([
   {
@@ -39,5 +42,18 @@ export const Router = createBrowserRouter([
   {
     path: "/contact-us",
     element: <ContactUs />,
+  },
+  {
+    path: "/about-us",
+    element: <AboutUs />,
+  },
+
+  {
+    path: "/not-authorized",
+    element: <NotAuthorized />,
+  },
+  {
+    path: "/*",
+    element: <NotFound />,
   },
 ]);
