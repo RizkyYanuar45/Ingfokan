@@ -15,6 +15,8 @@ import NotAuthorized from "../pages/NotAuthorized";
 import SearchPage from "../pages/SearchPage";
 
 import Test from "../pages/Admin/Test";
+import Dashboard from "../pages/Admin/Dashboard";
+import ControlArticles from "../pages/Admin/ControlArticles";
 
 export const Router = createBrowserRouter([
   {
@@ -63,6 +65,16 @@ export const Router = createBrowserRouter([
     path: "/admin/test",
     element: <Test />,
   },
+
+  {
+    path: "/admin/dashboard",
+    element: <Dashboard />,
+  },
+  {
+    path: "/admin/article",
+    element: <ControlArticles />,
+  },
+
   {
     path: "/*",
     element: <NotFound />,

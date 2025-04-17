@@ -6,6 +6,16 @@ export default function ContactUs() {
   return (
     <div>
       <Navbar />
+      <div className="breadcrumbs text-sm px-4 sm:px-10 py-4 sm:py-7">
+        <ul>
+          <li>
+            <a href="/">Home</a>
+          </li>
+          <li>
+            <a href="/about">Contact Us</a>
+          </li>
+        </ul>
+      </div>
       <div className="max-w-6xl mx-auto mt-5 p-6 bg-white rounded-lg ">
         <h1 className="text-2xl font-bold mb-6">Contact Us</h1>
 

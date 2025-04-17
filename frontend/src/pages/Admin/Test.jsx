@@ -1,296 +1,343 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
-  FileText,
-  Users,
-  Tag,
+  Search,
+  Filter,
   Eye,
-  Trash2,
   Edit,
-  PlusCircle,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
-import SideBar from "../../components/Admin/SideBar";
-import TopNavigation from "../../components/Admin/TopNavigation";
+export default function ControlsArticles() {
+  const [sortField, setSortField] = useState("date");
+  const [sortDirection, setSortDirection] = useState("desc");
 
-export default function Dashboard() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("desc");
+    }
   };
 
+  const renderSortIcon = (field) => {
+    if (sortField !== field) return null;
+    return sortDirection === "asc" ? (
+      <ArrowUp className="h-4 w-4 ml-1" />
+    ) : (
+      <ArrowDown className="h-4 w-4 ml-1" />
+    );
+  };
+
+  // Sample data for articles
+  const articles = [
+    {
+      id: 1,
+      title: "The Future of Artificial Intelligence",
+      category: "Technology",
+      author: "Sarah Johnson",
+      date: "2025-04-15",
+      status: "Published",
+      views: 3240,
+    },
+    {
+      id: 2,
+      title: "10 Tips for Healthy Living",
+      category: "Health",
+      author: "Michael Brown",
+      date: "2025-04-14",
+      status: "Published",
+      views: 2150,
+    },
+    {
+      id: 3,
+      title: "Global Climate Change Report 2025",
+      category: "Environment",
+      author: "James Wilson",
+      date: "2025-04-12",
+      status: "Published",
+      views: 1876,
+    },
+    {
+      id: 4,
+      title: "Financial Markets Analysis Q2 2025",
+      category: "Finance",
+      author: "Emma Davis",
+      date: "2025-04-10",
+      status: "Draft",
+      views: 0,
+    },
+    {
+      id: 5,
+      title: "Upcoming Tech Innovations",
+      category: "Technology",
+      author: "Sarah Johnson",
+      date: "2025-04-08",
+      status: "Published",
+      views: 4567,
+    },
+    {
+      id: 6,
+      title: "The Psychology of Decision Making",
+      category: "Psychology",
+      author: "Robert Martinez",
+      date: "2025-04-05",
+      status: "Published",
+      views: 1980,
+    },
+    {
+      id: 7,
+      title: "Travel Destinations for Summer 2025",
+      category: "Travel",
+      author: "Jennifer Lee",
+      date: "2025-04-02",
+      status: "Draft",
+      views: 0,
+    },
+  ];
+
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar - Mobile overlay */}
+    <div className="container mx-auto">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Articles</h1>
+          <p className="text-gray-500">
+            Manage your published and draft articles
+          </p>
+        </div>
+        <div className="mt-4 md:mt-0">
+          <Link to="/create-article">
+            <button className="btn btn-primary bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+              Create New Article
+            </button>
+          </Link>
+        </div>
+      </div>
 
-      {/* Sidebar */}
-      <SideBar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Navigation */}
-        <TopNavigation toggleSidebar={toggleSidebar} />
-
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-6 bg-gray-100">
-          <div className="mb-6">
-            <h1 className="text-2xl font-semibold text-gray-800">Dashboard</h1>
-            <p className="text-gray-600">Welcome back, Admin!</p>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-indigo-100 rounded-lg">
-                  <FileText className="h-6 w-6 text-indigo-600" />
-                </div>
-                <div className="ml-4">
-                  <h2 className="text-sm font-medium text-gray-500">
-                    Total Articles
-                  </h2>
-                  <p className="text-2xl font-semibold text-gray-800">142</p>
-                </div>
+      {/* Search and Filter */}
+      <div className="bg-white rounded-lg shadow mb-6">
+        <div className="p-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
               </div>
+              <input
+                type="text"
+                placeholder="Search articles..."
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <Eye className="h-6 w-6 text-green-600" />
-                </div>
-                <div className="ml-4">
-                  <h2 className="text-sm font-medium text-gray-500">
-                    Total Views
-                  </h2>
-                  <p className="text-2xl font-semibold text-gray-800">45.2K</p>
-                </div>
+            <div className="flex space-x-2">
+              <div className="relative">
+                <select className="border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white">
+                  <option value="">All Categories</option>
+                  <option value="technology">Technology</option>
+                  <option value="health">Health</option>
+                  <option value="finance">Finance</option>
+                  <option value="environment">Environment</option>
+                  <option value="psychology">Psychology</option>
+                  <option value="travel">Travel</option>
+                </select>
               </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <Users className="h-6 w-6 text-purple-600" />
-                </div>
-                <div className="ml-4">
-                  <h2 className="text-sm font-medium text-gray-500">
-                    Active Writers
-                  </h2>
-                  <p className="text-2xl font-semibold text-gray-800">15</p>
-                </div>
+              <div className="relative">
+                <select className="border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white">
+                  <option value="">All Statuses</option>
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                </select>
               </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-yellow-100 rounded-lg">
-                  <Tag className="h-6 w-6 text-yellow-600" />
-                </div>
-                <div className="ml-4">
-                  <h2 className="text-sm font-medium text-gray-500">
-                    Categories
-                  </h2>
-                  <p className="text-2xl font-semibold text-gray-800">12</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Articles Table */}
-          <div className="bg-white rounded-lg shadow mb-6">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-lg font-semibold text-gray-800">
-                Recent Articles
-              </h2>
-              <button className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                <span>Add New</span>
+              <button className="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50">
+                <Filter className="h-5 w-5 text-gray-500" />
               </button>
             </div>
+          </div>
+        </div>
+      </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-full">
-                <thead>
-                  <tr className="bg-gray-50 text-left">
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Title
-                    </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Category
-                    </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Author
-                    </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                  <tr>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        10 Tips for Better News Writing
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                        Journalism
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">Alex Johnson</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                        Published
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">Apr 12, 2025</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button className="text-indigo-600 hover:text-indigo-900">
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button className="text-red-600 hover:text-red-900">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        Breaking: New Technology Advances
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
-                        Technology
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">Sarah Miller</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                        Published
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">Apr 15, 2025</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button className="text-indigo-600 hover:text-indigo-900">
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button className="text-red-600 hover:text-red-900">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        Global Economic Forecast 2025
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
-                        Business
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">Robert Chen</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
-                        Draft
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">Apr 16, 2025</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button className="text-indigo-600 hover:text-indigo-900">
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button className="text-red-600 hover:text-red-900">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        Sports Update: Championship Results
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
-                        Sports
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">
-                        Michael Torres
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
-                        Under Review
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">Apr 14, 2025</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button className="text-indigo-600 hover:text-indigo-900">
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button className="text-red-600 hover:text-red-900">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+      {/* Articles Table */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <div
+                    className="flex items-center cursor-pointer"
+                    onClick={() => handleSort("title")}
+                  >
+                    Title
+                    {renderSortIcon("title")}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <div
+                    className="flex items-center cursor-pointer"
+                    onClick={() => handleSort("category")}
+                  >
+                    Category
+                    {renderSortIcon("category")}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <div
+                    className="flex items-center cursor-pointer"
+                    onClick={() => handleSort("author")}
+                  >
+                    Author
+                    {renderSortIcon("author")}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <div
+                    className="flex items-center cursor-pointer"
+                    onClick={() => handleSort("date")}
+                  >
+                    Date
+                    {renderSortIcon("date")}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <div
+                    className="flex items-center cursor-pointer"
+                    onClick={() => handleSort("status")}
+                  >
+                    Status
+                    {renderSortIcon("status")}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <div
+                    className="flex items-center cursor-pointer"
+                    onClick={() => handleSort("views")}
+                  >
+                    Views
+                    {renderSortIcon("views")}
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {articles.map((article) => (
+                <tr key={article.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {article.title}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-500">
+                      {article.category}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-500">
+                      {article.author}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-500">{article.date}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        article.status === "Published"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {article.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <Eye className="h-4 w-4 mr-1" />
+                      {article.views.toLocaleString()}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex space-x-2">
+                      <button className="text-blue-600 hover:text-blue-800">
+                        <Edit className="h-5 w-5" />
+                      </button>
+                      <button className="text-red-600 hover:text-red-800">
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+          <div className="flex items-center justify-between">
+            <div className="flex-1 flex justify-between sm:hidden">
+              <button className="btn btn-sm btn-outline">Previous</button>
+              <button className="btn btn-sm btn-outline">Next</button>
             </div>
-
-            <div className="px-6 py-4 border-t">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-500">
+            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
                   Showing <span className="font-medium">1</span> to{" "}
-                  <span className="font-medium">4</span> of{" "}
-                  <span className="font-medium">142</span> results
-                </div>
-                <div className="flex space-x-2">
-                  <button className="px-3 py-1 border rounded text-sm bg-white text-gray-500 hover:bg-gray-50">
-                    Previous
+                  <span className="font-medium">7</span> of{" "}
+                  <span className="font-medium">12</span> results
+                </p>
+              </div>
+              <div>
+                <nav
+                  className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                  aria-label="Pagination"
+                >
+                  <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span className="sr-only">Previous</span>
+                    <svg
+                      className="h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
                   </button>
-                  <button className="px-3 py-1 border rounded text-sm bg-indigo-600 text-white hover:bg-indigo-700">
-                    Next
+                  <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600 hover:bg-blue-100">
+                    1
                   </button>
-                </div>
+                  <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    2
+                  </button>
+                  <button className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span className="sr-only">Next</span>
+                    <svg
+                      className="h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                </nav>
               </div>
             </div>
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

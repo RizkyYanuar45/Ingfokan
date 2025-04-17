@@ -90,7 +90,7 @@ function NewPost() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-xl font-bold flex items-center">
-            <span className="bg-blue-500 w-1 h-6 mr-2 rounded-sm"></span>
+            <span className="bg-primarycus w-1 h-3 mr-2 rounded-lg"></span>
             New Posts
           </h1>
           <button className="text-gray-500 text-sm flex items-center">
@@ -112,7 +112,7 @@ function NewPost() {
                   alt={post.title}
                   className="w-full h-48 object-cover"
                 />
-                <div className="absolute top-3 left-3 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                <div className="absolute top-3 left-3 bg-primarycus text-white text-xs px-2 py-1 rounded-full">
                   {post.category}
                 </div>
               </div>
