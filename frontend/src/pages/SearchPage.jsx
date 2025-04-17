@@ -1,18 +1,22 @@
-import { useState } from "react";
+// src/SearchPage.jsx
+import { useState, useEffect } from "react";
 import {
   Heart,
   MessageCircle,
   ChevronLeft,
   ChevronRight,
-  Newspaper,
-  Clock,
+  Search,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import Office from "../assets/Office.jpg";
 
-function CategoryPage() {
-  const articles = [
+function SearchPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Sample articles data (same as in CategoryPage)
+  const allArticles = [
     {
       id: 1,
       title: "Unveiling the 7 Kayaking Spots in Austria, the Alps",
@@ -193,7 +197,6 @@ function CategoryPage() {
       likes: 385,
       comments: 67,
     },
-    // Added 6 more articles to reach a total of 18
     {
       id: 13,
       title: "The Ultimate Guide to Sustainable Gardening",
@@ -290,12 +293,34 @@ function CategoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInputValue, setPageInputValue] = useState(currentPage.toString());
   const articlesPerPage = 12; // 12 items per page (3 rows of 4 columns)
-  const totalPages = Math.ceil(articles.length / articlesPerPage);
+
+  // Filter articles based on search query
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setSearchResults([]);
+      return;
+    }
+
+    const lowercaseQuery = searchQuery.toLowerCase();
+    const filteredResults = allArticles.filter(
+      (article) =>
+        article.title.toLowerCase().includes(lowercaseQuery) ||
+        article.excerpt.toLowerCase().includes(lowercaseQuery) ||
+        article.author.name.toLowerCase().includes(lowercaseQuery)
+    );
+
+    setSearchResults(filteredResults);
+    setCurrentPage(1);
+    setPageInputValue("1");
+  }, [searchQuery]);
+
+  // Get total pages
+  const totalPages = Math.ceil(searchResults.length / articlesPerPage);
 
   // Get current articles
   const indexOfLastArticle = currentPage * articlesPerPage;
   const indexOfFirstArticle = indexOfLastArticle - articlesPerPage;
-  const currentArticles = articles.slice(
+  const currentArticles = searchResults.slice(
     indexOfFirstArticle,
     indexOfLastArticle
   );
@@ -335,6 +360,18 @@ function CategoryPage() {
     }
   };
 
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Handle search form submission
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setIsSearching(true);
+    // The useEffect will handle the actual search
+  };
+
   return (
     <div>
       <Navbar />
@@ -344,139 +381,181 @@ function CategoryPage() {
             <a>Home</a>
           </li>
           <li>
-            <a>Sports</a>
+            <a>Search</a>
           </li>
         </ul>
       </div>
-      <div className="p-6 flex items-center justify-center">
-        <div className="w-[1440px] h-32 bg-yellow-400 text-center  ">
-          Banner
-        </div>
+
+      {/* Search Input */}
+      <div className="flex justify-center px-4 py-6">
+        <form onSubmit={handleSearchSubmit} className="w-full max-w-2xl">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search articles, topics, authors..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="w-full py-3 px-4 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <button
+              type="submit"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              <Search size={20} />
+            </button>
+          </div>
+        </form>
       </div>
-      <div className=" flex">
-        <h1></h1>
-      </div>
+
       <div className="min-h-screen bg-gray-50 pb-8">
         {/* Header */}
-        <header className="flex items-center mb-5">
-          <div className="bg-primarycus w-1 h-3 rounded-4xl mx-2"></div>
-          <h2 className="font-bold text-base md:text-lg">Category : Sports</h2>
+        <header className="flex items-center mb-5 px-4">
+          <div className="bg-blue-500 w-1 h-3 rounded-lg mx-2"></div>
+          <h2 className="font-bold text-base md:text-lg">
+            {searchQuery
+              ? `Search Results for: "${searchQuery}" (${searchResults.length} results)`
+              : "Search Results"}
+          </h2>
         </header>
 
         {/* Articles Grid */}
         <main className="px-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-            {currentArticles.map((article) => (
-              <div
-                key={article.id}
-                className="bg-white rounded-md overflow-hidden shadow-sm"
-              >
-                {/* Article Image */}
-                <img
-                  src={article.image}
-                  alt={article.title}
-                  className="w-full h-32 object-cover"
-                />
+          {searchQuery && searchResults.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <p className="text-lg font-medium text-gray-600">
+                No results found for "{searchQuery}"
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                Try different keywords or browse our categories
+              </p>
+            </div>
+          ) : searchQuery ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              {currentArticles.map((article) => (
+                <div
+                  key={article.id}
+                  className="bg-white rounded-md overflow-hidden shadow-sm"
+                >
+                  {/* Article Image */}
+                  <img
+                    src={article.image}
+                    alt={article.title}
+                    className="w-full h-32 object-cover"
+                  />
 
-                {/* Article Content */}
-                <div className="p-3">
-                  <h3 className="font-medium text-xs leading-tight line-clamp-2 h-10 mb-2">
-                    {article.title}
-                  </h3>
+                  {/* Article Content */}
+                  <div className="p-3">
+                    <h3 className="font-medium text-xs leading-tight line-clamp-2 h-10 mb-2">
+                      {article.title}
+                    </h3>
 
-                  <p className="text-xs text-gray-500 line-clamp-2 h-8 mb-2">
-                    {article.excerpt}
-                  </p>
+                    <p className="text-xs text-gray-500 line-clamp-2 h-8 mb-2">
+                      {article.excerpt}
+                    </p>
 
-                  {/* Author & Engagement */}
-                  <div className="flex items-center justify-between mt-3">
-                    <div className="flex items-center">
-                      <img
-                        src={article.author.avatar}
-                        alt={article.author.name}
-                        className="w-6 h-6 rounded-full mr-2"
-                      />
-                      <div>
-                        <p className="text-xs font-medium">
-                          {article.author.name}
-                        </p>
-                        <p className="text-xs text-gray-500">{article.date}</p>
+                    {/* Author & Engagement */}
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center">
+                        <img
+                          src={article.author.avatar}
+                          alt={article.author.name}
+                          className="w-6 h-6 rounded-full mr-2"
+                        />
+                        <div>
+                          <p className="text-xs font-medium">
+                            {article.author.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {article.date}
+                          </p>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex space-x-2">
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <Heart size={14} />
-                      </button>
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <MessageCircle size={14} />
-                      </button>
+                      <div className="flex space-x-2">
+                        <button className="text-gray-400 hover:text-gray-600">
+                          <Heart size={14} />
+                        </button>
+                        <button className="text-gray-400 hover:text-gray-600">
+                          <MessageCircle size={14} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16">
+              <p className="text-lg font-medium text-gray-600">
+                Enter a search term to find articles
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                You can search by title, content, or author name
+              </p>
+            </div>
+          )}
         </main>
 
-        {/* Pagination Controls */}
-        <div className="mt-6">
-          <ul className="flex justify-center gap-1 text-gray-900">
-            <li>
-              <button
-                onClick={goToPrevPage}
-                disabled={currentPage === 1}
-                className={`grid size-8 place-content-center rounded border border-gray-200 transition-colors ${
-                  currentPage === 1
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-50"
-                }`}
-                aria-label="Previous page"
-              >
-                <ChevronLeft size={16} />
-              </button>
-            </li>
+        {/* Pagination Controls - Only show when we have search results */}
+        {searchResults.length > 0 && (
+          <div className="mt-6">
+            <ul className="flex justify-center gap-1 text-gray-900">
+              <li>
+                <button
+                  onClick={goToPrevPage}
+                  disabled={currentPage === 1}
+                  className={`grid size-8 place-content-center rounded border border-gray-200 transition-colors ${
+                    currentPage === 1
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-gray-50"
+                  }`}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+              </li>
 
-            <li>
-              <form onSubmit={handlePageInputSubmit}>
-                <label htmlFor="Page">
-                  <span className="sr-only">Page</span>
-                  <input
-                    type="text"
-                    id="Page"
-                    value={pageInputValue}
-                    onChange={handlePageInputChange}
-                    onBlur={handlePageInputSubmit}
-                    className="h-8 w-16 rounded border border-gray-200 text-center sm:text-sm"
-                  />
-                </label>
-              </form>
-            </li>
+              <li>
+                <form onSubmit={handlePageInputSubmit}>
+                  <label htmlFor="Page">
+                    <span className="sr-only">Page</span>
+                    <input
+                      type="text"
+                      id="Page"
+                      value={pageInputValue}
+                      onChange={handlePageInputChange}
+                      onBlur={handlePageInputSubmit}
+                      className="h-8 w-16 rounded border border-gray-200 text-center sm:text-sm"
+                    />
+                  </label>
+                </form>
+              </li>
 
-            <li className="flex items-center">
-              <span className="text-sm text-gray-500">of {totalPages}</span>
-            </li>
+              <li className="flex items-center">
+                <span className="text-sm text-gray-500">of {totalPages}</span>
+              </li>
 
-            <li>
-              <button
-                onClick={goToNextPage}
-                disabled={currentPage === totalPages}
-                className={`grid size-8 place-content-center rounded border border-gray-200 transition-colors ${
-                  currentPage === totalPages
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-50"
-                }`}
-                aria-label="Next page"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </li>
-          </ul>
-        </div>
+              <li>
+                <button
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                  className={`grid size-8 place-content-center rounded border border-gray-200 transition-colors ${
+                    currentPage === totalPages
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-gray-50"
+                  }`}
+                  aria-label="Next page"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </li>
+            </ul>
+          </div>
+        )}
       </div>
       <Footer />
     </div>
   );
 }
 
-export default CategoryPage;
+export default SearchPage;

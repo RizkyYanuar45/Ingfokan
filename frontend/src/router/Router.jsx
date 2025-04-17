@@ -12,6 +12,9 @@ import ContactUs from "../pages/ContactUs";
 import AboutUs from "../pages/AboutUs";
 import NotFound from "../pages/NotFound";
 import NotAuthorized from "../pages/NotAuthorized";
+import SearchPage from "../pages/SearchPage";
+
+import Test from "../pages/Admin/Test";
 
 export const Router = createBrowserRouter([
   {
@@ -51,6 +54,14 @@ export const Router = createBrowserRouter([
   {
     path: "/not-authorized",
     element: <NotAuthorized />,
+  },
+  {
+    path: "/search-page",
+    element: <SearchPage />,
+  },
+  {
+    path: "/admin/test",
+    element: <Test />,
   },
   {
     path: "/*",
