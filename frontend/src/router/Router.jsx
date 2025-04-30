@@ -17,6 +17,9 @@ import SearchPage from "../pages/SearchPage";
 import Test from "../pages/Admin/Test";
 import Dashboard from "../pages/Admin/Dashboard";
 import ControlArticles from "../pages/Admin/ControlArticles";
+import ControlBanners from "../pages/Admin/ControlBanners";
+import ControlCategories from "../pages/Admin/ControlCategories";
+import ControlAuthors from "../pages/Admin/ControlAuthors";
 
 export const Router = createBrowserRouter([
   {
@@ -74,7 +77,18 @@ export const Router = createBrowserRouter([
     path: "/admin/article",
     element: <ControlArticles />,
   },
-
+  {
+    path: "/admin/banners",
+    element: <ControlBanners />,
+  },
+  {
+    path: "/admin/categories",
+    element: <ControlCategories />,
+  },
+  {
+    path: "/admin/authors",
+    element: <ControlAuthors />,
+  },
   {
     path: "/*",
     element: <NotFound />,

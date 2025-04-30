@@ -11,6 +11,7 @@ import {
   Tag,
   LogOut,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function SideBar({ sidebarOpen, toggleSidebar }) {
   return (
@@ -39,45 +40,45 @@ export default function SideBar({ sidebarOpen, toggleSidebar }) {
 
         <nav className="mt-6">
           <div className="px-4 py-3">
-            <div className="flex items-center mb-4 px-4 py-2 bg-secondarycus rounded-lg">
+            <Link
+              to="/admin/dashboard"
+              className="flex items-center mb-4 px-4 py-2 bg-secondarycus rounded-lg"
+            >
               <Home className="h-5 w-5 mr-3" />
               <span className="font-medium">Dashboard</span>
-            </div>
+            </Link>
 
-            <div className="flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400">
+            <Link
+              to="/admin/article"
+              className="flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400"
+            >
               <FileText className="h-5 w-5 mr-3" />
               <span>Articles</span>
-            </div>
+            </Link>
 
-            <div className="flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400">
-              <PenTool className="h-5 w-5 mr-3" />
-              <span>Create Article</span>
-            </div>
-
-            <div className="flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400">
+            <Link
+              to="/admin/categories"
+              className="flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400"
+            >
               <Tag className="h-5 w-5 mr-3" />
               <span>Categories</span>
-            </div>
+            </Link>
 
-            <div className="flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400">
+            <Link
+              to="/admin/banners"
+              className="flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400"
+            >
               <Image className="h-5 w-5 mr-3" />
-              <span>Media</span>
-            </div>
+              <span>Banner</span>
+            </Link>
 
-            <div className="flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400">
+            <Link
+              to="/admin/authors"
+              className="flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400"
+            >
               <Users className="h-5 w-5 mr-3" />
-              <span>Users</span>
-            </div>
-
-            <div className="flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400">
-              <BarChart2 className="h-5 w-5 mr-3" />
-              <span>Analytics</span>
-            </div>
-
-            <div className="flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400">
-              <Settings className="h-5 w-5 mr-3" />
-              <span>Settings</span>
-            </div>
+              <span>Author</span>
+            </Link>
           </div>
         </nav>
 
