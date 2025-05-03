@@ -19,7 +19,7 @@ const article = db.define("Article", {
   },
   category_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     references: {
       model: category,
       key: "id",
@@ -27,7 +27,7 @@ const article = db.define("Article", {
   },
   author_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     references: {
       model: author,
       key: "id",

@@ -16,7 +16,7 @@ const Comment = db.define("Comment", {
   },
   user_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     references: {
       model: User,
       key: "id",
@@ -24,7 +24,7 @@ const Comment = db.define("Comment", {
   },
   article_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     references: {
       model: Article,
       key: "id",

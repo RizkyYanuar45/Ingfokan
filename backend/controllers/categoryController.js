@@ -1,4 +1,5 @@
 import Category from "../models/category.js";
+import Article from "../models/article.js";
 import fs from "fs";
 import ResponseAPI from "../helper/response.js";
 
@@ -34,10 +35,13 @@ const createCategory = async (req, res) => {
   try {
     const { name } = req.body;
     const newThumbnail = req.file ? req.file.path : null;
+    console.log(newThumbnail);
+
     const category = await Category.create({
       name: name,
       thumbnail: newThumbnail,
     });
+    console.log("Category created successfully", category);
     return ResponseAPI.success(res, "Berhasil membuat kategori", {
       category,
     });
@@ -82,19 +86,45 @@ const updateCategory = async (req, res) => {
 const deleteCategory = async (req, res) => {
   try {
     const id = req.params.id;
-    const category = await Category.findOne({ where: { id: id } });
-    if (!category)
-      return ResponseAPI.error(res, "data category tidak ditemukan");
-    if (category) {
-      if (fs.existsSync(category.thumbnail)) {
-        fs.unlinkSync(category.thumbnail);
-      }
-
-      await category.destroy();
+    // 1. Cari kategori
+    const category = await Category.findOne({ where: { id } });
+    if (!category) {
+      return ResponseAPI.error(res, "Kategori tidak ditemukan");
     }
-    return ResponseAPI.success(res, "Berhasil menghapus kategori", {
-      category,
-    });
+
+    // 2. Temukan artikel yang memakai kategori ini
+    const articles = await Article.findAll({ where: { category_id: id } });
+    if (articles.length > 0 && req.query.confirm !== "true") {
+      // 3. Kirim peringatan jika ada artikel terkait
+      return ResponseAPI.success(
+        res,
+        "Peringatan: " +
+          articles.length +
+          " artikel masih menggunakan kategori ini. Sertakan query ?confirm=true untuk melanjutkan penghapusan.",
+        { count: articles.length }
+      );
+    }
+
+    // Jika sudah konfirmasi, update artikel terkait menjadi null
+    if (articles.length > 0) {
+      await Article.update(
+        { category_id: null },
+        { where: { category_id: id } }
+      );
+    }
+
+    // 4. Hapus thumbnail jika ada
+    if (category.thumbnail && fs.existsSync(category.thumbnail)) {
+      fs.unlinkSync(category.thumbnail);
+    }
+
+    // 5. Hapus kategori
+    await category.destroy();
+    return ResponseAPI.success(
+      res,
+      "Berhasil menghapus kategori dan memutus relasi artikel",
+      { category }
+    );
   } catch (error) {
     return ResponseAPI.error(res, error.message);
   }

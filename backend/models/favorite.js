@@ -11,7 +11,7 @@ const favorite = db.define("favorite", {
   },
   user_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     references: {
       model: user,
       key: "id",
@@ -19,7 +19,7 @@ const favorite = db.define("favorite", {
   },
   article_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     references: {
       model: article,
       key: "id",

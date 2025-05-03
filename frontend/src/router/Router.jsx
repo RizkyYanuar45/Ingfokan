@@ -20,6 +20,7 @@ import ControlArticles from "../pages/Admin/ControlArticles";
 import ControlBanners from "../pages/Admin/ControlBanners";
 import ControlCategories from "../pages/Admin/ControlCategories";
 import ControlAuthors from "../pages/Admin/ControlAuthors";
+import LoginAdmin from "../pages/Admin/LoginAdmin";
 
 export const Router = createBrowserRouter([
   {
@@ -88,6 +89,10 @@ export const Router = createBrowserRouter([
   {
     path: "/admin/authors",
     element: <ControlAuthors />,
+  },
+  {
+    path: "/admin/login",
+    element: <LoginAdmin />,
   },
   {
     path: "/*",
