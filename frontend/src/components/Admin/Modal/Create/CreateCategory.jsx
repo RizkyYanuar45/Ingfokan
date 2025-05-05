@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Save, X } from "lucide-react";
+import { Save, X, CheckCircle, AlertCircle, XCircle } from "lucide-react";
 
 export default function CreateCategory({
   isModalOpen,
@@ -11,13 +11,21 @@ export default function CreateCategory({
 }) {
   const api = import.meta.env.VITE_API_URL;
   const [thumbnail, setThumbnail] = useState(null);
+  const [notification, setNotification] = useState(null); // { type: 'success' | 'error', message: string }
 
-  // Reset thumbnail saat modal dibuka/tutup atau currentCategory berubah
   useEffect(() => {
     setThumbnail(null);
+    setNotification(null);
   }, [isModalOpen, currentCategory]);
 
-  // Modifikasi pada handleCreate untuk melihat detail error
+  // Clear notification after 3 seconds
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
   const handleCreate = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -26,50 +34,39 @@ export default function CreateCategory({
       formData.append("thumbnail", thumbnail);
     }
 
-    // Log formData untuk debug
-    console.log("FormData entries:");
-    for (let pair of formData.entries()) {
-      console.log(pair[0], pair[1]);
-    }
-
     try {
       const response = await fetch(`${api}/category`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
-          // Jangan set Content-Type saat pakai FormData
         },
         body: formData,
       });
 
-      // Cek status response
-      console.log("Response status:", response.status);
-
-      // Ambil response text terlebih dahulu (karena mungkin bukan JSON yang valid)
       const responseText = await response.text();
-      console.log("Response text:", responseText);
-
-      // Coba parse sebagai JSON jika memungkinkan
       let data;
       try {
         data = JSON.parse(responseText);
-        console.log("Response data:", data);
-      } catch (e) {
-        console.log("Response bukan JSON yang valid");
-      }
+      } catch {}
 
       if (response.ok) {
-        console.log("Category created successfully:", data);
-        // if (refreshCategories) refreshCategories();
-        closeModal();
+        setNotification({
+          type: "success",
+          message: "Category created successfully!",
+        });
+        refreshCategories && refreshCategories();
+        setTimeout(() => {
+          closeModal();
+        }, 3000);
       } else {
-        console.error(
-          "Failed to create category:",
-          data?.message || responseText
-        );
+        setNotification({
+          type: "error",
+          message:
+            data?.message || responseText || "Failed to create category.",
+        });
       }
     } catch (error) {
-      console.error("Error creating category:", error);
+      setNotification({ type: "error", message: "Error creating category." });
     }
   };
 
@@ -85,24 +82,41 @@ export default function CreateCategory({
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
-          // Jangan set Content-Type saat pakai FormData
         },
         body: formData,
       });
       const data = await response.json();
       if (response.ok) {
-        console.log("Category updated successfully:", data);
+        setNotification({
+          type: "success",
+          message: "Category updated successfully!",
+        });
         refreshCategories();
-        closeModal();
+        setTimeout(() => {
+          closeModal();
+        }, 3000);
       } else {
-        console.error("Failed to update category:", data.message);
+        setNotification({
+          type: "error",
+          message: data.message || "Failed to update category.",
+        });
       }
     } catch (error) {
-      console.error("Error updating category:", error);
+      setNotification({ type: "error", message: "Error updating category." });
     }
   };
 
   if (!isModalOpen) return null;
+
+  // For demonstration purpose
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (isEditing) {
+      handleEdit(e);
+    } else {
+      handleCreate(e);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -113,16 +127,55 @@ export default function CreateCategory({
         </div>
 
         {/* Modal panel */}
-        <form
-          onSubmit={isEditing ? handleEdit : handleCreate}
-          className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
-        >
+        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="sm:flex sm:items-start">
               <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                 <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                   {isEditing ? "Edit Category" : "Create New Category"}
                 </h3>
+
+                {/* Enhanced Notification */}
+                {notification && (
+                  <div
+                    className={`mb-4 flex items-center justify-between p-4 rounded-md shadow-md transform transition-all duration-300 ease-in-out ${
+                      notification.type === "success"
+                        ? "bg-emerald-50 border-l-4 border-emerald-500"
+                        : "bg-red-50 border-l-4 border-red-500"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      {notification.type === "success" ? (
+                        <CheckCircle className="w-5 h-5 mr-3 text-emerald-500" />
+                      ) : (
+                        <AlertCircle className="w-5 h-5 mr-3 text-red-500" />
+                      )}
+                      <p
+                        className={`text-sm font-medium ${
+                          notification.type === "success"
+                            ? "text-emerald-800"
+                            : "text-red-800"
+                        }`}
+                      >
+                        {notification.message}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setNotification(null)}
+                      className="focus:outline-none"
+                      type="button"
+                    >
+                      <XCircle
+                        className={`w-4 h-4 ${
+                          notification.type === "success"
+                            ? "text-emerald-400"
+                            : "text-red-400"
+                        } hover:opacity-75 transition-opacity`}
+                      />
+                    </button>
+                  </div>
+                )}
+
                 <div className="mt-2 space-y-4">
                   <div>
                     <label
@@ -155,15 +208,14 @@ export default function CreateCategory({
                       name="image"
                       accept="image/*"
                       onChange={(e) => setThumbnail(e.target.files[0])}
-                      className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer focus:outline-none"
+                      className="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer focus:outline-none p-2"
                     />
-                    {/* Preview Image */}
                     {thumbnail && (
                       <div className="mt-2">
                         <img
                           src={URL.createObjectURL(thumbnail)}
                           alt="Preview"
-                          className="w-32 h-32 object-cover"
+                          className="w-32 h-32 object-cover rounded-md border border-gray-200"
                         />
                       </div>
                     )}
@@ -176,8 +228,9 @@ export default function CreateCategory({
           {/* Modal footer */}
           <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
             <button
-              type="submit"
-              className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
+              type="button"
+              onClick={handleSubmit}
+              className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
             >
               <Save className="h-4 w-4 mr-2" />
               {isEditing ? "Update" : "Save"}
@@ -185,13 +238,13 @@ export default function CreateCategory({
             <button
               type="button"
               onClick={closeModal}
-              className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
             >
               <X className="h-4 w-4 mr-2" />
               Cancel
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

@@ -9,29 +9,18 @@ const handleDeleteCategory = async (categoryId) => {
   });
   let result = await response.json();
 
-  if (result.message.includes("Peringatan")) {
-    // Tampilkan dialog konfirmasi ke user
-    const confirmDelete = window.confirm(
-      `${result.message}\nApakah Anda yakin ingin melanjutkan?`
-    );
-    if (confirmDelete) {
-      // Request hapus dengan konfirmasi
-      response = await fetch(
-        `${api}/category/delete/${categoryId}?confirm=true`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      const finalResult = await response.json();
-      alert(finalResult.message);
-    } else {
-      alert("Penghapusan dibatalkan");
-    }
+  if (response.ok) {
+    // Jika berhasil, tampilkan notifikasi sukses
+    return {
+      type: "success",
+      message: "Category deleted successfully!",
+    };
   } else {
-    alert(result.message);
+    // Jika gagal, tampilkan notifikasi error
+    return {
+      type: "error",
+      message: result.message || "Failed to delete category.",
+    };
   }
 };
 

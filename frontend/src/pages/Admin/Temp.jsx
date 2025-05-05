@@ -12,6 +12,7 @@ import SideBar from "../../components/Admin/SideBar";
 import TopNavigation from "../../components/Admin/TopNavigation";
 import CreateCategory from "../../components/Admin/Modal/Create/CreateCategory";
 import DeleteCategory from "../../components/Admin/Modal/Delete/DeleteCategory";
+
 export default function ControlCategories() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -23,6 +24,7 @@ export default function ControlCategories() {
     id: null,
     name: "",
   });
+  const [notification, setNotification] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,6 +49,10 @@ export default function ControlCategories() {
       setCategories(data.data.category);
     } catch (error) {
       console.error("Error fetching categories:", error);
+      setNotification({
+        type: "error",
+        message: "Failed to fetch categories",
+      });
     }
   };
 
@@ -54,6 +60,16 @@ export default function ControlCategories() {
   useEffect(() => {
     refreshCategories();
   }, []);
+
+  // Effect for clearing notification after some time
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   // Filter categories based on search term
   const filteredCategories = categories.filter((category) =>
@@ -102,13 +118,21 @@ export default function ControlCategories() {
     }
     setIsModalOpen(true);
   };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setCurrentCategory({
+      id: null,
+      name: "",
+    });
+  };
+
   const openDeleteModal = (category) => {
     setCurrentCategory(category);
     setIsDeleteOpen(true);
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
+  const closeDeleteModal = () => {
     setIsDeleteOpen(false);
     setCurrentCategory({
       id: null,
@@ -157,6 +181,24 @@ export default function ControlCategories() {
               <span>Create category</span>
             </button>
           </div>
+
+          {/* Notification Bar */}
+          {notification && (
+            <div
+              className={`mb-4 p-3 rounded-md flex items-center ${
+                notification.type === "success"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }`}
+            >
+              {notification.type === "success" ? (
+                <div className="flex-shrink-0 mr-2">✓</div>
+              ) : (
+                <div className="flex-shrink-0 mr-2">✖</div>
+              )}
+              <div>{notification.message}</div>
+            </div>
+          )}
 
           {/* Search Bar and Controls */}
           <div className="bg-white rounded-lg shadow p-4 mb-6">
@@ -392,23 +434,30 @@ export default function ControlCategories() {
       </div>
 
       {/* Modal for Create/Edit Category */}
-      <CreateCategory
-        isModalOpen={isModalOpen}
-        isEditing={isEditing}
-        currentCategory={currentCategory}
-        handleInputChange={handleInputChange}
-        closeModal={closeModal}
-        refreshCategories={refreshCategories}
-      />
+      {isModalOpen && (
+        <CreateCategory
+          isModalOpen={isModalOpen}
+          isEditing={isEditing}
+          currentCategory={currentCategory}
+          handleInputChange={handleInputChange}
+          closeModal={closeModal}
+          refreshCategories={refreshCategories}
+          setNotification={setNotification}
+        />
+      )}
 
       {/* Modal for Delete Category */}
       {isDeleteOpen && (
-        <DeleteCategory
-          isOpen={isDeleteOpen}
-          currentCategory={currentCategory}
-          closeModal={closeModal}
-          refreshCategories={refreshCategories}
-        />
+        <div className="fixed inset-0 overflow-y-auto z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <DeleteCategory
+              currentCategory={currentCategory}
+              closeModal={closeDeleteModal}
+              refreshCategories={refreshCategories}
+              setNotification={setNotification}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
