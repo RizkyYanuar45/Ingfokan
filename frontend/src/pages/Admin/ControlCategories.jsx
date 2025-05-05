@@ -15,7 +15,7 @@ import handleDelete from "./utils/handleDeleteCategory";
 
 export default function ControlCategories() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [categories, setCategories] = useState([]); // array untuk list kategori
+  const [categories, setCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -24,7 +24,7 @@ export default function ControlCategories() {
     name: "",
   });
 
-  // State untuk pagination
+  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [totalPages, setTotalPages] = useState(0);
@@ -33,7 +33,7 @@ export default function ControlCategories() {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Fungsi untuk fetch data kategori dari API
+  // Fetch categories data from API
   const refreshCategories = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/category`, {
@@ -44,40 +44,39 @@ export default function ControlCategories() {
       if (!response.ok) throw new Error("Failed to fetch categories");
       const data = await response.json();
 
-      setCategories(data.data.category); // set data kategori ke state
-      console.log("Categories fetched successfully:", data.data.category);
+      setCategories(data.data.category);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
   };
 
-  // Fetch data saat komponen mount
+  // Fetch data on component mount
   useEffect(() => {
     refreshCategories();
   }, []);
 
-  // Filter categories berdasarkan searchTerm
+  // Filter categories based on search term
   const filteredCategories = categories.filter((category) =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Hitung total halaman setiap kali filteredCategories berubah
+  // Calculate total pages whenever filtered categories change
   useEffect(() => {
     setTotalPages(Math.ceil(filteredCategories.length / itemsPerPage));
-    // Reset ke halaman 1 jika pencarian berubah
+    // Reset to page 1 if search term changes
     if (searchTerm) {
       setCurrentPage(1);
     }
   }, [filteredCategories, itemsPerPage, searchTerm]);
 
-  // Dapatkan kategori untuk halaman saat ini
+  // Get categories for current page
   const getCurrentPageItems = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return filteredCategories.slice(startIndex, endIndex);
   };
 
-  // Fungsi untuk navigasi
+  // Navigation functions
   const goToNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
@@ -120,10 +119,10 @@ export default function ControlCategories() {
     });
   };
 
-  // Handler untuk mengubah jumlah item per halaman
+  // Handler for changing items per page
   const handleItemsPerPageChange = (e) => {
     setItemsPerPage(parseInt(e.target.value));
-    setCurrentPage(1); // Reset ke halaman pertama saat mengubah jumlah item
+    setCurrentPage(1); // Reset to first page when changing item count
   };
 
   return (
@@ -154,7 +153,7 @@ export default function ControlCategories() {
             </button>
           </div>
 
-          {/* Search Bar */}
+          {/* Search Bar and Controls */}
           <div className="bg-white rounded-lg shadow p-4 mb-6">
             <div className="flex justify-between items-center">
               <div className="relative flex-grow max-w-md">
@@ -177,7 +176,7 @@ export default function ControlCategories() {
                 </label>
                 <select
                   id="itemsPerPage"
-                  className="border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="border border-gray-300 rounded-md text-sm p-1 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   value={itemsPerPage}
                   onChange={handleItemsPerPageChange}
                 >
@@ -193,18 +192,24 @@ export default function ControlCategories() {
           {/* Categories Table */}
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-full divide-y divide-gray-200">
+              <table className="w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       Category Name
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Thumbnail
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       Actions
                     </th>
@@ -213,21 +218,44 @@ export default function ControlCategories() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {getCurrentPageItems().length > 0 ? (
                     getCurrentPageItems().map((category) => (
-                      <tr key={category.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <tr
+                        key={category.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
                           {category.name}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex justify-end space-x-3">
+                        <td className="px-6 py-4 text-center">
+                          {category.thumbnail ? (
+                            <div className="flex justify-center">
+                              <img
+                                src={`http://localhost:3000/${category.thumbnail.replace(
+                                  /\\/g,
+                                  "/"
+                                )}`}
+                                alt={category.name}
+                                className="h-14 w-28 object-cover border border-gray-200"
+                              />
+                            </div>
+                          ) : (
+                            <span className="text-gray-500 text-sm">
+                              No Image
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end space-x-4">
                             <button
                               onClick={() => openModal(true, category)}
-                              className="text-indigo-600 hover:text-indigo-900 transition-colors"
+                              className="text-indigo-600 hover:text-indigo-900 transition-colors p-1 rounded-md hover:bg-indigo-50"
+                              title="Edit category"
                             >
                               <Edit className="h-5 w-5" />
                             </button>
                             <button
                               onClick={() => handleDelete(category.id)}
-                              className="text-red-600 hover:text-red-900 transition-colors"
+                              className="text-red-600 hover:text-red-900 transition-colors p-1 rounded-md hover:bg-red-50"
+                              title="Delete category"
                             >
                               <Trash2 className="h-5 w-5" />
                             </button>
@@ -238,8 +266,8 @@ export default function ControlCategories() {
                   ) : (
                     <tr>
                       <td
-                        colSpan="2"
-                        className="px-6 py-4 text-center text-sm text-gray-500"
+                        colSpan="3"
+                        className="px-6 py-8 text-center text-sm text-gray-500"
                       >
                         No categories found
                       </td>
@@ -251,7 +279,8 @@ export default function ControlCategories() {
 
             {/* Pagination Controls */}
             {filteredCategories.length > 0 && (
-              <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
+              <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
+                {/* Mobile pagination */}
                 <div className="flex-1 flex justify-between sm:hidden">
                   <button
                     onClick={goToPreviousPage}
@@ -276,12 +305,16 @@ export default function ControlCategories() {
                     Next
                   </button>
                 </div>
+
+                {/* Desktop pagination */}
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">
                       Showing{" "}
                       <span className="font-medium">
-                        {(currentPage - 1) * itemsPerPage + 1}
+                        {filteredCategories.length > 0
+                          ? (currentPage - 1) * itemsPerPage + 1
+                          : 0}
                       </span>{" "}
                       to{" "}
                       <span className="font-medium">

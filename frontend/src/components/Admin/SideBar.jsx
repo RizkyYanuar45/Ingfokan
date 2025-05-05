@@ -31,7 +31,7 @@ export default function SideBar({ sidebarOpen, toggleSidebar }) {
         <div className="flex items-center justify-between p-4 border-b ">
           <div className="flex items-center">
             <FileText className="h-8 w-8 mr-2" />
-            <span className="text-xl font-bold">NewsAdmin</span>
+            <span className="text-xl font-bold">IngfokanAdmin</span>
           </div>
           <button onClick={toggleSidebar} className="lg:hidden">
             <X className="h-6 w-6" />

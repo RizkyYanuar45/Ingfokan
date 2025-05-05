@@ -20,6 +20,7 @@ const seeder = async () => {
       name: "Jane Doe",
       email: "jane.doe@example.com",
       password: encryptedPassword,
+
       role: "admin",
       username: "JD",
     });

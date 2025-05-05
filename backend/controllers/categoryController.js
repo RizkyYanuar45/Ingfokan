@@ -1,6 +1,7 @@
 import Category from "../models/category.js";
 import Article from "../models/article.js";
 import fs from "fs";
+
 import ResponseAPI from "../helper/response.js";
 
 const getAllCategory = async (req, res) => {
@@ -34,19 +35,28 @@ const getCategoryById = async (req, res) => {
 const createCategory = async (req, res) => {
   try {
     const { name } = req.body;
-    const newThumbnail = req.file ? req.file.path : null;
-    console.log(newThumbnail);
+    let newThumbnail = null;
+
+    if (req.file && req.file.path) {
+      // Normalisasi path agar menggunakan forward slash
+      newThumbnail = req.file.path.replace(/\\/g, "/");
+      console.log("Normalized thumbnail path:", newThumbnail);
+    }
 
     const category = await Category.create({
-      name: name,
+      name,
       thumbnail: newThumbnail,
     });
+
     console.log("Category created successfully", category);
     return ResponseAPI.success(res, "Berhasil membuat kategori", {
       category,
     });
   } catch (error) {
-    if (req.file) fs.unlinkSync(req.file.path);
+    // Jika ada file yang sudah ter-upload tapi terjadi error, hapus file tersebut
+    if (req.file && req.file.path && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
     return ResponseAPI.error(res, error.message);
   }
 };

@@ -25,17 +25,6 @@ export default function TopNavigation({ toggleSidebar }) {
             <Bell className="h-6 w-6 text-gray-500" />
             <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
           </div>
-
-          <div className="flex items-center">
-            <img
-              src="/api/placeholder/40/40"
-              alt="Profile"
-              className="h-8 w-8 rounded-full"
-            />
-            <span className="ml-2 font-medium text-gray-700 hidden md:inline-block">
-              Admin User
-            </span>
-          </div>
         </div>
       </div>
     </header>

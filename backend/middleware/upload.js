@@ -7,7 +7,10 @@ const storage = multer.diskStorage({
     cb(null, "uploads");
   },
   filename: (req, file, cb) => {
-    cb(null, `${uuidv4()}-${file.originalname}`);
+    // Ambil ekstensi file asli, misal ".png"
+    const ext = file.originalname.substring(file.originalname.lastIndexOf("."));
+    // Gabungkan UUID dengan ekstensi
+    cb(null, `${uuidv4()}${ext}`);
   },
 });
 

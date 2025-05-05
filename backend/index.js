@@ -9,11 +9,20 @@ import cateoryRoutes from "./routes/categoryRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
 import favoriteRoutes from "./routes/favoriteRoutes.js";
 import articleRoutes from "./routes/articleRoutes.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Mendapatkan __dirname di ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 connectDB();
 const app = express();
 const port = process.env.PORT;
+
+// Konfigurasi static files yang benar
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(express.json());
 app.use(urlencoded({ extended: true }));
