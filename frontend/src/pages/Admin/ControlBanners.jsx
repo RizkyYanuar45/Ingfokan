@@ -1,184 +1,133 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  FileText,
-  Users,
-  Tag,
-  Eye,
   Trash2,
   Edit,
   PlusCircle,
   Search,
-  Filter,
-  X,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Save,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import SideBar from "../../components/Admin/SideBar";
 import TopNavigation from "../../components/Admin/TopNavigation";
-
+import CreateBanner from "../../components/Admin/Modal/Create/CreateBanner";
+import DeleteCategory from "../../components/Admin/Modal/Delete/DeleteBanner";
 export default function ControlBanners() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [articles, setArticles] = useState([
-    {
-      id: 1,
-      title: "10 Tips for Better News Writing",
-      category: "Journalism",
-      categoryColor: "blue",
-      author: "Alex Johnson",
-      status: "Published",
-      statusColor: "green",
-      date: "Apr 12, 2025",
-    },
-    {
-      id: 2,
-      title: "Breaking: New Technology Advances",
-      category: "Technology",
-      categoryColor: "purple",
-      author: "Sarah Miller",
-      status: "Published",
-      statusColor: "green",
-      date: "Apr 15, 2025",
-    },
-    {
-      id: 3,
-      title: "Global Economic Forecast 2025",
-      category: "Business",
-      categoryColor: "yellow",
-      author: "Robert Chen",
-      status: "Draft",
-      statusColor: "yellow",
-      date: "Apr 16, 2025",
-    },
-    {
-      id: 4,
-      title: "Sports Update: Championship Results",
-      category: "Sports",
-      categoryColor: "red",
-      author: "Michael Torres",
-      status: "Under Review",
-      statusColor: "gray",
-      date: "Apr 14, 2025",
-    },
-  ]);
-
+  const [banners, setCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentArticle, setCurrentArticle] = useState({
-    id: null,
-    title: "",
-    category: "",
-    author: "",
-    status: "Draft",
-    date: new Date().toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }),
-  });
   const [isEditing, setIsEditing] = useState(false);
+  const [currentBanner, setCurrentBanner] = useState({
+    id: null,
+    name: "",
+  });
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [totalPages, setTotalPages] = useState(0);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  const filteredArticles = articles.filter(
-    (article) =>
-      article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      article.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      article.category.toLowerCase().includes(searchTerm.toLowerCase())
+  // Fetch banners data from API
+  const refreshBanner = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/banner`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch banners");
+      const data = await response.json();
+
+      setCategories(data.data.data);
+    } catch (error) {
+      console.error("Error fetching banners:", error);
+    }
+  };
+
+  // Fetch data on component mount
+  useEffect(() => {
+    refreshBanner();
+  }, []);
+
+  //Filter banners based on search term
+  const filteredCategories = banners.filter((banner) =>
+    banner.link.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const openModal = (isEdit = false, article = null) => {
-    if (isEdit && article) {
-      setCurrentArticle({ ...article });
+  // Calculate total pages whenever filtered banners change
+  useEffect(() => {
+    setTotalPages(Math.ceil(filteredCategories.length / itemsPerPage));
+    // Reset to page 1 if search term changes
+    if (searchTerm) {
+      setCurrentPage(1);
+    }
+  }, [filteredCategories, itemsPerPage, searchTerm]);
+
+  // Get banners for current page
+  const getCurrentPageItems = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredCategories.slice(startIndex, endIndex);
+  };
+
+  // Navigation functions
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const openModal = (isEdit = false, banner = null) => {
+    if (isEdit && banner) {
+      setCurrentBanner({ ...banner });
       setIsEditing(true);
     } else {
-      setCurrentArticle({
-        id:
-          articles.length > 0 ? Math.max(...articles.map((a) => a.id)) + 1 : 1,
-        title: "",
-        category: "",
-        author: "",
-        status: "Draft",
-        date: new Date().toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }),
+      setCurrentBanner({
+        id: null,
+        name: "",
       });
       setIsEditing(false);
     }
     setIsModalOpen(true);
   };
+  const openDeleteModal = (banner) => {
+    setCurrentBanner(banner);
+    setIsDeleteOpen(true);
+  };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setCurrentArticle({
+    setIsDeleteOpen(false);
+    setCurrentBanner({
       id: null,
-      title: "",
-      category: "",
-      author: "",
-      status: "Draft",
-      date: new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
+      name: "",
     });
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setCurrentArticle({
-      ...currentArticle,
+    setCurrentBanner({
+      ...currentBanner,
       [name]: value,
     });
   };
 
-  const handleSubmit = () => {
-    if (isEditing) {
-      setArticles(
-        articles.map((article) =>
-          article.id === currentArticle.id ? currentArticle : article
-        )
-      );
-    } else {
-      setArticles([...articles, currentArticle]);
-    }
-    closeModal();
-  };
-
-  const deleteArticle = (id) => {
-    if (window.confirm("Are you sure you want to delete this article?")) {
-      setArticles(articles.filter((article) => article.id !== id));
-    }
-  };
-
-  const getCategoryColor = (category) => {
-    const colors = {
-      Journalism: "blue",
-      Technology: "purple",
-      Business: "yellow",
-      Sports: "red",
-      Politics: "indigo",
-      Entertainment: "pink",
-      Health: "green",
-      Science: "cyan",
-    };
-    return colors[category] || "gray";
-  };
-
-  const getStatusColor = (status) => {
-    const colors = {
-      Published: "green",
-      Draft: "yellow",
-      "Under Review": "gray",
-      Rejected: "red",
-    };
-    return colors[status] || "gray";
+  // Handler for changing items per page
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(parseInt(e.target.value));
+    setCurrentPage(1); // Reset to first page when changing item count
   };
 
   return (
@@ -196,234 +145,113 @@ export default function ControlBanners() {
           <div className="mb-6 flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-semibold text-gray-800">
-                Banner Management
+                Banners Management
               </h1>
-              <p className="text-gray-600">Manage all your blog articles</p>
+              <p className="text-gray-600">Manage all your blog banners</p>
             </div>
             <button
               onClick={() => openModal(false)}
               className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
             >
               <PlusCircle className="h-4 w-4 mr-2" />
-              <span>Create Article</span>
+              <span>Create banner</span>
             </button>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-indigo-100 rounded-lg">
-                  <FileText className="h-6 w-6 text-indigo-600" />
-                </div>
-                <div className="ml-4">
-                  <h2 className="text-sm font-medium text-gray-500">
-                    Total Articles
-                  </h2>
-                  <p className="text-2xl font-semibold text-gray-800">
-                    {articles.length}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <Eye className="h-6 w-6 text-green-600" />
-                </div>
-                <div className="ml-4">
-                  <h2 className="text-sm font-medium text-gray-500">
-                    Published
-                  </h2>
-                  <p className="text-2xl font-semibold text-gray-800">
-                    {articles.filter((a) => a.status === "Published").length}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-yellow-100 rounded-lg">
-                  <FileText className="h-6 w-6 text-yellow-600" />
-                </div>
-                <div className="ml-4">
-                  <h2 className="text-sm font-medium text-gray-500">Drafts</h2>
-                  <p className="text-2xl font-semibold text-gray-800">
-                    {articles.filter((a) => a.status === "Draft").length}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <Tag className="h-6 w-6 text-purple-600" />
-                </div>
-                <div className="ml-4">
-                  <h2 className="text-sm font-medium text-gray-500">
-                    Categories
-                  </h2>
-                  <p className="text-2xl font-semibold text-gray-800">
-                    {new Set(articles.map((a) => a.category)).size}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Search and Filter Bar */}
-          <div className="bg-white rounded-lg shadow p-4 mb-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-grow">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  placeholder="Search articles..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className="flex space-x-2">
-                <select className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                  <option value="">All Categories</option>
-                  <option value="Journalism">Journalism</option>
-                  <option value="Technology">Technology</option>
-                  <option value="Business">Business</option>
-                  <option value="Sports">Sports</option>
-                </select>
-                <select className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                  <option value="">All Statuses</option>
-                  <option value="Published">Published</option>
-                  <option value="Draft">Draft</option>
-                  <option value="Under Review">Under Review</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Articles Table */}
+          {/* Categories Table */}
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-full divide-y divide-gray-200">
+              <table className="w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
-                      Title
+                      Link
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
-                      Category
+                      Thumbnail
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Author
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       Status
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Date
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredArticles.length > 0 ? (
-                    filteredArticles.map((article) => {
-                      const categoryColor = `bg-${
-                        article.categoryColor ||
-                        getCategoryColor(article.category)
-                      }-100 text-${
-                        article.categoryColor ||
-                        getCategoryColor(article.category)
-                      }-800`;
-                      const statusColor = `bg-${
-                        article.statusColor || getStatusColor(article.status)
-                      }-100 text-${
-                        article.statusColor || getStatusColor(article.status)
-                      }-800`;
-
-                      return (
-                        <tr key={article.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">
-                              {article.title}
+                  {getCurrentPageItems().length > 0 ? (
+                    getCurrentPageItems().map((banner) => (
+                      <tr
+                        key={banner.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                          {banner.link}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          {banner.thumbnail ? (
+                            <div className="flex justify-center">
+                              <img
+                                src={`http://localhost:3000/${banner.thumbnail.replace(
+                                  /\\/g,
+                                  "/"
+                                )}`}
+                                alt={banner.link}
+                                className="h-14 w-28 object-cover border border-gray-200"
+                              />
                             </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${categoryColor}`}
-                            >
-                              {article.category}
+                          ) : (
+                            <span className="text-gray-500 text-sm">
+                              No Image
                             </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-500">
-                              {article.author}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}`}
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-center font-medium text-gray-900">
+                          {banner.is_active === "active" ? (
+                            <span className="text-green-500">Active</span>
+                          ) : (
+                            <span className="text-red-500">Not Active</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end space-x-4">
+                            <button
+                              onClick={() => openModal(true, banner)}
+                              className="text-indigo-600 hover:text-indigo-900 transition-colors p-1 rounded-md hover:bg-indigo-50"
+                              title="Edit banner"
                             >
-                              {article.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-500">
-                              {article.date}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex justify-end space-x-3">
-                              <button
-                                onClick={() => openModal(true, article)}
-                                className="text-indigo-600 hover:text-indigo-900 transition-colors"
-                              >
-                                <Edit className="h-5 w-5" />
-                              </button>
-                              <button
-                                onClick={() => deleteArticle(article.id)}
-                                className="text-red-600 hover:text-red-900 transition-colors"
-                              >
-                                <Trash2 className="h-5 w-5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
+                              <Edit className="h-5 w-5" />
+                            </button>
+                            <button
+                              onClick={() => openDeleteModal(banner)}
+                              className="text-red-600 hover:text-red-900 transition-colors p-1 rounded-md hover:bg-red-50"
+                              title="Delete banner"
+                            >
+                              <Trash2 className="h-5 w-5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                   ) : (
                     <tr>
                       <td
-                        colSpan="6"
-                        className="px-6 py-4 text-center text-sm text-gray-500"
+                        colSpan="3"
+                        className="px-6 py-8 text-center text-sm text-gray-500"
                       >
-                        No articles found
+                        No banners found
                       </td>
                     </tr>
                   )}
@@ -431,170 +259,133 @@ export default function ControlBanners() {
               </table>
             </div>
 
-            {/* Pagination */}
-            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">
-                    Showing <span className="font-medium">1</span> to{" "}
-                    <span className="font-medium">
-                      {filteredArticles.length}
-                    </span>{" "}
-                    of{" "}
-                    <span className="font-medium">
-                      {filteredArticles.length}
-                    </span>{" "}
-                    results
-                  </p>
-                </div>
-                <div>
-                  <nav
-                    className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                    aria-label="Pagination"
+            {/* Pagination Controls */}
+            {filteredCategories.length > 0 && (
+              <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
+                {/* Mobile pagination */}
+                <div className="flex-1 flex justify-between sm:hidden">
+                  <button
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+                      currentPage === 1
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
                   >
-                    <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                      Previous
-                    </button>
-                    <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                      1
-                    </button>
-                    <button className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                      Next
-                    </button>
-                  </nav>
+                    Previous
+                  </button>
+                  <button
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+                      currentPage === totalPages
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    Next
+                  </button>
+                </div>
+
+                {/* Desktop pagination */}
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Showing{" "}
+                      <span className="font-medium">
+                        {filteredCategories.length > 0
+                          ? (currentPage - 1) * itemsPerPage + 1
+                          : 0}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-medium">
+                        {Math.min(
+                          currentPage * itemsPerPage,
+                          filteredCategories.length
+                        )}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-medium">
+                        {filteredCategories.length}
+                      </span>{" "}
+                      results
+                    </p>
+                  </div>
+                  <div>
+                    <nav
+                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                      aria-label="Pagination"
+                    >
+                      <button
+                        onClick={goToPreviousPage}
+                        disabled={currentPage === 1}
+                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                          currentPage === 1
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-gray-500 hover:bg-gray-50"
+                        }`}
+                      >
+                        <span className="sr-only">Previous</span>
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+
+                      {/* Page Numbers */}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                              currentPage === page
+                                ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        )
+                      )}
+
+                      <button
+                        onClick={goToNextPage}
+                        disabled={currentPage === totalPages}
+                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                          currentPage === totalPages
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-gray-500 hover:bg-gray-50"
+                        }`}
+                      >
+                        <span className="sr-only">Next</span>
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    </nav>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </main>
       </div>
 
-      {/* Modal for Create/Edit Article */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-10 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div
-              className="fixed inset-0 transition-opacity"
-              aria-hidden="true"
-            >
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
+      {/* Modal for Create/Edit Category */}
+      <CreateBanner
+        isModalOpen={isModalOpen}
+        isEditing={isEditing}
+        currentBanner={currentBanner}
+        handleInputChange={handleInputChange}
+        closeModal={closeModal}
+        refreshBanner={refreshBanner}
+      />
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div className="sm:flex sm:items-start">
-                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                      {isEditing ? "Edit Article" : "Create New Article"}
-                    </h3>
-                    <div className="mt-2 space-y-4">
-                      <div>
-                        <label
-                          htmlFor="title"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          Article Title
-                        </label>
-                        <input
-                          type="text"
-                          name="title"
-                          id="title"
-                          value={currentArticle.title}
-                          onChange={handleInputChange}
-                          className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 border"
-                          placeholder="Enter article title"
-                        />
-                      </div>
-
-                      <div>
-                        <label
-                          htmlFor="category"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          Category
-                        </label>
-                        <select
-                          id="category"
-                          name="category"
-                          value={currentArticle.category}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        >
-                          <option value="">Select a category</option>
-                          <option value="Journalism">Journalism</option>
-                          <option value="Technology">Technology</option>
-                          <option value="Business">Business</option>
-                          <option value="Sports">Sports</option>
-                          <option value="Politics">Politics</option>
-                          <option value="Entertainment">Entertainment</option>
-                          <option value="Health">Health</option>
-                          <option value="Science">Science</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label
-                          htmlFor="author"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          Author
-                        </label>
-                        <input
-                          type="text"
-                          name="author"
-                          id="author"
-                          value={currentArticle.author}
-                          onChange={handleInputChange}
-                          className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 border"
-                          placeholder="Enter author name"
-                        />
-                      </div>
-
-                      <div>
-                        <label
-                          htmlFor="status"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          Status
-                        </label>
-                        <select
-                          id="status"
-                          name="status"
-                          value={currentArticle.status}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        >
-                          <option value="Draft">Draft</option>
-                          <option value="Under Review">Under Review</option>
-                          <option value="Published">Published</option>
-                          <option value="Rejected">Rejected</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {isEditing ? "Update" : "Save"}
-                </button>
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Modal for Delete Category */}
+      {isDeleteOpen && (
+        <DeleteCategory
+          isOpen={isDeleteOpen}
+          currentBanner={currentBanner}
+          closeModal={closeModal}
+          refreshBanners={refreshBanner}
+        />
       )}
     </div>
   );

@@ -11,9 +11,15 @@ import {
   Tag,
   LogOut,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export default function SideBar({ sidebarOpen, toggleSidebar }) {
+  const location = useLocation();
+  const isActive = (path) => {
+    return location.pathname === path
+      ? "bg-secondarycus"
+      : "hover:bg-orange-400";
+  };
   return (
     <>
       {sidebarOpen && (
@@ -42,7 +48,9 @@ export default function SideBar({ sidebarOpen, toggleSidebar }) {
           <div className="px-4 py-3">
             <Link
               to="/admin/dashboard"
-              className="flex items-center mb-4 px-4 py-2 bg-secondarycus rounded-lg"
+              className={`flex items-center mb-4 px-4 py-2  rounded-lg ${isActive(
+                "/admin/dashboard"
+              )}`}
             >
               <Home className="h-5 w-5 mr-3" />
               <span className="font-medium">Dashboard</span>
@@ -50,7 +58,9 @@ export default function SideBar({ sidebarOpen, toggleSidebar }) {
 
             <Link
               to="/admin/article"
-              className="flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400"
+              className={`flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400 ${isActive(
+                "/admin/article"
+              )}`}
             >
               <FileText className="h-5 w-5 mr-3" />
               <span>Articles</span>
@@ -58,7 +68,9 @@ export default function SideBar({ sidebarOpen, toggleSidebar }) {
 
             <Link
               to="/admin/categories"
-              className="flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400"
+              className={`flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400 ${isActive(
+                "/admin/categories"
+              )}`}
             >
               <Tag className="h-5 w-5 mr-3" />
               <span>Categories</span>
@@ -66,7 +78,9 @@ export default function SideBar({ sidebarOpen, toggleSidebar }) {
 
             <Link
               to="/admin/banners"
-              className="flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400"
+              className={`flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400 ${isActive(
+                "/admin/banners"
+              )}`}
             >
               <Image className="h-5 w-5 mr-3" />
               <span>Banner</span>
@@ -74,7 +88,9 @@ export default function SideBar({ sidebarOpen, toggleSidebar }) {
 
             <Link
               to="/admin/authors"
-              className="flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400"
+              className={`flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400 ${isActive(
+                "/admin/authors"
+              )}`}
             >
               <Users className="h-5 w-5 mr-3" />
               <span>Author</span>

@@ -1,7 +1,7 @@
 const handleDeleteBanner = async (bannerId) => {
   const api = import.meta.env.VITE_API_URL;
   // Request hapus tanpa konfirmasi
-  let response = await fetch(`${api}/category/delete/${bannerId}`, {
+  let response = await fetch(`${api}/banner/delete/${bannerId}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -16,15 +16,12 @@ const handleDeleteBanner = async (bannerId) => {
     );
     if (confirmDelete) {
       // Request hapus dengan konfirmasi
-      response = await fetch(
-        `${api}/category/delete/${bannerId}?confirm=true`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      response = await fetch(`${api}/banner/delete/${bannerId}?confirm=true`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       const finalResult = await response.json();
       alert(finalResult.message);
     } else {

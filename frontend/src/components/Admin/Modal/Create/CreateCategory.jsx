@@ -75,7 +75,7 @@ export default function CreateCategory({
     const formData = new FormData();
     formData.append("name", currentCategory.name);
     if (thumbnail) {
-      formData.append("image", thumbnail);
+      formData.append("thumbnail", thumbnail);
     }
     try {
       const response = await fetch(`${api}/category/${currentCategory.id}`, {
