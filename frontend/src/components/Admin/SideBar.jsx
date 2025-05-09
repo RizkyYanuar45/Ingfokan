@@ -1,16 +1,5 @@
 import React, { useState } from "react";
-import {
-  Home,
-  FileText,
-  Users,
-  BarChart2,
-  Settings,
-  X,
-  PenTool,
-  Image,
-  Tag,
-  LogOut,
-} from "lucide-react";
+import { Home, FileText, Users, X, Image, Tag, LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 export default function SideBar({ sidebarOpen, toggleSidebar }) {
