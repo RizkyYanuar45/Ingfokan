@@ -60,33 +60,6 @@ const createArticle = async (req, res) => {
 };
 
 const updateArticle = async (req, res) => {
-  // try {
-  //   const id = req.params.id;
-  //   const article = await Article.findOne({ where: { id: id } });
-  //   if (!article) {
-  //     ResponseAPI.notFound(res, "article tidak ditemukan");
-  //   }
-  //   const { title, content, category_id, article_id, published_date } = req.body;
-  //   const thumbnailPath = req.file ? req.file.thumbnail : null;
-  //   const slugged = slugify(title, {
-  //     replacement: "-",
-  //     lower: true,
-  //     strict: true,
-  //   });
-  //   article.title = title;
-  //   article.thumbnail = thumbnailPath;
-  //   article.content = content;
-  //   article.category_id = category_id;
-  //   article.article_id = article_id;
-  //   article.published_date = published_date;
-  //   article.slug = slugged;
-  //   await article.save();
-  //   return ResponseAPI.success(res, "Artikel berhasil diupdate", {
-  //     article,
-  //   });
-  // } catch (error) {
-  //   return ResponseAPI.error(res, error.message);
-  // }
   try {
     const id = req.params.id;
     const { title, content, category_id, author_id } = req.body;

@@ -1,28 +1,166 @@
-import { useState } from "react";
-import {
-  FileText,
-  Users,
-  Tag,
-  Eye,
-  Trash2,
-  Edit,
-  PlusCircle,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { FileText, Users, Tag, Eye } from "lucide-react";
 
 import SideBar from "../../components/Admin/SideBar";
 import TopNavigation from "../../components/Admin/TopNavigation";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [categoryNames, setCategoryNames] = useState({});
+  const [authorNames, setAuthorNames] = useState({});
+
+  // State for API data
+  const [totalArticles, setTotalArticles] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalAuthors, setTotalAuthors] = useState(0);
+  const [totalCategories, setTotalCategories] = useState(0);
+  const [recentArticles, setRecentArticles] = useState([]);
+
+  // Loading and error states
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
+  // Modified to update state instead of returning directly
+  const fetchCategoryName = async (categoryId) => {
+    try {
+      const result = await fetch(
+        `${import.meta.env.VITE_API_URL}/category/${categoryId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (!result.ok) {
+        throw new Error("Failed to fetch category");
+      }
+      const data = await result.json();
+      setCategoryNames((prev) => ({ ...prev, [categoryId]: data.data.name }));
+    } catch (error) {
+      console.error("Error fetching category:", error);
+      setCategoryNames((prev) => ({ ...prev, [categoryId]: "Unknown" }));
+    }
+  };
+
+  // Modified to update state instead of returning directly
+  const fetchAuthorName = async (authorId) => {
+    try {
+      const result = await fetch(
+        `${import.meta.env.VITE_API_URL}/author/${authorId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (!result.ok) {
+        throw new Error("Failed to fetch author");
+      }
+      const data = await result.json();
+      setAuthorNames((prev) => ({ ...prev, [authorId]: data.data.data.name }));
+    } catch (error) {
+      console.error("Error fetching author:", error);
+      setAuthorNames((prev) => ({ ...prev, [authorId]: "Unknown" }));
+    }
+  };
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch data from all endpoints
+        const [
+          articlesResponse,
+          usersResponse,
+          authorsResponse,
+          categoriesResponse,
+        ] = await Promise.all([
+          fetch("http://localhost:3000/api/article"),
+          fetch("http://localhost:3000/api/user"),
+          fetch("http://localhost:3000/api/author"),
+          fetch("http://localhost:3000/api/category"),
+        ]);
+
+        // Check if responses are ok
+        if (
+          !articlesResponse.ok ||
+          !usersResponse.ok ||
+          !authorsResponse.ok ||
+          !categoriesResponse.ok
+        ) {
+          throw new Error("One or more API requests failed");
+        }
+
+        // Parse JSON responses
+        const articlesData = await articlesResponse.json();
+        const usersData = await usersResponse.json();
+        const authorsData = await authorsResponse.json();
+        const categoriesData = await categoriesResponse.json();
+
+        // Update state with fetched data
+        setTotalArticles(articlesData.data.article.length);
+        setTotalUsers(usersData.data.data.length);
+        setTotalAuthors(authorsData.data.data.length);
+        setTotalCategories(categoriesData.data.category.length);
+
+        const articles = articlesData.data.article;
+
+        // Sort articles by most recent and take top 5
+        const sortedArticles = articles.sort((a, b) => b.id - a.id).slice(0, 5);
+        setRecentArticles(sortedArticles);
+
+        // Fetch category and author names for each article
+        const uniqueCategoryIds = [
+          ...new Set(sortedArticles.map((article) => article.category_id)),
+        ];
+        const uniqueAuthorIds = [
+          ...new Set(sortedArticles.map((article) => article.author_id)),
+        ];
+
+        // Fetch all category names at once
+        for (const categoryId of uniqueCategoryIds) {
+          await fetchCategoryName(categoryId);
+        }
+
+        // Fetch all author names at once
+        for (const authorId of uniqueAuthorIds) {
+          await fetchAuthorName(authorId);
+        }
+
+        setIsLoading(false);
+      } catch (err) {
+        setError("Failed to fetch dashboard data");
+        setIsLoading(false);
+        console.error("Dashboard data fetch error:", err);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex h-screen justify-center items-center bg-gray-100">
+        <div className="text-xl text-gray-600">Loading dashboard...</div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex h-screen justify-center items-center bg-gray-100">
+        <div className="text-xl text-red-600">{error}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Sidebar - Mobile overlay */}
-
       {/* Sidebar */}
       <SideBar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
 
@@ -49,7 +187,9 @@ export default function Dashboard() {
                   <h2 className="text-sm font-medium text-gray-500">
                     Total Articles
                   </h2>
-                  <p className="text-2xl font-semibold text-gray-800">142</p>
+                  <p className="text-2xl font-semibold text-gray-800">
+                    {totalArticles}
+                  </p>
                 </div>
               </div>
             </div>
@@ -61,9 +201,11 @@ export default function Dashboard() {
                 </div>
                 <div className="ml-4">
                   <h2 className="text-sm font-medium text-gray-500">
-                    Total Views
+                    Total Users
                   </h2>
-                  <p className="text-2xl font-semibold text-gray-800">45.2K</p>
+                  <p className="text-2xl font-semibold text-gray-800">
+                    {totalUsers}
+                  </p>
                 </div>
               </div>
             </div>
@@ -74,10 +216,10 @@ export default function Dashboard() {
                   <Users className="h-6 w-6 text-purple-600" />
                 </div>
                 <div className="ml-4">
-                  <h2 className="text-sm font-medium text-gray-500">
-                    Active Writers
-                  </h2>
-                  <p className="text-2xl font-semibold text-gray-800">15</p>
+                  <h2 className="text-sm font-medium text-gray-500">Authors</h2>
+                  <p className="text-2xl font-semibold text-gray-800">
+                    {totalAuthors}
+                  </p>
                 </div>
               </div>
             </div>
@@ -91,7 +233,9 @@ export default function Dashboard() {
                   <h2 className="text-sm font-medium text-gray-500">
                     Categories
                   </h2>
-                  <p className="text-2xl font-semibold text-gray-800">12</p>
+                  <p className="text-2xl font-semibold text-gray-800">
+                    {totalCategories}
+                  </p>
                 </div>
               </div>
             </div>
@@ -103,10 +247,6 @@ export default function Dashboard() {
               <h2 className="text-lg font-semibold text-gray-800">
                 Recent Articles
               </h2>
-              <button className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                <span>Add New</span>
-              </button>
             </div>
 
             <div className="overflow-x-auto">
@@ -122,172 +262,30 @@ export default function Dashboard() {
                     <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Author
                     </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  <tr>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        10 Tips for Better News Writing
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                        Journalism
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">Alex Johnson</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                        Published
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">Apr 12, 2025</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button className="text-indigo-600 hover:text-indigo-900">
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button className="text-red-600 hover:text-red-900">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        Breaking: New Technology Advances
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
-                        Technology
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">Sarah Miller</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                        Published
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">Apr 15, 2025</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button className="text-indigo-600 hover:text-indigo-900">
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button className="text-red-600 hover:text-red-900">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        Global Economic Forecast 2025
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
-                        Business
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">Robert Chen</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
-                        Draft
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">Apr 16, 2025</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button className="text-indigo-600 hover:text-indigo-900">
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button className="text-red-600 hover:text-red-900">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        Sports Update: Championship Results
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
-                        Sports
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">
-                        Michael Torres
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
-                        Under Review
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">Apr 14, 2025</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button className="text-indigo-600 hover:text-indigo-900">
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button className="text-red-600 hover:text-red-900">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                  {recentArticles.map((article) => (
+                    <tr key={article.id}>
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {article.title}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                          {categoryNames[article.category_id] || "Loading..."}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-500">
+                          {authorNames[article.author_id] || "Loading..."}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
-            </div>
-
-            <div className="px-6 py-4 border-t">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-500">
-                  Showing <span className="font-medium">1</span> to{" "}
-                  <span className="font-medium">4</span> of{" "}
-                  <span className="font-medium">142</span> results
-                </div>
-                <div className="flex space-x-2">
-                  <button className="px-3 py-1 border rounded text-sm bg-white text-gray-500 hover:bg-gray-50">
-                    Previous
-                  </button>
-                  <button className="px-3 py-1 border rounded text-sm bg-indigo-600 text-white hover:bg-indigo-700">
-                    Next
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </main>

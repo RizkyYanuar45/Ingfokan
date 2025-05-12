@@ -1,161 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
+  FileText,
+  Users,
+  Tag,
+  Eye,
   Trash2,
   Edit,
   PlusCircle,
-  Search,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 
 import SideBar from "../../components/Admin/SideBar";
 import TopNavigation from "../../components/Admin/TopNavigation";
-import CreateCategory from "../../components/Admin/Modal/Create/CreateCategory";
-import DeleteCategory from "../../components/Admin/Modal/Delete/DeleteCategory";
 
-export default function ControlCategories() {
+export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [categories, setCategories] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentCategory, setCurrentCategory] = useState({
-    id: null,
-    name: "",
-  });
-  const [notification, setNotification] = useState(null);
-
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
-  const [totalPages, setTotalPages] = useState(0);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Fetch categories data from API
-  const refreshCategories = async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/category`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      if (!response.ok) throw new Error("Failed to fetch categories");
-      const data = await response.json();
-
-      setCategories(data.data.category);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      setNotification({
-        type: "error",
-        message: "Failed to fetch categories",
-      });
-    }
-  };
-
-  // Fetch data on component mount
-  useEffect(() => {
-    refreshCategories();
-  }, []);
-
-  // Effect for clearing notification after some time
-  useEffect(() => {
-    if (notification) {
-      const timer = setTimeout(() => {
-        setNotification(null);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [notification]);
-
-  // Filter categories based on search term
-  const filteredCategories = categories.filter((category) =>
-    category.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Calculate total pages whenever filtered categories change
-  useEffect(() => {
-    setTotalPages(Math.ceil(filteredCategories.length / itemsPerPage));
-    // Reset to page 1 if search term changes
-    if (searchTerm) {
-      setCurrentPage(1);
-    }
-  }, [filteredCategories, itemsPerPage, searchTerm]);
-
-  // Get categories for current page
-  const getCurrentPageItems = () => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return filteredCategories.slice(startIndex, endIndex);
-  };
-
-  // Navigation functions
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const openModal = (isEdit = false, category = null) => {
-    if (isEdit && category) {
-      setCurrentCategory({ ...category });
-      setIsEditing(true);
-    } else {
-      setCurrentCategory({
-        id: null,
-        name: "",
-      });
-      setIsEditing(false);
-    }
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setCurrentCategory({
-      id: null,
-      name: "",
-    });
-  };
-
-  const openDeleteModal = (category) => {
-    setCurrentCategory(category);
-    setIsDeleteOpen(true);
-  };
-
-  const closeDeleteModal = () => {
-    setIsDeleteOpen(false);
-    setCurrentCategory({
-      id: null,
-      name: "",
-    });
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setCurrentCategory({
-      ...currentCategory,
-      [name]: value,
-    });
-  };
-
-  // Handler for changing items per page
-  const handleItemsPerPageChange = (e) => {
-    setItemsPerPage(parseInt(e.target.value));
-    setCurrentPage(1); // Reset to first page when changing item count
-  };
-
   return (
     <div className="flex h-screen bg-gray-100">
+      {/* Sidebar - Mobile overlay */}
+
       {/* Sidebar */}
       <SideBar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
 
@@ -166,299 +33,265 @@ export default function ControlCategories() {
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto p-6 bg-gray-100">
-          <div className="mb-6 flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-800">
-                Categories Management
-              </h1>
-              <p className="text-gray-600">Manage all your blog categories</p>
-            </div>
-            <button
-              onClick={() => openModal(false)}
-              className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              <PlusCircle className="h-4 w-4 mr-2" />
-              <span>Create category</span>
-            </button>
+          <div className="mb-6">
+            <h1 className="text-2xl font-semibold text-gray-800">Dashboard</h1>
+            <p className="text-gray-600">Welcome back, Admin!</p>
           </div>
 
-          {/* Notification Bar */}
-          {notification && (
-            <div
-              className={`mb-4 p-3 rounded-md flex items-center ${
-                notification.type === "success"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-              }`}
-            >
-              {notification.type === "success" ? (
-                <div className="flex-shrink-0 mr-2">✓</div>
-              ) : (
-                <div className="flex-shrink-0 mr-2">✖</div>
-              )}
-              <div>{notification.message}</div>
-            </div>
-          )}
-
-          {/* Search Bar and Controls */}
-          <div className="bg-white rounded-lg shadow p-4 mb-6">
-            <div className="flex justify-between items-center">
-              <div className="relative flex-grow max-w-md">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center">
+                <div className="p-3 bg-indigo-100 rounded-lg">
+                  <FileText className="h-6 w-6 text-indigo-600" />
                 </div>
-                <input
-                  type="text"
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  placeholder="Search categories..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+                <div className="ml-4">
+                  <h2 className="text-sm font-medium text-gray-500">
+                    Total Articles
+                  </h2>
+                  <p className="text-2xl font-semibold text-gray-800">142</p>
+                </div>
               </div>
+            </div>
 
-              {/* Items per page selector */}
-              <div className="flex items-center space-x-2">
-                <label htmlFor="itemsPerPage" className="text-sm text-gray-600">
-                  Show:
-                </label>
-                <select
-                  id="itemsPerPage"
-                  className="border border-gray-300 rounded-md text-sm p-1 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  value={itemsPerPage}
-                  onChange={handleItemsPerPageChange}
-                >
-                  <option value="5">5</option>
-                  <option value="10">10</option>
-                  <option value="25">25</option>
-                  <option value="50">50</option>
-                </select>
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center">
+                <div className="p-3 bg-green-100 rounded-lg">
+                  <Eye className="h-6 w-6 text-green-600" />
+                </div>
+                <div className="ml-4">
+                  <h2 className="text-sm font-medium text-gray-500">
+                    Total Views
+                  </h2>
+                  <p className="text-2xl font-semibold text-gray-800">45.2K</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center">
+                <div className="p-3 bg-purple-100 rounded-lg">
+                  <Users className="h-6 w-6 text-purple-600" />
+                </div>
+                <div className="ml-4">
+                  <h2 className="text-sm font-medium text-gray-500">
+                    Active Writers
+                  </h2>
+                  <p className="text-2xl font-semibold text-gray-800">15</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center">
+                <div className="p-3 bg-yellow-100 rounded-lg">
+                  <Tag className="h-6 w-6 text-yellow-600" />
+                </div>
+                <div className="ml-4">
+                  <h2 className="text-sm font-medium text-gray-500">
+                    Categories
+                  </h2>
+                  <p className="text-2xl font-semibold text-gray-800">12</p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Categories Table */}
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          {/* Recent Articles Table */}
+          <div className="bg-white rounded-lg shadow mb-6">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h2 className="text-lg font-semibold text-gray-800">
+                Recent Articles
+              </h2>
+              <button className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                <span>Add New</span>
+              </button>
+            </div>
+
             <div className="overflow-x-auto">
-              <table className="w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Category Name
+              <table className="w-full min-w-full">
+                <thead>
+                  <tr className="bg-gray-50 text-left">
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Title
                     </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Thumbnail
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Category
                     </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Author
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {getCurrentPageItems().length > 0 ? (
-                    getCurrentPageItems().map((category) => (
-                      <tr
-                        key={category.id}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                          {category.name}
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          {category.thumbnail ? (
-                            <div className="flex justify-center">
-                              <img
-                                src={`http://localhost:3000/${category.thumbnail.replace(
-                                  /\\/g,
-                                  "/"
-                                )}`}
-                                alt={category.name}
-                                className="h-14 w-28 object-cover border border-gray-200"
-                              />
-                            </div>
-                          ) : (
-                            <span className="text-gray-500 text-sm">
-                              No Image
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end space-x-4">
-                            <button
-                              onClick={() => openModal(true, category)}
-                              className="text-indigo-600 hover:text-indigo-900 transition-colors p-1 rounded-md hover:bg-indigo-50"
-                              title="Edit category"
-                            >
-                              <Edit className="h-5 w-5" />
-                            </button>
-                            <button
-                              onClick={() => openDeleteModal(category)}
-                              className="text-red-600 hover:text-red-900 transition-colors p-1 rounded-md hover:bg-red-50"
-                              title="Delete category"
-                            >
-                              <Trash2 className="h-5 w-5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="3"
-                        className="px-6 py-8 text-center text-sm text-gray-500"
-                      >
-                        No categories found
-                      </td>
-                    </tr>
-                  )}
+                <tbody className="divide-y divide-gray-200 bg-white">
+                  <tr>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        10 Tips for Better News Writing
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                        Journalism
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-500">Alex Johnson</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                        Published
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-500">Apr 12, 2025</div>
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <button className="text-indigo-600 hover:text-indigo-900">
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button className="text-red-600 hover:text-red-900">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        Breaking: New Technology Advances
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
+                        Technology
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-500">Sarah Miller</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                        Published
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-500">Apr 15, 2025</div>
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <button className="text-indigo-600 hover:text-indigo-900">
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button className="text-red-600 hover:text-red-900">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        Global Economic Forecast 2025
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                        Business
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-500">Robert Chen</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                        Draft
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-500">Apr 16, 2025</div>
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <button className="text-indigo-600 hover:text-indigo-900">
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button className="text-red-600 hover:text-red-900">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        Sports Update: Championship Results
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
+                        Sports
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-500">
+                        Michael Torres
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+                        Under Review
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-500">Apr 14, 2025</div>
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <button className="text-indigo-600 hover:text-indigo-900">
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button className="text-red-600 hover:text-red-900">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
 
-            {/* Pagination Controls */}
-            {filteredCategories.length > 0 && (
-              <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
-                {/* Mobile pagination */}
-                <div className="flex-1 flex justify-between sm:hidden">
-                  <button
-                    onClick={goToPreviousPage}
-                    disabled={currentPage === 1}
-                    className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
-                      currentPage === 1
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
+            <div className="px-6 py-4 border-t">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-500">
+                  Showing <span className="font-medium">1</span> to{" "}
+                  <span className="font-medium">4</span> of{" "}
+                  <span className="font-medium">142</span> results
+                </div>
+                <div className="flex space-x-2">
+                  <button className="px-3 py-1 border rounded text-sm bg-white text-gray-500 hover:bg-gray-50">
                     Previous
                   </button>
-                  <button
-                    onClick={goToNextPage}
-                    disabled={currentPage === totalPages}
-                    className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
-                      currentPage === totalPages
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
+                  <button className="px-3 py-1 border rounded text-sm bg-indigo-600 text-white hover:bg-indigo-700">
                     Next
                   </button>
                 </div>
-
-                {/* Desktop pagination */}
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Showing{" "}
-                      <span className="font-medium">
-                        {filteredCategories.length > 0
-                          ? (currentPage - 1) * itemsPerPage + 1
-                          : 0}
-                      </span>{" "}
-                      to{" "}
-                      <span className="font-medium">
-                        {Math.min(
-                          currentPage * itemsPerPage,
-                          filteredCategories.length
-                        )}
-                      </span>{" "}
-                      of{" "}
-                      <span className="font-medium">
-                        {filteredCategories.length}
-                      </span>{" "}
-                      results
-                    </p>
-                  </div>
-                  <div>
-                    <nav
-                      className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                      aria-label="Pagination"
-                    >
-                      <button
-                        onClick={goToPreviousPage}
-                        disabled={currentPage === 1}
-                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
-                          currentPage === 1
-                            ? "text-gray-300 cursor-not-allowed"
-                            : "text-gray-500 hover:bg-gray-50"
-                        }`}
-                      >
-                        <span className="sr-only">Previous</span>
-                        <ChevronLeft className="h-5 w-5" />
-                      </button>
-
-                      {/* Page Numbers */}
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                        (page) => (
-                          <button
-                            key={page}
-                            onClick={() => setCurrentPage(page)}
-                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                              currentPage === page
-                                ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
-                                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        )
-                      )}
-
-                      <button
-                        onClick={goToNextPage}
-                        disabled={currentPage === totalPages}
-                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
-                          currentPage === totalPages
-                            ? "text-gray-300 cursor-not-allowed"
-                            : "text-gray-500 hover:bg-gray-50"
-                        }`}
-                      >
-                        <span className="sr-only">Next</span>
-                        <ChevronRight className="h-5 w-5" />
-                      </button>
-                    </nav>
-                  </div>
-                </div>
               </div>
-            )}
+            </div>
           </div>
         </main>
       </div>
-
-      {/* Modal for Create/Edit Category */}
-      {isModalOpen && (
-        <CreateCategory
-          isModalOpen={isModalOpen}
-          isEditing={isEditing}
-          currentCategory={currentCategory}
-          handleInputChange={handleInputChange}
-          closeModal={closeModal}
-          refreshCategories={refreshCategories}
-          setNotification={setNotification}
-        />
-      )}
-
-      {/* Modal for Delete Category */}
-      {isDeleteOpen && (
-        <div className="fixed inset-0 overflow-y-auto z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <DeleteCategory
-              currentCategory={currentCategory}
-              closeModal={closeDeleteModal}
-              refreshCategories={refreshCategories}
-              setNotification={setNotification}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

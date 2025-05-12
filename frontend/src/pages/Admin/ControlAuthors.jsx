@@ -405,7 +405,7 @@ export default function ControlAuthors() {
       <CreateAuthor
         isModalOpen={isModalOpen}
         isEditing={isEditing}
-        currentAuthors={currentAuthors}
+        currentAuthor={currentAuthors}
         handleInputChange={handleInputChange}
         closeModal={closeModal}
         refreshAuthors={refreshAuthors}
@@ -415,7 +415,7 @@ export default function ControlAuthors() {
       {isDeleteOpen && (
         <DeleteAuthor
           isOpen={isDeleteOpen}
-          currentAuthors={currentAuthors}
+          currentAuthor={currentAuthors}
           closeModal={closeModal}
           refreshAuthors={refreshAuthors}
         />

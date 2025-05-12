@@ -1,26 +1,128 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Save, X, CheckCircle, AlertCircle, XCircle } from "lucide-react";
+import "quill/dist/quill.snow.css";
+import Quill from "quill";
 
-export default function CreateAuthor({
+export default function CreateArticle({
   isModalOpen,
   isEditing,
-  currentAuthor,
+  currentArticle,
   handleInputChange,
   closeModal,
-  refreshAuthor,
+  refreshArticle,
 }) {
   const api = import.meta.env.VITE_API_URL;
-  const [avatar, setThumbnail] = useState(null);
+  const [thumbnail, setThumbnail] = useState(null);
   const [notification, setNotification] = useState(null);
   const [dragActive, setDragActive] = useState(false);
+  const [authors, setAuthors] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [content, setContent] = useState("");
+  const quillRef = useRef(null);
+  const editorRef = useRef(null);
 
   useEffect(() => {
     // Reset state when modal opens or current category changes
     if (isModalOpen) {
       setThumbnail(null);
       setNotification(null);
+      setContent(currentArticle.content || "");
+      fetchAuthorsAndCategories();
+
+      // Initialize Quill
+      if (quillRef.current && !editorRef.current) {
+        const quillInstance = new Quill(quillRef.current, {
+          theme: "snow",
+          modules: {
+            toolbar: [
+              [{ header: [1, 2, 3, 4, 5, 6, false] }],
+              ["bold", "italic", "underline", "strike"],
+              [{ list: "ordered" }, { list: "bullet" }],
+              [{ script: "sub" }, { script: "super" }],
+              [{ indent: "-1" }, { indent: "+1" }],
+              [{ direction: "rtl" }],
+              [{ color: [] }, { background: [] }],
+              [{ align: [] }],
+              ["link", "image", "video"],
+              ["clean"],
+            ],
+          },
+          formats: [
+            "header",
+            "bold",
+            "italic",
+            "underline",
+            "strike",
+            "list",
+            "bullet",
+            "indent",
+            "link",
+            "image",
+            "video",
+            "direction",
+            "color",
+            "background",
+            "align",
+            "script",
+          ],
+        });
+
+        editorRef.current = quillInstance;
+
+        // Setup content change listener
+        quillInstance.on("text-change", () => {
+          setContent(quillInstance.root.innerHTML);
+        });
+
+        // Set initial content if exists
+        if (currentArticle.content) {
+          quillInstance.root.innerHTML = currentArticle.content;
+        }
+      }
     }
-  }, [isModalOpen, currentAuthor]);
+  }, [isModalOpen, currentArticle]);
+
+  const fetchAuthorsAndCategories = async () => {
+    setLoading(true);
+    try {
+      // Fetch authors and categories in parallel
+      const [authorsResponse, categoriesResponse] = await Promise.all([
+        fetch(`${api}/author`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }),
+        fetch(`${api}/category`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }),
+      ]);
+
+      if (authorsResponse.ok && categoriesResponse.ok) {
+        const authorsData = await authorsResponse.json();
+        const categoriesData = await categoriesResponse.json();
+
+        setAuthors(authorsData.data.data || []);
+        setCategories(categoriesData.data.category || []);
+      } else {
+        console.error("Failed to fetch authors or categories");
+        setNotification({
+          type: "error",
+          message: "Failed to load authors or categories",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setNotification({
+        type: "error",
+        message: `Error loading data: ${error.message}`,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Clear notification after 3 seconds
   useEffect(() => {
@@ -77,14 +179,16 @@ export default function CreateAuthor({
   const handleCreate = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append("name", currentAuthor.name);
-    formData.append("email", currentAuthor.email);
-    if (avatar) {
-      formData.append("avatar", avatar);
+    formData.append("title", currentArticle.title || "");
+    formData.append("author_id", currentArticle.author_id || "");
+    formData.append("category_id", currentArticle.category_id || "");
+    formData.append("content", content);
+    if (thumbnail) {
+      formData.append("thumbnail", thumbnail);
     }
 
     try {
-      const response = await fetch(`${api}/author`, {
+      const response = await fetch(`${api}/article`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -103,22 +207,22 @@ export default function CreateAuthor({
       if (response.ok) {
         setNotification({
           type: "success",
-          message: "Author created successfully!",
+          message: "Article created successfully!",
         });
-        refreshAuthor && refreshAuthor();
+        refreshArticle && refreshArticle();
         setTimeout(() => {
           closeModal();
         }, 3000);
       } else {
         setNotification({
           type: "error",
-          message: data?.message || responseText || "Failed to create Author.",
+          message: data?.message || responseText || "Failed to create Article.",
         });
       }
     } catch (error) {
       setNotification({
         type: "error",
-        message: `Error creating Author: ${error.message}`,
+        message: `Error creating Article: ${error.message}`,
       });
     }
   };
@@ -126,15 +230,16 @@ export default function CreateAuthor({
   const handleEdit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append("name", currentAuthor.name);
-    formData.append("email", currentAuthor.email);
-    if (avatar) {
-      // Using "avatar" key to match the model field name
-      formData.append("avatar", avatar);
+    formData.append("title", currentArticle.title || "");
+    formData.append("author_id", currentArticle.author_id || "");
+    formData.append("category_id", currentArticle.category_id || "");
+    formData.append("content", content);
+    if (thumbnail) {
+      formData.append("thumbnail", thumbnail);
     }
 
     try {
-      const response = await fetch(`${api}/author/${currentAuthor.id}`, {
+      const response = await fetch(`${api}/article/${currentArticle.id}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -153,27 +258,26 @@ export default function CreateAuthor({
       if (response.ok) {
         setNotification({
           type: "success",
-          message: "Author updated successfully!",
+          message: "Article updated successfully!",
         });
-        refreshAuthor && refreshAuthor();
+        refreshArticle && refreshArticle();
         setTimeout(() => {
           closeModal();
         }, 3000);
       } else {
         setNotification({
           type: "error",
-          message: data?.message || "Failed to update author.",
+          message: data?.message || "Failed to update article.",
         });
       }
     } catch (error) {
       setNotification({
         type: "error",
-        message: `Error updating author: ${error.message}`,
+        message: `Error updating article: ${error.message}`,
       });
     }
   };
 
-  // For demonstration purpose
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isEditing) {
@@ -194,13 +298,13 @@ export default function CreateAuthor({
         </div>
 
         {/* Modal panel */}
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
           <form onSubmit={handleSubmit}>
             <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
               <div className="sm:flex sm:items-start">
                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                    {isEditing ? "Edit Author" : "Create New Author"}
+                    {isEditing ? "Edit Article" : "Create New Article"}
                   </h3>
 
                   {/* Enhanced Notification */}
@@ -245,48 +349,112 @@ export default function CreateAuthor({
                   )}
 
                   <div className="mt-2 space-y-4">
+                    {/* Title field */}
                     <div>
                       <label
-                        htmlFor="name"
+                        htmlFor="title"
                         className="block text-sm font-medium text-gray-700"
                       >
-                        Name
+                        Title
                       </label>
                       <input
                         type="text"
-                        name="name"
-                        id="name"
-                        value={currentAuthor.name || ""}
+                        name="title"
+                        id="title"
+                        value={currentArticle.title || ""}
                         onChange={handleFormInputChange}
                         className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 border"
-                        placeholder="Enter name"
+                        placeholder="Enter article title"
                         required
                       />
                     </div>
+
+                    {/* Author dropdown */}
                     <div>
                       <label
-                        htmlFor="email"
+                        htmlFor="author_id"
                         className="block text-sm font-medium text-gray-700"
                       >
-                        Email
+                        Author
                       </label>
-                      <input
-                        type="email"
-                        name="email"
-                        id="email "
-                        value={currentAuthor.email || ""}
+                      <select
+                        name="author_id"
+                        id="author_id"
+                        value={currentArticle.author_id || ""}
                         onChange={handleFormInputChange}
-                        className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 border"
-                        placeholder="Enter email "
+                        className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         required
-                      />
+                      >
+                        <option value="" disabled>
+                          Select an author
+                        </option>
+                        {loading ? (
+                          <option value="" disabled>
+                            Loading authors...
+                          </option>
+                        ) : (
+                          authors.map((author) => (
+                            <option key={author.id} value={author.id}>
+                              {author.name}
+                            </option>
+                          ))
+                        )}
+                      </select>
                     </div>
+
+                    {/* Category dropdown */}
                     <div>
                       <label
-                        htmlFor="avatar"
+                        htmlFor="category_id"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Category
+                      </label>
+                      <select
+                        name="category_id"
+                        id="category_id"
+                        value={currentArticle.category_id || ""}
+                        onChange={handleFormInputChange}
+                        className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        required
+                      >
+                        <option value="" disabled>
+                          Select a category
+                        </option>
+                        {loading ? (
+                          <option value="" disabled>
+                            Loading categories...
+                          </option>
+                        ) : (
+                          categories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                              {category.name}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                    </div>
+
+                    {/* Quill Editor for Content */}
+                    <div>
+                      <label
+                        htmlFor="content"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Content
+                      </label>
+                      <div className="border border-gray-300 rounded-md">
+                        <div ref={quillRef} className="h-64"></div>
+                      </div>
+                    </div>
+
+                    {/* Thumbnail Upload */}
+                    <div>
+                      <label
+                        htmlFor="thumbnail"
                         className="block text-sm font-medium text-gray-700 mb-1"
                       >
-                        Avatar
+                        Thumbnail
                       </label>
                       <div
                         className={`flex flex-col items-center rounded border ${
@@ -323,7 +491,7 @@ export default function CreateAuthor({
                           Browse files
                           <input
                             id="file-upload"
-                            name="avatar"
+                            name="thumbnail"
                             type="file"
                             className="sr-only"
                             accept="image/*"
@@ -332,7 +500,7 @@ export default function CreateAuthor({
                         </label>
                       </div>
                     </div>
-                    {avatar && (
+                    {thumbnail && (
                       <div>
                         <label
                           htmlFor="preview"
@@ -342,7 +510,7 @@ export default function CreateAuthor({
                         </label>
                         <div className="mt-1">
                           <img
-                            src={URL.createObjectURL(avatar)}
+                            src={URL.createObjectURL(thumbnail)}
                             alt="Preview"
                             className="w-32 h-32 object-cover rounded-md border border-gray-200"
                           />
