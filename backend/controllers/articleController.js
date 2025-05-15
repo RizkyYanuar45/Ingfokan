@@ -2,12 +2,39 @@ import Article from "../models/article.js";
 import ResponseAPI from "../helper/response.js";
 import fs from "fs";
 import slugify from "slugify";
+import { Op } from "sequelize"; // Menambahkan import Op dari sequelize
+
+const generateUniqueSlug = async (baseSlug, excludeId = null) => {
+  let slug = baseSlug;
+  let counter = 1;
+  let isUnique = false;
+
+  while (!isUnique) {
+    // Find any article with the current slug, excluding the current article if updating
+    const whereClause = { slug: slug };
+    if (excludeId) {
+      whereClause.id = { [Op.ne]: excludeId }; // Op.ne = not equal
+    }
+
+    const existingArticle = await Article.findOne({ where: whereClause });
+
+    if (!existingArticle) {
+      isUnique = true;
+    } else {
+      // If slug exists, append counter to the slug and try again
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+  }
+
+  return slug;
+};
 
 const getAllArticle = async (req, res) => {
   try {
     const article = await Article.findAll();
-    if (!article) {
-      ResponseAPI.notFound(res, "article tidak ditemukan");
+    if (!article || article.length === 0) {
+      return ResponseAPI.notFound(res, "article tidak ditemukan");
     }
     return ResponseAPI.success(res, "Semua artikel berhasil didapatkan", {
       article,
@@ -22,7 +49,7 @@ const getAllById = async (req, res) => {
     const id = req.params.id;
     const article = await Article.findOne({ where: { id: id } });
     if (!article) {
-      ResponseAPI.notFound(res, "article tidak ditemukan");
+      return ResponseAPI.notFound(res, "article tidak ditemukan");
     }
     return ResponseAPI.success(res, "Artikel berhasil didapatkan", {
       article,
@@ -37,11 +64,17 @@ const createArticle = async (req, res) => {
     const { title, content, category_id, author_id } = req.body;
     const thumbnailPath = req.file ? req.file.path : null;
     const dateNow = Date.now();
-    const slugged = slugify(title, {
+
+    // Generate base slug from title
+    const baseSlug = slugify(title, {
       replacement: "-",
       lower: true,
       strict: true,
     });
+
+    // Get unique slug
+    const slug = await generateUniqueSlug(baseSlug);
+
     const article = await Article.create({
       title,
       thumbnail: thumbnailPath,
@@ -49,8 +82,9 @@ const createArticle = async (req, res) => {
       category_id,
       author_id,
       published_date: dateNow,
-      slug: slugged,
+      slug: slug,
     });
+
     return ResponseAPI.success(res, "Artikel berhasil dibuat", {
       article,
     });
@@ -71,11 +105,25 @@ const updateArticle = async (req, res) => {
       return ResponseAPI.error(res, "Data article tidak ditemukan");
     }
 
-    if (newThumbnail) {
-      if (fs.existsSync(article.avatar)) {
-        fs.unlinkSync(article.avatar);
+    if (newThumbnail && article.thumbnail) {
+      if (fs.existsSync(article.thumbnail)) {
+        // Mengubah article.avatar menjadi article.thumbnail
+        fs.unlinkSync(article.thumbnail);
       }
     }
+
+    // Generate base slug from title
+    const baseSlug = slugify(title, {
+      replacement: "-",
+      lower: true,
+      strict: true,
+    });
+
+    // Only generate new slug if title changed
+    const slug =
+      title !== article.title
+        ? await generateUniqueSlug(baseSlug, article.id)
+        : article.slug;
 
     await Article.update(
       {
@@ -84,11 +132,7 @@ const updateArticle = async (req, res) => {
         category_id,
         author_id,
         published_date: timeNow,
-        slug: slugify(title, {
-          replacement: "-",
-          lower: true,
-          strict: true,
-        }),
+        slug: slug,
         thumbnail: newThumbnail || article.thumbnail,
       },
       { where: { id: id } }
@@ -109,13 +153,15 @@ const deleteArticle = async (req, res) => {
     const id = req.params.id;
     const article = await Article.findOne({ where: { id: id } });
     if (!article) return ResponseAPI.error(res, "data article tidak ditemukan");
-    if (article) {
+
+    if (article.thumbnail) {
       if (fs.existsSync(article.thumbnail)) {
         fs.unlinkSync(article.thumbnail);
       }
-
-      await article.destroy();
     }
+
+    await article.destroy();
+
     return ResponseAPI.success(res, "Berhasil menghapus artikel", {
       article,
     });

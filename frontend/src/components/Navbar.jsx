@@ -27,14 +27,6 @@ function Navbar() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex gap-9 items-center">
-            <button className="flex gap-0.5 items-center text-base font-medium text-stone-700">
-              <span>Categories</span>
-              <ChevronDown className="h-4 w-4" />
-            </button>
-            <button className="flex gap-0.5 items-center text-base font-medium text-stone-700">
-              <span>Authors</span>
-              <ChevronDown className="h-4 w-4" />
-            </button>
             <a href="/contact" className="text-base font-medium text-stone-700">
               Contact us
             </a>

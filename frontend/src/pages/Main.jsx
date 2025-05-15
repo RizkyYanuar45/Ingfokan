@@ -5,6 +5,7 @@ import Carousel from "../components/Carousel";
 import Footer from "../components/Footer";
 import PopularPost from "../components/PopularPost";
 import NewPost from "../components/NewPost";
+import RandomCategory from "../components/RandomCategory";
 
 function Main() {
   return (
@@ -18,7 +19,10 @@ function Main() {
 
       <PopularPost />
       <NewPost />
+      {/* <RandomCategory /> */}
+      <RandomCategory />
 
+      {/* Footer */}
       <Footer />
     </div>
   );

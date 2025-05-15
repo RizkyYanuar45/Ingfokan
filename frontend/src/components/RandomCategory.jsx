@@ -1,49 +1,93 @@
 import React, { useState, useEffect } from "react";
 import { ChevronRight, ChevronLeft, Bookmark } from "lucide-react";
 
-function PopularPost() {
+function RandomCategory() {
   const [startIndex, setStartIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [articles, setArticles] = useState([]);
   const [authors, setAuthors] = useState({});
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch articles with category === trend
+  // Fetch categories and then articles filtered by random category
+  function toTitleCase(str) {
+    return str
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
   useEffect(() => {
-    const fetchArticles = async () => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
       try {
-        const response = await fetch("http://localhost:3000/api/article");
-        const result = await response.json();
+        // Fetch all categories
+        const categoryResponse = await fetch(
+          "http://localhost:3000/api/category"
+        );
+        const categoryResult = await categoryResponse.json();
 
-        if (result.success) {
-          const allArticles = result.data.article;
-
-          // Urutkan artikel berdasarkan published_date terbaru
-          const sortedArticles = allArticles
-            .sort(
-              (a, b) =>
-                new Date(b.published_date).getTime() -
-                new Date(a.published_date).getTime()
-            )
-            .slice(0, 6); // Ambil 6 artikel terbaru
-
-          setArticles(sortedArticles);
-
-          // Fetch author info untuk artikel yang sudah diurutkan
-          await fetchAuthors(sortedArticles);
-        } else {
-          setError("Failed to fetch articles");
+        if (!categoryResult.success) {
+          throw new Error("Failed to fetch categories");
         }
+
+        const allCategories = categoryResult.data.category || [];
+        setCategories(allCategories);
+
+        if (allCategories.length === 0) {
+          setError("No categories found");
+          setLoading(false);
+          return;
+        }
+
+        // Pilih satu kategori secara acak
+        const randomIndex = Math.floor(Math.random() * allCategories.length);
+        const randomCategory = allCategories[randomIndex];
+        setSelectedCategory(randomCategory);
+
+        // Fetch all articles
+        const articleResponse = await fetch(
+          "http://localhost:3000/api/article"
+        );
+        const articleResult = await articleResponse.json();
+
+        if (!articleResult.success) {
+          throw new Error("Failed to fetch articles");
+        }
+
+        const allArticles = articleResult.data.article || [];
+
+        // Filter artikel berdasarkan category_id yang sesuai dengan kategori yang dipilih
+        const filteredArticles = allArticles.filter(
+          (article) => article.category_id === randomCategory.id
+        );
+
+        // Urutkan artikel berdasarkan published_date terbaru dan ambil 6 artikel pertama
+        const sortedArticles = filteredArticles
+          .sort(
+            (a, b) =>
+              new Date(b.published_date).getTime() -
+              new Date(a.published_date).getTime()
+          )
+          .slice(0, 6);
+
+        setArticles(sortedArticles);
+
+        // Fetch author info untuk artikel yang sudah difilter dan diurutkan
+        await fetchAuthors(sortedArticles);
       } catch (err) {
-        setError("Error fetching articles: " + err.message);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchArticles();
+    fetchData();
   }, []);
 
   // Fetch author information for each article
@@ -70,14 +114,10 @@ function PopularPost() {
 
   // Fungsi untuk membuat excerpt dari konten HTML
   const createExcerpt = (htmlContent, maxLength = 80) => {
-    // Buat elemen div sementara untuk parsing HTML
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = htmlContent;
-
-    // Ambil text content saja (tanpa tag HTML)
     const textContent = tempDiv.textContent || tempDiv.innerText || "";
 
-    // Batasi panjang text dan tambahkan ellipsis jika terpotong
     if (textContent.length <= maxLength) {
       return textContent;
     }
@@ -91,17 +131,12 @@ function PopularPost() {
       setIsMobile(window.innerWidth < 768);
     };
 
-    // Initial check
     checkMobile();
-
-    // Add event listener for window resize
     window.addEventListener("resize", checkMobile);
 
-    // Cleanup
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Dynamically set itemsToShow based on screen size
   const itemsToShow = isMobile ? 1 : 4;
   const totalItems = articles.length;
 
@@ -111,7 +146,6 @@ function PopularPost() {
     setIsAnimating(true);
     if (direction === "next") {
       setStartIndex((prev) => {
-        // Calculate the new index, ensuring we don't go beyond available items
         const maxStartIndex = Math.max(0, totalItems - itemsToShow);
         return prev >= maxStartIndex ? 0 : prev + 1;
       });
@@ -129,13 +163,11 @@ function PopularPost() {
   const nextSlide = () => handleSlide("next");
   const prevSlide = () => handleSlide("prev");
 
-  // Calculate translate value based on screen size
   const getTranslateValue = () => {
     const percentPerItem = isMobile ? 100 : 25;
     return `translateX(-${startIndex * percentPerItem}%)`;
   };
 
-  // Format date for display
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("id-ID", {
@@ -158,7 +190,12 @@ function PopularPost() {
       <div className="flex justify-between items-center mb-6 md:mb-8">
         <div className="flex items-center">
           <div className="bg-primarycus w-1 h-3 rounded-4xl mx-2"></div>
-          <h2 className="font-bold text-base md:text-lg">New Article</h2>
+          <h2 className="font-bold text-base md:text-lg">
+            About{" "}
+            {toTitleCase(
+              selectedCategory ? selectedCategory.name : "Random Category"
+            )}
+          </h2>
         </div>
 
         <div className="px-2 md:px-16 space-x-2 md:space-x-3">
@@ -180,7 +217,9 @@ function PopularPost() {
       </div>
 
       {articles.length === 0 ? (
-        <div className="text-center py-8">No trend articles found</div>
+        <div className="text-center py-8">
+          No articles found in category "{selectedCategory?.name}"
+        </div>
       ) : (
         <div className="overflow-hidden">
           <div
@@ -247,4 +286,4 @@ function PopularPost() {
   );
 }
 
-export default PopularPost;
+export default RandomCategory;

@@ -65,30 +65,50 @@ const updateCategory = async (req, res) => {
   try {
     const id = req.params.id;
     const { name } = req.body;
-    const newThumbnail = req.file ? req.file.thumbnail : null;
+    const newThumbnail = req.file ? req.file.path : null; // Use file.path instead of file.thumbnail
 
     const category = await Category.findOne({ where: { id: id } });
     if (!category) {
       return ResponseAPI.error(res, "Data kategori tidak ditemukan");
     }
 
-    if (newThumbnail) {
-      if (fs.existsSync(category.thumbnail)) {
-        fs.unlinkSync(category.thumbnail);
+    console.log("New thumbnail:", newThumbnail);
+    console.log("Current thumbnail:", category.thumbnail);
+
+    // If a new thumbnail is uploaded, delete the old one
+    if (newThumbnail && category.thumbnail) {
+      try {
+        if (fs.existsSync(category.thumbnail)) {
+          fs.unlinkSync(category.thumbnail);
+          console.log("Old thumbnail deleted successfully");
+        }
+      } catch (fsError) {
+        console.error("Error deleting old thumbnail:", fsError);
+        // Continue with the update even if file deletion fails
       }
     }
 
-    await Category.update(
-      { name: name, thumbnail: newThumbnail || category.thumbnail },
-      { where: { id: id } }
-    );
+    // Update with new data
+    const updateData = {
+      name: name,
+    };
 
+    // Only update thumbnail if a new one was uploaded
+    if (newThumbnail) {
+      updateData.thumbnail = newThumbnail;
+    }
+
+    // Use a single update method (don't mix update and save)
+    await Category.update(updateData, { where: { id: id } });
+
+    // Fetch the updated record to return
     const updatedCategory = await Category.findOne({ where: { id: id } });
 
     return ResponseAPI.success(res, "Berhasil mengupdate kategori", {
       category: updatedCategory,
     });
   } catch (error) {
+    console.error("Update category error:", error);
     return ResponseAPI.error(res, error.message);
   }
 };

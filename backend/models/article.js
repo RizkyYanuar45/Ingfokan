@@ -45,6 +45,7 @@ const article = db.define("Article", {
   slug: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
   },
 });
 

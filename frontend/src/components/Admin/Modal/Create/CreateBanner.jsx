@@ -13,6 +13,7 @@ export default function CreateBanner({
   const [thumbnail, setThumbnail] = useState(null);
   const [notification, setNotification] = useState(null);
   const [dragActive, setDragActive] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     // Reset state when modal opens or current category changes
@@ -76,15 +77,31 @@ export default function CreateBanner({
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
     const formData = new FormData();
-    formData.append("link", currentBanner.link);
-    formData.append("is_active", currentBanner.is_active);
+    formData.append("link", currentBanner.link || "");
+
+    // The database column is an ENUM with values ["active","not_active"]
+    // We need to send these exact string values
+    formData.append("is_active", currentBanner.is_active || "active");
+
     if (thumbnail) {
       formData.append("thumbnail", thumbnail);
     }
 
     try {
-      const response = await fetch(`${api}/banner`, {
+      // Make sure the API URL is correctly formatted
+      const apiUrl = `${api}/banner`;
+
+      console.log("Submitting to:", apiUrl);
+      console.log("Form data values:", {
+        link: currentBanner.link,
+        is_active: currentBanner.is_active || "active",
+        thumbnail: thumbnail ? thumbnail.name : "No thumbnail",
+      });
+
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -97,7 +114,12 @@ export default function CreateBanner({
       try {
         data = JSON.parse(responseText);
       } catch (error) {
-        console.error("Error parsing response:", error);
+        console.error(
+          "Error parsing response:",
+          error,
+          "Raw response:",
+          responseText
+        );
       }
 
       if (response.ok) {
@@ -114,27 +136,39 @@ export default function CreateBanner({
           type: "error",
           message: data?.message || responseText || "Failed to create Banner.",
         });
+        console.error("Server returned error:", response.status, data);
       }
     } catch (error) {
+      console.error("Request failed:", error);
       setNotification({
         type: "error",
         message: `Error creating Banner: ${error.message}`,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleEdit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
     const formData = new FormData();
-    formData.append("link", currentBanner.link);
-    formData.append("is_active", currentBanner.is_active);
+    formData.append("link", currentBanner.link || "");
+
+    // The database column is an ENUM with values ["active","not_active"]
+    // We need to send these exact string values
+    formData.append("is_active", currentBanner.is_active || "active");
+
     if (thumbnail) {
-      // Using "thumbnail" key to match the model field name
       formData.append("thumbnail", thumbnail);
     }
 
     try {
-      const response = await fetch(`${api}/banner/${currentBanner.id}`, {
+      // Make sure the API URL is correctly formatted
+      const apiUrl = `${api}/banner/${currentBanner.id}`;
+
+      const response = await fetch(apiUrl, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -164,12 +198,16 @@ export default function CreateBanner({
           type: "error",
           message: data?.message || "Failed to update banner.",
         });
+        console.error("Server returned error:", response.status, data);
       }
     } catch (error) {
+      console.error("Request failed:", error);
       setNotification({
         type: "error",
         message: `Error updating banner: ${error.message}`,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -359,14 +397,44 @@ export default function CreateBanner({
               <button
                 type="submit"
                 className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
+                disabled={isSubmitting}
               >
-                <Save className="h-4 w-4 mr-2" />
-                {isEditing ? "Update" : "Save"}
+                {isSubmitting ? (
+                  <span className="inline-flex items-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Processing...
+                  </span>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    {isEditing ? "Update" : "Save"}
+                  </>
+                )}
               </button>
               <button
                 type="button"
                 onClick={closeModal}
                 className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
+                disabled={isSubmitting}
               >
                 <X className="h-4 w-4 mr-2" />
                 Cancel

@@ -17,7 +17,7 @@ export default function Dashboard() {
   const [recentArticles, setRecentArticles] = useState([]);
 
   // Loading and error states
-  const [isLoading, setIsLoading] = useState(true);
+
   const [error, setError] = useState(null);
 
   const toggleSidebar = () => {
@@ -129,26 +129,15 @@ export default function Dashboard() {
         for (const authorId of uniqueAuthorIds) {
           await fetchAuthorName(authorId);
         }
-
-        setIsLoading(false);
       } catch (err) {
         setError("Failed to fetch dashboard data");
-        setIsLoading(false);
+
         console.error("Dashboard data fetch error:", err);
       }
     };
 
     fetchDashboardData();
   }, []);
-
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="flex h-screen justify-center items-center bg-gray-100">
-        <div className="text-xl text-gray-600">Loading dashboard...</div>
-      </div>
-    );
-  }
 
   // Error state
   if (error) {
