@@ -41,6 +41,25 @@ const getAuthorById = async (req, res) => {
     );
   }
 };
+const getAuthorBySlug = async (req, res) => {
+  try {
+    const slug = req.params.slug;
+    const author = await Author.findOne({ where: { slug: slug } });
+    if (!author) {
+      return ResponseAPI.notFound(res, "author tidak ditemukan");
+    }
+    return ResponseAPI.success(res, "berhasil mendapatkan author", {
+      data: author,
+    });
+  } catch (error) {
+    return ResponseAPI.error(
+      res,
+      "gagal mendapatkan author",
+      400,
+      error.message
+    );
+  }
+};
 
 const createAuthor = async (req, res) => {
   try {
@@ -126,6 +145,7 @@ const deleteAuthor = async (req, res) => {
 export {
   getAllAuthor,
   getAuthorById,
+  getAuthorBySlug,
   createAuthor,
   updateAuthor,
   deleteAuthor,

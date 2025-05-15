@@ -293,62 +293,65 @@ function CategoryPage() {
           )}
         </main>
 
-        {/* Pagination Controls - Only show if articles exist */}
-        {articlesWithAuthors.length > 0 && (
-          <div className="mt-6">
-            <ul className="flex justify-center gap-1 text-gray-900">
-              <li>
-                <button
-                  onClick={goToPrevPage}
-                  disabled={currentPage === 1}
-                  className={`grid size-8 place-content-center rounded border border-gray-200 transition-colors ${
-                    currentPage === 1
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-gray-50"
-                  }`}
-                  aria-label="Previous page"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-              </li>
+        {/* Pagination Controls - Only show if articles exist AND there's more than one page */}
+        {!loading &&
+          !error &&
+          articlesWithAuthors.length > 0 &&
+          totalPages > 1 && (
+            <div className="mt-6">
+              <ul className="flex justify-center gap-1 text-gray-900">
+                <li>
+                  <button
+                    onClick={goToPrevPage}
+                    disabled={currentPage === 1}
+                    className={`grid size-8 place-content-center rounded border border-gray-200 transition-colors ${
+                      currentPage === 1
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:bg-gray-50"
+                    }`}
+                    aria-label="Previous page"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                </li>
 
-              <li>
-                <form onSubmit={handlePageInputSubmit}>
-                  <label htmlFor="Page">
-                    <span className="sr-only">Page</span>
-                    <input
-                      type="text"
-                      id="Page"
-                      value={pageInputValue}
-                      onChange={handlePageInputChange}
-                      onBlur={handlePageInputSubmit}
-                      className="h-8 w-16 rounded border border-gray-200 text-center sm:text-sm"
-                    />
-                  </label>
-                </form>
-              </li>
+                <li>
+                  <form onSubmit={handlePageInputSubmit}>
+                    <label htmlFor="Page">
+                      <span className="sr-only">Page</span>
+                      <input
+                        type="text"
+                        id="Page"
+                        value={pageInputValue}
+                        onChange={handlePageInputChange}
+                        onBlur={handlePageInputSubmit}
+                        className="h-8 w-16 rounded border border-gray-200 text-center sm:text-sm"
+                      />
+                    </label>
+                  </form>
+                </li>
 
-              <li className="flex items-center">
-                <span className="text-sm text-gray-500">of {totalPages}</span>
-              </li>
+                <li className="flex items-center">
+                  <span className="text-sm text-gray-500">of {totalPages}</span>
+                </li>
 
-              <li>
-                <button
-                  onClick={goToNextPage}
-                  disabled={currentPage === totalPages}
-                  className={`grid size-8 place-content-center rounded border border-gray-200 transition-colors ${
-                    currentPage === totalPages
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-gray-50"
-                  }`}
-                  aria-label="Next page"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </li>
-            </ul>
-          </div>
-        )}
+                <li>
+                  <button
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    className={`grid size-8 place-content-center rounded border border-gray-200 transition-colors ${
+                      currentPage === totalPages
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:bg-gray-50"
+                    }`}
+                    aria-label="Next page"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </li>
+              </ul>
+            </div>
+          )}
       </div>
       <Footer />
     </div>

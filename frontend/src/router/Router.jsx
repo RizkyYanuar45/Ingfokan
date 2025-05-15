@@ -41,7 +41,7 @@ export const Router = createBrowserRouter([
     element: <Article />,
   },
   {
-    path: "/author-profile",
+    path: "/author/:slug",
     element: <AuthorProfile />,
   },
   {
