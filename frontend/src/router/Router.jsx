@@ -45,7 +45,7 @@ export const Router = createBrowserRouter([
     element: <AuthorProfile />,
   },
   {
-    path: "/category-page",
+    path: "/category/:slug",
     element: <CategoryPage />,
   },
   {

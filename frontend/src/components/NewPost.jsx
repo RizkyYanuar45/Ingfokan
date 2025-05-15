@@ -103,18 +103,24 @@ function NewPost() {
     fetchData();
   }, []);
 
-  // Fungsi untuk mendapatkan excerpt dari konten artikel
+  // Fungsi untuk mendapatkan excerpt yang lebih pendek dari konten artikel
   const getExcerpt = (content) => {
     if (!content) return "";
 
-    if (content.includes("<p>")) {
-      const match = content.match(/<p>(.*?)<\/p>/);
-      if (match && match[1]) {
-        return match[1];
-      }
+    // Menghapus semua tag HTML
+    const strippedContent = content.replace(/<[^>]*>/g, "");
+
+    // Memastikan teks tidak terlalu panjang (maximum 80 karakter)
+    const maxLength = 80;
+    if (strippedContent.length <= maxLength) {
+      return strippedContent;
     }
 
-    return content.substring(0, 100) + (content.length > 100 ? "..." : "");
+    // Cari posisi spasi terakhir sebelum batas untuk memotong pada kata utuh
+    let cutoff = strippedContent.lastIndexOf(" ", maxLength);
+    if (cutoff === -1) cutoff = maxLength;
+
+    return strippedContent.substring(0, cutoff) + "...";
   };
 
   // Format tanggal agar lebih readable

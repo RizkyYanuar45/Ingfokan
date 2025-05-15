@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 function CategoriesBar() {
   // State variables
@@ -132,7 +133,8 @@ function CategoriesBar() {
             style={{ transform: `translateX(${translateValue})` }}
           >
             {categories.map((item) => (
-              <div
+              <NavLink
+                to={`/category/${item.slug}`}
                 key={item.id}
                 className="flex-shrink-0 px-1 sm:px-2"
                 style={{ width: itemWidth }}
@@ -152,7 +154,7 @@ function CategoriesBar() {
                     </h2>
                   </div>
                 </div>
-              </div>
+              </NavLink>
             ))}
           </div>
 

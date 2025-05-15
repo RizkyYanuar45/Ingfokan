@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import {
   Heart,
   MessageCircle,
@@ -12,290 +13,125 @@ import Footer from "../components/Footer";
 import Office from "../assets/Office.jpg";
 
 function CategoryPage() {
-  const articles = [
-    {
-      id: 1,
-      title: "Unveiling the 7 Kayaking Spots in Austria, the Alps",
-      image: "https://source.unsplash.com/random/300x200/?kayak,mountains",
-      excerpt:
-        "Discover the most scenic spots to paddle through crystal clear waters with breathtaking mountain backdrops around Austria.",
-      author: {
-        name: "James",
-        avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-        role: "Travel Writer",
-      },
-      date: "1d ago",
-      likes: 245,
-      comments: 42,
-    },
-    {
-      id: 2,
-      title: "How To Choose The Right Laptop For Gaming",
-      image: "https://source.unsplash.com/random/300x200/?laptop,gaming",
-      excerpt:
-        "Find the best laptop specs for high-performance gaming without breaking the bank. Key features to look for.",
-      author: {
-        name: "Lucas Rodriguez",
-        avatar: "https://randomuser.me/api/portraits/men/41.jpg",
-        role: "Tech Reviewer",
-      },
-      date: "2d ago",
-      likes: 189,
-      comments: 23,
-    },
-    {
-      id: 3,
-      title: "How We Built The First Test Self-Driving Car",
-      image: "https://source.unsplash.com/random/300x200/?car,pink",
-      excerpt:
-        "The journey to creating an autonomous vehicle that safely navigates urban environments with AI assistance.",
-      author: {
-        name: "Emily",
-        avatar: "https://randomuser.me/api/portraits/women/28.jpg",
-        role: "Automotive Engineer",
-      },
-      date: "3d ago",
-      likes: 302,
-      comments: 56,
-    },
-    {
-      id: 4,
-      title: "How To Choose The Best Laptop For Video Editing",
-      image: "https://source.unsplash.com/random/300x200/?laptop,editing",
-      excerpt:
-        "Selecting the right hardware for professional video editing work - RAM, GPU, CPU, and storage considerations.",
-      author: {
-        name: "Robert",
-        avatar: "https://randomuser.me/api/portraits/men/45.jpg",
-        role: "Content Creator",
-      },
-      date: "3d ago",
-      likes: 173,
-      comments: 31,
-    },
-    {
-      id: 5,
-      title: "How To Perfectly Cure Hamchi To Be Eaten Raw",
-      image: "https://source.unsplash.com/random/300x200/?food,fish",
-      excerpt:
-        "The step-by-step process to safely cure fish at home for delicious, restaurant-quality sashimi and crudo dishes.",
-      author: {
-        name: "Sophie",
-        avatar: "https://randomuser.me/api/portraits/women/62.jpg",
-        role: "Chef",
-      },
-      date: "Apr 10",
-      likes: 412,
-      comments: 78,
-    },
-    {
-      id: 6,
-      title: "How To Build A Self-Driving Car In Your Garage",
-      image: "https://source.unsplash.com/random/300x200/?car,blue",
-      excerpt:
-        "A DIY approach to creating automated driving features using off-the-shelf components and open-source software.",
-      author: {
-        name: "Michael",
-        avatar: "https://randomuser.me/api/portraits/men/22.jpg",
-        role: "Engineer",
-      },
-      date: "Apr 8",
-      likes: 528,
-      comments: 94,
-    },
-    {
-      id: 7,
-      title: "Self-Improvement Hack Nobody In California Knows",
-      image: "https://source.unsplash.com/random/300x200/?beach,california",
-      excerpt:
-        "The little-known technique that helps top performers in the Golden State stay ahead of the competition.",
-      author: {
-        name: "Tyler",
-        avatar: "https://randomuser.me/api/portraits/men/77.jpg",
-        role: "Life Coach",
-      },
-      date: "Apr 5",
-      likes: 217,
-      comments: 39,
-    },
-    {
-      id: 8,
-      title: "Why Electric Cars Are Better Now Than Ever Before",
-      image: "https://source.unsplash.com/random/300x200/?car,red",
-      excerpt:
-        "Recent innovations in battery technology and charging infrastructure have made EVs more practical than traditional vehicles.",
-      author: {
-        name: "Alex",
-        avatar: "https://randomuser.me/api/portraits/men/91.jpg",
-        role: "Automotive Journalist",
-      },
-      date: "Apr 3",
-      likes: 361,
-      comments: 57,
-    },
-    {
-      id: 9,
-      title: "14 Coffee Brewing Tricks to Impress Anyone",
-      image: "https://source.unsplash.com/random/300x200/?coffee,brewing",
-      excerpt:
-        "Advanced coffee preparation techniques to elevate your morning brew from ordinary to extraordinary.",
-      author: {
-        name: "Emma",
-        avatar: "https://randomuser.me/api/portraits/women/33.jpg",
-        role: "Barista",
-      },
-      date: "Apr 1",
-      likes: 193,
-      comments: 45,
-    },
-    {
-      id: 10,
-      title: "Waterproof Laptops Now Actually Work Just Fine",
-      image: "https://source.unsplash.com/random/300x200/?laptop,blue",
-      excerpt:
-        "The latest innovations in waterproof technology for computers that make them reliable for outdoor and marine use.",
-      author: {
-        name: "Lucas",
-        avatar: "https://randomuser.me/api/portraits/men/41.jpg",
-        role: "Tech Writer",
-      },
-      date: "Mar 29",
-      likes: 274,
-      comments: 38,
-    },
-    {
-      id: 11,
-      title: "Historic Kayaks for Sale in Venice",
-      image: "https://source.unsplash.com/random/300x200/?kayak,venice",
-      excerpt:
-        "Vintage and antique water craft now available in the famous canal city - from traditional gondolas to modern kayaks.",
-      author: {
-        name: "Isabella",
-        avatar: "https://randomuser.me/api/portraits/women/12.jpg",
-        role: "Antique Dealer",
-      },
-      date: "Mar 25",
-      likes: 298,
-      comments: 51,
-    },
-    {
-      id: 12,
-      title: "Lasagna is Just a Pasta Cake",
-      image: "https://source.unsplash.com/random/300x200/?lasagna,food",
-      excerpt:
-        "The provocative comparison of lasagna to layered cake, and why this perspective changes how we think about pasta dishes.",
-      author: {
-        name: "Marco",
-        avatar: "https://randomuser.me/api/portraits/men/36.jpg",
-        role: "Food Writer",
-      },
-      date: "Mar 21",
-      likes: 385,
-      comments: 67,
-    },
-    // Added 6 more articles to reach a total of 18
-    {
-      id: 13,
-      title: "The Ultimate Guide to Sustainable Gardening",
-      image: "https://source.unsplash.com/random/300x200/?garden,plants",
-      excerpt:
-        "Eco-friendly gardening practices that conserve water, improve soil health, and attract beneficial wildlife to your backyard.",
-      author: {
-        name: "Olivia",
-        avatar: "https://randomuser.me/api/portraits/women/23.jpg",
-        role: "Environmental Scientist",
-      },
-      date: "Mar 18",
-      likes: 276,
-      comments: 48,
-    },
-    {
-      id: 14,
-      title: "The Psychology Behind Effective Website Design",
-      image: "https://source.unsplash.com/random/300x200/?website,design",
-      excerpt:
-        "How color theory, layout principles, and user behavior research influence successful digital experiences.",
-      author: {
-        name: "Nathan",
-        avatar: "https://randomuser.me/api/portraits/men/52.jpg",
-        role: "UX Designer",
-      },
-      date: "Mar 15",
-      likes: 318,
-      comments: 63,
-    },
-    {
-      id: 15,
-      title: "Traditional Bread Recipes From Around The World",
-      image: "https://source.unsplash.com/random/300x200/?bread,baking",
-      excerpt:
-        "From French baguettes to Indian naan, explore diverse baking techniques and cultural significance of bread.",
-      author: {
-        name: "Sophia",
-        avatar: "https://randomuser.me/api/portraits/women/56.jpg",
-        role: "Food Historian",
-      },
-      date: "Mar 12",
-      likes: 423,
-      comments: 71,
-    },
-    {
-      id: 16,
-      title: "Beginners Guide to Night Sky Photography",
-      image: "https://source.unsplash.com/random/300x200/?stars,night",
-      excerpt:
-        "Capture stunning images of stars, planets, and galaxies with basic equipment and these expert techniques.",
-      author: {
-        name: "David",
-        avatar: "https://randomuser.me/api/portraits/men/67.jpg",
-        role: "Photographer",
-      },
-      date: "Mar 9",
-      likes: 356,
-      comments: 62,
-    },
-    {
-      id: 17,
-      title: "Modern Interior Design Trends for Small Spaces",
-      image: "https://source.unsplash.com/random/300x200/?interior,apartment",
-      excerpt:
-        "Maximize functionality and style in compact living areas with these innovative design solutions and space-saving ideas.",
-      author: {
-        name: "Jessica",
-        avatar: "https://randomuser.me/api/portraits/women/42.jpg",
-        role: "Interior Designer",
-      },
-      date: "Mar 6",
-      likes: 289,
-      comments: 47,
-    },
-    {
-      id: 18,
-      title: "The Rise of E-Sports: From Hobby to Professional Career",
-      image: "https://source.unsplash.com/random/300x200/?gaming,tournament",
-      excerpt:
-        "How competitive gaming evolved into a billion-dollar industry with professional leagues, sponsorships, and global tournaments.",
-      author: {
-        name: "Ryan",
-        avatar: "https://randomuser.me/api/portraits/men/18.jpg",
-        role: "E-Sports Analyst",
-      },
-      date: "Mar 3",
-      likes: 467,
-      comments: 82,
-    },
-  ];
+  const { slug } = useParams(); // Get the category slug from URL parameters
+  const [category, setCategory] = useState(null);
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [articlesWithAuthors, setArticlesWithAuthors] = useState([]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInputValue, setPageInputValue] = useState(currentPage.toString());
+  const [totalPages, setTotalPages] = useState(1);
   const articlesPerPage = 12; // 12 items per page (3 rows of 4 columns)
-  const totalPages = Math.ceil(articles.length / articlesPerPage);
 
-  // Get current articles
+  // Two-step fetch process: First get category by slug, then get articles by category_id
+  useEffect(() => {
+    const fetchCategoryAndArticles = async () => {
+      setLoading(true);
+      try {
+        // Step 1: Fetch the category by slug to get its ID
+        const categoryResponse = await fetch(
+          `http://localhost:3000/api/category/slug/${slug}`
+        );
+
+        if (!categoryResponse.ok) {
+          throw new Error(
+            `Failed to fetch category: ${categoryResponse.status}`
+          );
+        }
+
+        const categoryData = await categoryResponse.json();
+        setCategory(categoryData.data);
+
+        // Step 2: Use the category ID to fetch all articles with that category_id
+        const articlesResponse = await fetch(
+          `http://localhost:3000/api/article/category?category_id=${categoryData.data.id}`
+        );
+
+        if (!articlesResponse.ok) {
+          throw new Error(
+            `Failed to fetch articles: ${articlesResponse.status}`
+          );
+        }
+
+        const articlesData = await articlesResponse.json();
+        // Ensure articlesData is an array before setting it
+        const articlesArray = Array.isArray(articlesData) ? articlesData : [];
+        setArticles(articlesArray);
+        setTotalPages(Math.ceil(articlesArray.length / articlesPerPage));
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (slug) {
+      fetchCategoryAndArticles();
+    }
+  }, [slug]);
+
+  useEffect(() => {
+    const fetchAuthorsForArticles = async () => {
+      if (!Array.isArray(articles) || articles.length === 0) return;
+
+      try {
+        const articlesWithAuthorData = await Promise.all(
+          articles.map(async (article) => {
+            try {
+              const authorResponse = await fetch(
+                `http://localhost:3000/api/author/${article.author_id}`
+              );
+
+              if (!authorResponse.ok) {
+                throw new Error(
+                  `Failed to fetch author: ${authorResponse.status}`
+                );
+              }
+
+              const authorData = await authorResponse.json();
+
+              // Corrected data access - use authorData.data directly
+              return {
+                ...article,
+                author: authorData.data.data || {
+                  // Changed from authorData.data.data
+                  name: "Unknown Author",
+                  avatar: "https://placehold.co/100?text=?",
+                },
+              };
+            } catch (err) {
+              console.error(
+                `Error fetching author for article ${article.id}:`,
+                err
+              );
+              return {
+                ...article,
+                author: {
+                  name: "Unknown Author",
+                  avatar: "https://placehold.co/100?text=?",
+                },
+              };
+            }
+          })
+        );
+
+        setArticlesWithAuthors(articlesWithAuthorData);
+      } catch (err) {
+        console.error("Error fetching authors:", err);
+      }
+    };
+
+    fetchAuthorsForArticles();
+  }, [articles]);
+
+  // Get current articles for pagination
   const indexOfLastArticle = currentPage * articlesPerPage;
   const indexOfFirstArticle = indexOfLastArticle - articlesPerPage;
-  const currentArticles = articles.slice(
+  const currentArticles = articlesWithAuthors.slice(
     indexOfFirstArticle,
     indexOfLastArticle
   );
@@ -334,6 +170,10 @@ function CategoryPage() {
       setPageInputValue(currentPage.toString());
     }
   };
+  const formatDate = (dateString) => {
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
   return (
     <div>
@@ -344,7 +184,7 @@ function CategoryPage() {
             <a>Home</a>
           </li>
           <li>
-            <a>Sports</a>
+            <a>{category ? category.name : slug}</a>
           </li>
         </ul>
       </div>
@@ -360,119 +200,155 @@ function CategoryPage() {
         {/* Header */}
         <header className="flex items-center mb-5">
           <div className="bg-primarycus w-1 h-3 rounded-4xl mx-2"></div>
-          <h2 className="font-bold text-base md:text-lg">Category : Sports</h2>
+          <h2 className="font-bold text-base md:text-lg">
+            Category : {category ? category.name : slug}
+          </h2>
         </header>
 
         {/* Articles Grid */}
         <main className="px-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-            {currentArticles.map((article) => (
-              <div
-                key={article.id}
-                className="bg-white rounded-md overflow-hidden shadow-sm"
-              >
-                {/* Article Image */}
-                <img
-                  src={article.image}
-                  alt={article.title}
-                  className="w-full h-32 object-cover"
-                />
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <p>Loading articles...</p>
+            </div>
+          ) : error ? (
+            <div className="flex justify-center items-center h-64">
+              <p className="text-red-500">Error: {error}</p>
+            </div>
+          ) : articlesWithAuthors.length === 0 ? (
+            <div className="flex justify-center items-center h-64">
+              <p>No articles found for this category.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              {currentArticles.map((article) => (
+                <div
+                  key={article.id}
+                  className="bg-white rounded-md overflow-hidden shadow-sm"
+                >
+                  {/* Article Image */}
+                  <img
+                    src={
+                      article.thumbnail
+                        ? `http://localhost:3000/${article.thumbnail.replace(
+                            /\\/g,
+                            "/"
+                          )}`
+                        : "https://placehold.co/300x200?text=No+Image"
+                    }
+                    alt={article.title}
+                    className="w-full h-32 object-cover"
+                  />
 
-                {/* Article Content */}
-                <div className="p-3">
-                  <h3 className="font-medium text-xs leading-tight line-clamp-2 h-10 mb-2">
-                    {article.title}
-                  </h3>
+                  {/* Article Content */}
+                  <div className="p-3">
+                    <h3 className="font-medium text-xs leading-tight line-clamp-2 h-10 mb-2">
+                      {article.title}
+                    </h3>
 
-                  <p className="text-xs text-gray-500 line-clamp-2 h-8 mb-2">
-                    {article.excerpt}
-                  </p>
+                    <p className="text-xs text-gray-500 line-clamp-2 h-8 mb-2">
+                      {article.content
+                        ? article.content.substring(0, 100) + "..."
+                        : "No excerpt available"}
+                    </p>
 
-                  {/* Author & Engagement */}
-                  <div className="flex items-center justify-between mt-3">
-                    <div className="flex items-center">
-                      <img
-                        src={article.author.avatar}
-                        alt={article.author.name}
-                        className="w-6 h-6 rounded-full mr-2"
-                      />
-                      <div>
-                        <p className="text-xs font-medium">
-                          {article.author.name}
-                        </p>
-                        <p className="text-xs text-gray-500">{article.date}</p>
+                    {/* Author & Engagement */}
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center">
+                        <img
+                          src={
+                            article.author?.avatar
+                              ? `http://localhost:3000/${article.author.avatar.replace(
+                                  /\\/g,
+                                  "/"
+                                )}`
+                              : "https://placehold.co/100?text=?"
+                          }
+                          alt={article.author?.name || "Unknown Author"}
+                          className="w-6 h-6 rounded-full mr-2"
+                        />
+                        <div>
+                          <p className="text-xs font-medium">
+                            {article.author?.name || "Unknown Author"}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {formatDate(article.published_date) || "No date"}
+                          </p>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex space-x-2">
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <Heart size={14} />
-                      </button>
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <MessageCircle size={14} />
-                      </button>
+                      <div className="flex space-x-2">
+                        <button className="text-gray-400 hover:text-gray-600">
+                          <Heart size={14} />
+                        </button>
+                        <button className="text-gray-400 hover:text-gray-600">
+                          <MessageCircle size={14} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </main>
 
-        {/* Pagination Controls */}
-        <div className="mt-6">
-          <ul className="flex justify-center gap-1 text-gray-900">
-            <li>
-              <button
-                onClick={goToPrevPage}
-                disabled={currentPage === 1}
-                className={`grid size-8 place-content-center rounded border border-gray-200 transition-colors ${
-                  currentPage === 1
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-50"
-                }`}
-                aria-label="Previous page"
-              >
-                <ChevronLeft size={16} />
-              </button>
-            </li>
+        {/* Pagination Controls - Only show if articles exist */}
+        {articlesWithAuthors.length > 0 && (
+          <div className="mt-6">
+            <ul className="flex justify-center gap-1 text-gray-900">
+              <li>
+                <button
+                  onClick={goToPrevPage}
+                  disabled={currentPage === 1}
+                  className={`grid size-8 place-content-center rounded border border-gray-200 transition-colors ${
+                    currentPage === 1
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-gray-50"
+                  }`}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+              </li>
 
-            <li>
-              <form onSubmit={handlePageInputSubmit}>
-                <label htmlFor="Page">
-                  <span className="sr-only">Page</span>
-                  <input
-                    type="text"
-                    id="Page"
-                    value={pageInputValue}
-                    onChange={handlePageInputChange}
-                    onBlur={handlePageInputSubmit}
-                    className="h-8 w-16 rounded border border-gray-200 text-center sm:text-sm"
-                  />
-                </label>
-              </form>
-            </li>
+              <li>
+                <form onSubmit={handlePageInputSubmit}>
+                  <label htmlFor="Page">
+                    <span className="sr-only">Page</span>
+                    <input
+                      type="text"
+                      id="Page"
+                      value={pageInputValue}
+                      onChange={handlePageInputChange}
+                      onBlur={handlePageInputSubmit}
+                      className="h-8 w-16 rounded border border-gray-200 text-center sm:text-sm"
+                    />
+                  </label>
+                </form>
+              </li>
 
-            <li className="flex items-center">
-              <span className="text-sm text-gray-500">of {totalPages}</span>
-            </li>
+              <li className="flex items-center">
+                <span className="text-sm text-gray-500">of {totalPages}</span>
+              </li>
 
-            <li>
-              <button
-                onClick={goToNextPage}
-                disabled={currentPage === totalPages}
-                className={`grid size-8 place-content-center rounded border border-gray-200 transition-colors ${
-                  currentPage === totalPages
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-50"
-                }`}
-                aria-label="Next page"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </li>
-          </ul>
-        </div>
+              <li>
+                <button
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                  className={`grid size-8 place-content-center rounded border border-gray-200 transition-colors ${
+                    currentPage === totalPages
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-gray-50"
+                  }`}
+                  aria-label="Next page"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </li>
+            </ul>
+          </div>
+        )}
       </div>
       <Footer />
     </div>

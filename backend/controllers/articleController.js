@@ -59,6 +59,28 @@ const getAllById = async (req, res) => {
   }
 };
 
+const getArticlesByCategory = async (req, res) => {
+  try {
+    const categoryId = req.query.category_id;
+
+    if (!categoryId) {
+      return res
+        .status(400)
+        .json({ message: "category_id query parameter is required" });
+    }
+
+    const articles = await Article.findAll({
+      where: { category_id: categoryId },
+      order: [["published_date", "DESC"]],
+    });
+
+    return res.status(200).json(articles);
+  } catch (error) {
+    console.error("Error fetching articles by category:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 const createArticle = async (req, res) => {
   try {
     const { title, content, category_id, author_id } = req.body;
@@ -176,4 +198,5 @@ export {
   createArticle,
   updateArticle,
   deleteArticle,
+  getArticlesByCategory,
 };

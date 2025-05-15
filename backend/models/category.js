@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import db from "./../config/database.js";
+import slugify from "slugify";
 
 const category = db.define("category", {
   id: {
@@ -14,6 +15,11 @@ const category = db.define("category", {
   thumbnail: {
     type: DataTypes.STRING(255),
     allowNull: false,
+  },
+  slug: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+    unique: true,
   },
 });
 

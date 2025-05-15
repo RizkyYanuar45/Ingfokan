@@ -1,5 +1,6 @@
 import Category from "../models/category.js";
 import Article from "../models/article.js";
+import slugify from "slugify";
 import fs from "fs";
 
 import ResponseAPI from "../helper/response.js";
@@ -11,6 +12,22 @@ const getAllCategory = async (req, res) => {
     return ResponseAPI.success(res, "Berhasil mendapatkan semua kategori", {
       category,
     });
+  } catch (error) {
+    return ResponseAPI.error(res, error.message);
+  }
+};
+
+const getCategoryBySlug = async (req, res) => {
+  try {
+    const slug = req.params.slug;
+    const category = await Category.findOne({ where: { slug: slug } });
+    if (!category)
+      return ResponseAPI.error(res, "data category tidak ditemukan");
+    return ResponseAPI.success(
+      res,
+      "Berhasil mendapatkan kategori dengan slug ",
+      category
+    );
   } catch (error) {
     return ResponseAPI.error(res, error.message);
   }
@@ -36,6 +53,11 @@ const createCategory = async (req, res) => {
   try {
     const { name } = req.body;
     let newThumbnail = null;
+    const baseSlug = slugify(name, {
+      replacement: "-",
+      lower: true,
+      strict: true,
+    });
 
     if (req.file && req.file.path) {
       // Normalisasi path agar menggunakan forward slash
@@ -46,6 +68,7 @@ const createCategory = async (req, res) => {
     const category = await Category.create({
       name,
       thumbnail: newThumbnail,
+      slug: baseSlug,
     });
 
     console.log("Category created successfully", category);
@@ -66,7 +89,11 @@ const updateCategory = async (req, res) => {
     const id = req.params.id;
     const { name } = req.body;
     const newThumbnail = req.file ? req.file.path : null; // Use file.path instead of file.thumbnail
-
+    const baseSlug = slugify(name, {
+      replacement: "-",
+      lower: true,
+      strict: true,
+    });
     const category = await Category.findOne({ where: { id: id } });
     if (!category) {
       return ResponseAPI.error(res, "Data kategori tidak ditemukan");
@@ -91,6 +118,7 @@ const updateCategory = async (req, res) => {
     // Update with new data
     const updateData = {
       name: name,
+      slug: baseSlug,
     };
 
     // Only update thumbnail if a new one was uploaded
@@ -162,6 +190,7 @@ const deleteCategory = async (req, res) => {
 
 export {
   getAllCategory,
+  getCategoryBySlug,
   getCategoryById,
   createCategory,
   updateCategory,
