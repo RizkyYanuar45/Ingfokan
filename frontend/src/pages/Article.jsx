@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import {
   Heart,
   MessageCircle,
@@ -12,70 +13,216 @@ import Footer from "../components/Footer";
 import RelatedPost from "../components/RelatedPost";
 
 export default function Article() {
+  const { slug } = useParams(); // Get slug from URL params
+  const [article, setArticle] = useState(null);
+  const [author, setAuthor] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [randomArticles, setRandomArticles] = useState([]);
+
   const [isLiked, setIsLiked] = useState(false);
   const [commentText, setCommentText] = useState("");
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      author: "Maria Johnson",
-      avatar: "/api/placeholder/40/40",
-      date: "2 days ago",
-      text: "This is such a beautiful place! I visited Mljet last summer and absolutely loved the kayaking experience. The water really is that blue!",
-      likes: 12,
-      isLiked: false,
-    },
-    {
-      id: 2,
-      author: "David Chen",
-      avatar: "/api/placeholder/40/40",
-      date: "5 days ago",
-      text: "Great article! Could you share more details about transportation to the island? Is it accessible by ferry only or are there other options?",
-      likes: 8,
-      isLiked: false,
-    },
-    {
-      id: 3,
-      author: "Sarah Miller",
-      avatar: "/api/placeholder/40/40",
-      date: "1 week ago",
-      text: "The Odysseus Cave sounds magical! Does anyone know if it's suitable for children or is it a difficult trek to get there?",
-      likes: 5,
-      isLiked: false,
-    },
-  ]);
+  const [comments, setComments] = useState([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+
+  // Fetch random articles for sidebar
+  useEffect(() => {
+    const fetchRandomArticles = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/api/article");
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch random articles");
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.data && data.data.article) {
+          // Get all articles
+          const allArticles = data.data.article;
+
+          // Shuffle array and take first 5
+          const shuffled = [...allArticles].sort(() => 0.5 - Math.random());
+          const selected = shuffled.slice(0, 5);
+
+          setRandomArticles(selected);
+        }
+      } catch (err) {
+        console.error("Error fetching random articles:", err);
+      }
+    };
+
+    fetchRandomArticles();
+  }, []);
+
+  // Fetch article data and then author data
+  useEffect(() => {
+    const fetchArticleAndAuthor = async () => {
+      setLoading(true);
+      try {
+        // Fetch article data using slug
+        const articleResponse = await fetch(
+          `http://localhost:3000/api/article/slug/${slug}`
+        );
+
+        if (!articleResponse.ok) {
+          throw new Error("Failed to fetch article data");
+        }
+
+        const articleData = await articleResponse.json();
+        setArticle(articleData.data.article);
+
+        // Fetch author data using author_id from article
+        if (articleData.data.article.author_id) {
+          const authorResponse = await fetch(
+            `http://localhost:3000/api/author/${articleData.data.article.author_id}`
+          );
+
+          if (!authorResponse.ok) {
+            throw new Error("Failed to fetch author data");
+          }
+
+          const authorData = await authorResponse.json();
+          setAuthor(authorData.data.data);
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    if (slug) {
+      fetchArticleAndAuthor();
+    }
+  }, [slug]);
+
+  // Fetch comments for the article
+  useEffect(() => {
+    const fetchComments = async () => {
+      if (!article || !article.id) return;
+
+      setLoadingComments(true);
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/article/comment/${article.id}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch comments");
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.data && data.data.comments) {
+          setComments(data.data.comments);
+        }
+      } catch (err) {
+        console.error("Error fetching comments:", err);
+      } finally {
+        setLoadingComments(false);
+      }
+    };
+
+    fetchComments();
+  }, [article]);
 
   const handleCommentSubmit = (e) => {
     e.preventDefault();
     if (commentText.trim() === "") return;
 
+    // You would typically send this to your API
+    // For now, we'll just add it to the local state
     const newComment = {
-      id: comments.length + 1,
-      author: "You",
-      avatar: "/api/placeholder/40/40",
-      date: "Just now",
-      text: commentText,
-      likes: 0,
-      isLiked: false,
+      id: Date.now(), // Temporary ID
+      content: commentText,
+      user_id: 1, // Assuming logged in user has ID 1
+      article_id: article.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     setComments([newComment, ...comments]);
     setCommentText("");
+
+    // Here you would make an API call to save the comment
+    // Example:
+    // fetch('http://localhost:3000/api/article/comment', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({
+    //     content: commentText,
+    //     article_id: article.id,
+    //     user_id: 1, // You would get this from authentication context
+    //   }),
+    // })
   };
 
-  const toggleCommentLike = (id) => {
-    setComments(
-      comments.map((comment) => {
-        if (comment.id === id) {
-          return {
-            ...comment,
-            isLiked: !comment.isLiked,
-            likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
-          };
-        }
-        return comment;
-      })
-    );
+  // Format date for display
+  const formatDate = (dateString) => {
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(dateString).toLocaleDateString(undefined, options);
   };
+
+  // Format date as "X days ago"
+  const formatRelativeDate = (dateString) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+      return "Today";
+    } else if (diffDays === 1) {
+      return "1 day ago";
+    } else {
+      return `${diffDays} days ago`;
+    }
+  };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div>
+        <Navbar />
+        <div className="flex justify-center items-center min-h-screen bg-gray-50">
+          <div className="text-xl font-medium text-gray-600">
+            Loading article...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div>
+        <Navbar />
+        <div className="flex justify-center items-center min-h-screen bg-gray-50">
+          <div className="text-xl font-medium text-red-600">Error: {error}</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show not found state
+  if (!article) {
+    return (
+      <div>
+        <Navbar />
+        <div className="flex justify-center items-center min-h-screen bg-gray-50">
+          <div className="text-xl font-medium text-gray-600">
+            Article not found
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -87,20 +234,23 @@ export default function Article() {
             {/* Main Article */}
             <article className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
               <h1 className="text-2xl md:text-3xl font-bold p-4 lg:p-6">
-                How to Spend the Perfect Day on Croatia's Most Magical Island
+                {article.title}
               </h1>
 
               {/* Hero Image */}
               <div className="relative">
                 <img
-                  src="/api/placeholder/800/400"
-                  alt="Person kayaking with mountain view in Croatia"
+                  src={
+                    `http://localhost:3000/${article.thumbnail}` ||
+                    "/api/placeholder/800/400"
+                  }
+                  alt={article.title}
                   className="w-full h-auto object-cover"
                 />
                 <div className="absolute bottom-4 left-4 bg-white bg-opacity-70 p-2 rounded-full">
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium text-gray-800">
-                      June 23, 2023
+                      {formatDate(article.published_date)}
                     </span>
                   </div>
                 </div>
@@ -109,10 +259,22 @@ export default function Article() {
               {/* Article Content */}
               <div className="p-4 lg:p-6">
                 <div className="flex items-center mb-4">
-                  <div className="w-10 h-10 rounded-full bg-red-500 mr-3"></div>
+                  <div className="w-10 h-10 rounded-full bg-red-500 mr-3">
+                    {author?.avatar && (
+                      <img
+                        src={`http://localhost:3000/${author.avatar}`}
+                        alt={author.name}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    )}
+                  </div>
                   <div>
-                    <p className="font-medium">Travel Insider</p>
-                    <p className="text-xs text-gray-500">Travel Expert</p>
+                    <p className="font-medium">
+                      {author?.name || "Unknown Author"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {author?.role || "Writer"}
+                    </p>
                   </div>
                   <div className="ml-auto flex space-x-3">
                     <button
@@ -124,11 +286,11 @@ export default function Article() {
                           isLiked ? "fill-red-500 text-red-500" : ""
                         }`}
                       />
-                      <span className="ml-1 text-sm">245</span>
+                      <span className="ml-1 text-sm">{article.likes || 0}</span>
                     </button>
                     <button className="flex items-center text-gray-500 hover:text-blue-500">
                       <MessageCircle className="w-5 h-5" />
-                      <span className="ml-1 text-sm">42</span>
+                      <span className="ml-1 text-sm">{comments.length}</span>
                     </button>
                     <button className="flex items-center text-gray-500 hover:text-green-500">
                       <Share2 className="w-5 h-5" />
@@ -139,58 +301,10 @@ export default function Article() {
                   </div>
                 </div>
 
-                <p className="text-gray-700 mb-6">
-                  Croatia attracts over sixteen million visitors each year
-                  because it unites mesmerizing turquoise waters with beautiful
-                  mountainous landscapes. From stunning ancient cities to
-                  picturesque coastal towns, Croatia's crown jewel might just be
-                  the magical island of Mljet. Here's how to make the most of
-                  your perfect day exploring pristine lakes, lush forests, and
-                  rich cultural heritage on this enchanting Mediterranean
-                  paradise.
-                </p>
-
-                {/* Secondary Image */}
-                <img
-                  src="/api/placeholder/800/300"
-                  alt="Colorful kayaks lined up on beach"
-                  className="w-full h-auto object-cover rounded-lg mb-6"
+                <div
+                  className="text-gray-700 mb-6"
+                  dangerouslySetInnerHTML={{ __html: article.content }}
                 />
-
-                <h2 className="text-xl font-bold mb-4">
-                  Red Kayak Day: The Perfect Blue Waters And A Secluded Cove
-                </h2>
-
-                <p className="text-gray-700 mb-6">
-                  Start your day with a breathtaking sunrise kayak tour. Paddle
-                  your way through crystal-clear waters, gently surrounded by
-                  the forest's edge reflecting in the azure sea. Our guide
-                  recommends renting a red kayak for that perfect Instagram
-                  moment against the blue backdrop. The morning tranquility
-                  rewards early risers with peaceful waters and a chance to spot
-                  local wildlife along the shoreline.
-                </p>
-
-                <p className="text-gray-700 mb-6">
-                  Make your way to the secluded Small Lake cove, accessible only
-                  by water or hiking trail. The limestone formations create a
-                  natural swimming pool with remarkably clear visibility. Spend
-                  time exploring the underwater caves and marveling at the
-                  vibrant marine life that flourishes in this protected area.
-                  Professional guides recommend snorkeling gear for the best
-                  experience, and afternoon hours for optimal sunlight through
-                  the water.
-                </p>
-
-                <p className="text-gray-700">
-                  End your day with a sunset picnic at Odysseus Cave, named
-                  after the legendary hero who allegedly spent seven years on
-                  the island after being shipwrecked here. Bring a local bottle
-                  of wine, a selection of Croatian cheeses, and freshly baked
-                  bread from the bakery near the harbor. The views from this
-                  natural platform facing west provide the perfect finale to
-                  your magical day on Mljet.
-                </p>
               </div>
             </article>
 
@@ -232,49 +346,65 @@ export default function Article() {
 
               {/* Comments List */}
               <div className="divide-y">
-                {comments.map((comment) => (
-                  <div key={comment.id} className="p-4 lg:p-6">
-                    <div className="flex items-start">
-                      <div className="flex-shrink-0 mr-3">
-                        <img
-                          src={comment.avatar}
-                          alt={comment.author}
-                          className="w-10 h-10 rounded-full"
-                        />
-                      </div>
-                      <div className="flex-grow">
-                        <div className="flex items-center mb-1">
-                          <h4 className="font-medium">{comment.author}</h4>
-                          <span className="text-xs text-gray-500 ml-2">
-                            {comment.date}
-                          </span>
+                {loadingComments
+                  ? // Loading skeleton for comments
+                    Array(3)
+                      .fill()
+                      .map((_, index) => (
+                        <div key={index} className="p-4 lg:p-6">
+                          <div className="flex items-start">
+                            <div className="flex-shrink-0 mr-3">
+                              <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
+                            </div>
+                            <div className="flex-grow">
+                              <div className="flex items-center mb-1">
+                                <div className="bg-gray-200 animate-pulse h-4 w-24 rounded"></div>
+                                <div className="bg-gray-200 animate-pulse h-3 w-16 rounded ml-2"></div>
+                              </div>
+                              <div className="bg-gray-200 animate-pulse h-4 w-full rounded mb-3"></div>
+                              <div className="bg-gray-200 animate-pulse h-4 w-3/4 rounded"></div>
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-gray-700 mb-3">{comment.text}</p>
-                        <div className="flex items-center text-sm text-gray-500">
-                          <button
-                            onClick={() => toggleCommentLike(comment.id)}
-                            className="flex items-center mr-4 hover:text-red-500"
-                          >
-                            <Heart
-                              className={`w-4 h-4 mr-1 ${
-                                comment.isLiked
-                                  ? "fill-red-500 text-red-500"
-                                  : ""
-                              }`}
+                      ))
+                  : comments.map((comment) => (
+                      <div key={comment.id} className="p-4 lg:p-6">
+                        <div className="flex items-start">
+                          <div className="flex-shrink-0 mr-3">
+                            <img
+                              src="/api/placeholder/40/40"
+                              alt="User Avatar"
+                              className="w-10 h-10 rounded-full"
                             />
-                            <span>{comment.likes}</span>
-                          </button>
-                          <button className="flex items-center mr-4 hover:text-blue-500">
-                            <MessageCircle className="w-4 h-4 mr-1" />
-                            <span>Reply</span>
-                          </button>
+                          </div>
+                          <div className="flex-grow">
+                            <div className="flex items-center mb-1">
+                              <h4 className="font-medium">
+                                User #{comment.user_id}
+                              </h4>
+                              <span className="text-xs text-gray-500 ml-2">
+                                {formatRelativeDate(comment.createdAt)}
+                              </span>
+                            </div>
+                            <p className="text-gray-700 mb-3">
+                              {comment.content}
+                            </p>
+                            <div className="flex items-center text-sm text-gray-500">
+                              <button className="flex items-center mr-4 hover:text-red-500">
+                                <Heart className="w-4 h-4 mr-1" />
+                                <span>Like</span>
+                              </button>
+                              <button className="flex items-center mr-4 hover:text-blue-500">
+                                <MessageCircle className="w-4 h-4 mr-1" />
+                                <span>Reply</span>
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
+                    ))}
 
-                {comments.length === 0 && (
+                {!loadingComments && comments.length === 0 && (
                   <div className="p-4 lg:p-6 text-center text-gray-500">
                     No comments yet. Be the first to comment!
                   </div>
@@ -287,40 +417,79 @@ export default function Article() {
         {/* Sidebar */}
         <div className="w-full lg:w-1/3 p-4 bg-white lg:bg-gray-50">
           <div className="lg:sticky lg:top-4">
-            {/* Profile Section */}
+            {/* Author Profile Section */}
             <div className="bg-white p-4 rounded-lg shadow-md mb-4">
               <div className="flex items-center">
-                <div className="w-12 h-12 rounded-full bg-red-500 mr-3"></div>
+                <div className="w-12 h-12 rounded-full bg-red-500 mr-3">
+                  {author?.avatar && (
+                    <img
+                      src={`http://localhost:3000/${author.avatar}`}
+                      alt={author.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  )}
+                </div>
                 <div>
-                  <p className="font-medium">Travel Insider</p>
+                  <p className="font-medium">
+                    {author?.name || "Unknown Author"}
+                  </p>
                   <button className="mt-1 bg-red-500 text-white text-xs px-3 py-1 rounded-full">
                     Follow
                   </button>
                 </div>
               </div>
+              {author?.bio && (
+                <p className="text-sm text-gray-600 mt-3">{author.bio}</p>
+              )}
             </div>
 
-            {/* Popular Posts */}
+            {/* Random Posts */}
             <div className="bg-white p-4 rounded-lg shadow-md mb-4">
-              <h3 className="font-bold text-lg mb-4">Popular Posts</h3>
+              <h3 className="font-bold text-lg mb-4">Random Posts</h3>
 
-              {Array(5)
-                .fill()
-                .map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex items-start mb-4 pb-4 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0"
-                  >
-                    <div className="w-16 h-16 bg-gray-200 rounded-md mr-3 flex-shrink-0"></div>
-                    <div>
-                      <h4 className="font-medium text-sm">
-                        The Secret Beaches of Southern Europe You Need to Visit
-                      </h4>
-                      <p className="text-xs text-gray-500 mt-1">5 days ago</p>
+              {randomArticles.length > 0
+                ? randomArticles.map((randomArticle) => (
+                    <div
+                      key={randomArticle.id}
+                      className="flex items-start mb-4 pb-4 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0"
+                    >
+                      <div className="w-16 h-16 bg-gray-200 rounded-md mr-3 flex-shrink-0">
+                        <img
+                          src={`http://localhost:3000/${randomArticle.thumbnail}`}
+                          alt={randomArticle.title}
+                          className="w-16 h-16 object-cover rounded-md"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/api/placeholder/64/64";
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm">
+                          {randomArticle.title}
+                        </h4>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatRelativeDate(randomArticle.published_date)}
+                        </p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-400 ml-auto flex-shrink-0 mt-2" />
                     </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400 ml-auto flex-shrink-0 mt-2" />
-                  </div>
-                ))}
+                  ))
+                : // Show loading skeleton while fetching random articles
+                  Array(5)
+                    .fill()
+                    .map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start mb-4 pb-4 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0"
+                      >
+                        <div className="w-16 h-16 bg-gray-200 animate-pulse rounded-md mr-3 flex-shrink-0"></div>
+                        <div className="flex-grow">
+                          <div className="bg-gray-200 animate-pulse h-4 rounded w-3/4 mb-2"></div>
+                          <div className="bg-gray-200 animate-pulse h-3 rounded w-1/3"></div>
+                        </div>
+                      </div>
+                    ))}
             </div>
 
             {/* Advertisement */}
@@ -348,7 +517,7 @@ export default function Article() {
           </div>
         </div>
       </div>
-      <RelatedPost />
+      <RelatedPost authorId={article.author_id} />
       <Footer />
     </div>
   );

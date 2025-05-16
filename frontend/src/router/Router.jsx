@@ -37,7 +37,7 @@ export const Router = createBrowserRouter([
     element: <ForgetPassword />,
   },
   {
-    path: "/article",
+    path: "/article/:slug",
     element: <Article />,
   },
   {

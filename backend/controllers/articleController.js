@@ -1,4 +1,5 @@
 import Article from "../models/article.js";
+import Comment from "../models/comment.js";
 import ResponseAPI from "../helper/response.js";
 import fs from "fs";
 import slugify from "slugify";
@@ -100,6 +101,39 @@ const getArticlesByAuthor = async (req, res) => {
   } catch (error) {
     console.error("Error fetching articles by author:", error);
     return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const getArticlesBySlug = async (req, res) => {
+  try {
+    const slug = req.params.slug;
+    const article = await Article.findOne({ where: { slug: slug } });
+    if (!article) {
+      return ResponseAPI.notFound(res, "article tidak ditemukan");
+    }
+    return ResponseAPI.success(res, "Artikel berhasil didapatkan", {
+      article,
+    });
+  } catch (error) {
+    return ResponseAPI.error(res, error.message);
+  }
+};
+
+const getArticleComments = async (req, res) => {
+  try {
+    const articleId = req.params.id;
+    const comments = await Comment.findAll({
+      where: { article_id: articleId },
+      order: [["createdAt", "DESC"]],
+    });
+    if (!comments || comments.length === 0) {
+      return ResponseAPI.notFound(res, "komentar tidak ditemukan");
+    }
+    return ResponseAPI.success(res, "Semua komentar berhasil didapatkan", {
+      comments,
+    });
+  } catch (error) {
+    return ResponseAPI.error(res, error.message);
   }
 };
 
@@ -220,6 +254,8 @@ export {
   createArticle,
   updateArticle,
   deleteArticle,
+  getArticlesBySlug,
   getArticlesByCategory,
   getArticlesByAuthor,
+  getArticleComments,
 };

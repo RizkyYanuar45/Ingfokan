@@ -5,6 +5,8 @@ import {
   createArticle,
   updateArticle,
   deleteArticle,
+  getArticlesBySlug,
+  getArticleComments,
   getArticlesByCategory,
   getArticlesByAuthor,
 } from "./../controllers/articleController.js";
@@ -13,6 +15,8 @@ import upload from "./../middleware/upload.js";
 const routes = express.Router();
 
 routes.get("/", getAllArticle);
+routes.get("/slug/:slug", getArticlesBySlug);
+routes.get("/comment/:id", getArticleComments);
 routes.get("/category", getArticlesByCategory);
 routes.get("/author", getArticlesByAuthor);
 routes.get("/:id", getAllById);
