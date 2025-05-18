@@ -4,7 +4,6 @@ import User from "../models/user.js";
 import bcrypt from "bcrypt";
 
 import fs from "fs";
-import { log } from "console";
 
 const registerUser = async (req, res) => {
   try {
@@ -83,6 +82,7 @@ const loginUser = async (req, res) => {
       {
         email: user.email, // Menyertakan email
         role: user.role, // Menyertakan role
+        id: user.id, // Menyertakan ID pengguna
       },
       process.env.JWT_SECRET, // Kunci rahasia dari variabel lingkungan
       {
@@ -152,7 +152,12 @@ const editUser = async (req, res) => {
 
     if (req.file) {
       const oldAvatar = await User.findOne({ where: { id: id } });
-      fs.unlinkSync(oldAvatar.avatar);
+      if (oldAvatar && oldAvatar.avatar) {
+        fs.unlinkSync(oldAvatar.avatar);
+
+        console.log(oldAvatar.avatar);
+      }
+
       updates.avatar = req.file.path;
     }
 

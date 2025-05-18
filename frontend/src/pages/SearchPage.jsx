@@ -7,292 +7,72 @@ import {
   ChevronRight,
   Search,
 } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
 function SearchPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Sample articles data (same as in CategoryPage)
-  const allArticles = [
-    {
-      id: 1,
-      title: "Unveiling the 7 Kayaking Spots in Austria, the Alps",
-      image: "https://source.unsplash.com/random/300x200/?kayak,mountains",
-      excerpt:
-        "Discover the most scenic spots to paddle through crystal clear waters with breathtaking mountain backdrops around Austria.",
-      author: {
-        name: "James",
-        avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-        role: "Travel Writer",
-      },
-      date: "1d ago",
-      likes: 245,
-      comments: 42,
-    },
-    {
-      id: 2,
-      title: "How To Choose The Right Laptop For Gaming",
-      image: "https://source.unsplash.com/random/300x200/?laptop,gaming",
-      excerpt:
-        "Find the best laptop specs for high-performance gaming without breaking the bank. Key features to look for.",
-      author: {
-        name: "Lucas Rodriguez",
-        avatar: "https://randomuser.me/api/portraits/men/41.jpg",
-        role: "Tech Reviewer",
-      },
-      date: "2d ago",
-      likes: 189,
-      comments: 23,
-    },
-    {
-      id: 3,
-      title: "How We Built The First Test Self-Driving Car",
-      image: "https://source.unsplash.com/random/300x200/?car,pink",
-      excerpt:
-        "The journey to creating an autonomous vehicle that safely navigates urban environments with AI assistance.",
-      author: {
-        name: "Emily",
-        avatar: "https://randomuser.me/api/portraits/women/28.jpg",
-        role: "Automotive Engineer",
-      },
-      date: "3d ago",
-      likes: 302,
-      comments: 56,
-    },
-    {
-      id: 4,
-      title: "How To Choose The Best Laptop For Video Editing",
-      image: "https://source.unsplash.com/random/300x200/?laptop,editing",
-      excerpt:
-        "Selecting the right hardware for professional video editing work - RAM, GPU, CPU, and storage considerations.",
-      author: {
-        name: "Robert",
-        avatar: "https://randomuser.me/api/portraits/men/45.jpg",
-        role: "Content Creator",
-      },
-      date: "3d ago",
-      likes: 173,
-      comments: 31,
-    },
-    {
-      id: 5,
-      title: "How To Perfectly Cure Hamchi To Be Eaten Raw",
-      image: "https://source.unsplash.com/random/300x200/?food,fish",
-      excerpt:
-        "The step-by-step process to safely cure fish at home for delicious, restaurant-quality sashimi and crudo dishes.",
-      author: {
-        name: "Sophie",
-        avatar: "https://randomuser.me/api/portraits/women/62.jpg",
-        role: "Chef",
-      },
-      date: "Apr 10",
-      likes: 412,
-      comments: 78,
-    },
-    {
-      id: 6,
-      title: "How To Build A Self-Driving Car In Your Garage",
-      image: "https://source.unsplash.com/random/300x200/?car,blue",
-      excerpt:
-        "A DIY approach to creating automated driving features using off-the-shelf components and open-source software.",
-      author: {
-        name: "Michael",
-        avatar: "https://randomuser.me/api/portraits/men/22.jpg",
-        role: "Engineer",
-      },
-      date: "Apr 8",
-      likes: 528,
-      comments: 94,
-    },
-    {
-      id: 7,
-      title: "Self-Improvement Hack Nobody In California Knows",
-      image: "https://source.unsplash.com/random/300x200/?beach,california",
-      excerpt:
-        "The little-known technique that helps top performers in the Golden State stay ahead of the competition.",
-      author: {
-        name: "Tyler",
-        avatar: "https://randomuser.me/api/portraits/men/77.jpg",
-        role: "Life Coach",
-      },
-      date: "Apr 5",
-      likes: 217,
-      comments: 39,
-    },
-    {
-      id: 8,
-      title: "Why Electric Cars Are Better Now Than Ever Before",
-      image: "https://source.unsplash.com/random/300x200/?car,red",
-      excerpt:
-        "Recent innovations in battery technology and charging infrastructure have made EVs more practical than traditional vehicles.",
-      author: {
-        name: "Alex",
-        avatar: "https://randomuser.me/api/portraits/men/91.jpg",
-        role: "Automotive Journalist",
-      },
-      date: "Apr 3",
-      likes: 361,
-      comments: 57,
-    },
-    {
-      id: 9,
-      title: "14 Coffee Brewing Tricks to Impress Anyone",
-      image: "https://source.unsplash.com/random/300x200/?coffee,brewing",
-      excerpt:
-        "Advanced coffee preparation techniques to elevate your morning brew from ordinary to extraordinary.",
-      author: {
-        name: "Emma",
-        avatar: "https://randomuser.me/api/portraits/women/33.jpg",
-        role: "Barista",
-      },
-      date: "Apr 1",
-      likes: 193,
-      comments: 45,
-    },
-    {
-      id: 10,
-      title: "Waterproof Laptops Now Actually Work Just Fine",
-      image: "https://source.unsplash.com/random/300x200/?laptop,blue",
-      excerpt:
-        "The latest innovations in waterproof technology for computers that make them reliable for outdoor and marine use.",
-      author: {
-        name: "Lucas",
-        avatar: "https://randomuser.me/api/portraits/men/41.jpg",
-        role: "Tech Writer",
-      },
-      date: "Mar 29",
-      likes: 274,
-      comments: 38,
-    },
-    {
-      id: 11,
-      title: "Historic Kayaks for Sale in Venice",
-      image: "https://source.unsplash.com/random/300x200/?kayak,venice",
-      excerpt:
-        "Vintage and antique water craft now available in the famous canal city - from traditional gondolas to modern kayaks.",
-      author: {
-        name: "Isabella",
-        avatar: "https://randomuser.me/api/portraits/women/12.jpg",
-        role: "Antique Dealer",
-      },
-      date: "Mar 25",
-      likes: 298,
-      comments: 51,
-    },
-    {
-      id: 12,
-      title: "Lasagna is Just a Pasta Cake",
-      image: "https://source.unsplash.com/random/300x200/?lasagna,food",
-      excerpt:
-        "The provocative comparison of lasagna to layered cake, and why this perspective changes how we think about pasta dishes.",
-      author: {
-        name: "Marco",
-        avatar: "https://randomuser.me/api/portraits/men/36.jpg",
-        role: "Food Writer",
-      },
-      date: "Mar 21",
-      likes: 385,
-      comments: 67,
-    },
-    {
-      id: 13,
-      title: "The Ultimate Guide to Sustainable Gardening",
-      image: "https://source.unsplash.com/random/300x200/?garden,plants",
-      excerpt:
-        "Eco-friendly gardening practices that conserve water, improve soil health, and attract beneficial wildlife to your backyard.",
-      author: {
-        name: "Olivia",
-        avatar: "https://randomuser.me/api/portraits/women/23.jpg",
-        role: "Environmental Scientist",
-      },
-      date: "Mar 18",
-      likes: 276,
-      comments: 48,
-    },
-    {
-      id: 14,
-      title: "The Psychology Behind Effective Website Design",
-      image: "https://source.unsplash.com/random/300x200/?website,design",
-      excerpt:
-        "How color theory, layout principles, and user behavior research influence successful digital experiences.",
-      author: {
-        name: "Nathan",
-        avatar: "https://randomuser.me/api/portraits/men/52.jpg",
-        role: "UX Designer",
-      },
-      date: "Mar 15",
-      likes: 318,
-      comments: 63,
-    },
-    {
-      id: 15,
-      title: "Traditional Bread Recipes From Around The World",
-      image: "https://source.unsplash.com/random/300x200/?bread,baking",
-      excerpt:
-        "From French baguettes to Indian naan, explore diverse baking techniques and cultural significance of bread.",
-      author: {
-        name: "Sophia",
-        avatar: "https://randomuser.me/api/portraits/women/56.jpg",
-        role: "Food Historian",
-      },
-      date: "Mar 12",
-      likes: 423,
-      comments: 71,
-    },
-    {
-      id: 16,
-      title: "Beginners Guide to Night Sky Photography",
-      image: "https://source.unsplash.com/random/300x200/?stars,night",
-      excerpt:
-        "Capture stunning images of stars, planets, and galaxies with basic equipment and these expert techniques.",
-      author: {
-        name: "David",
-        avatar: "https://randomuser.me/api/portraits/men/67.jpg",
-        role: "Photographer",
-      },
-      date: "Mar 9",
-      likes: 356,
-      comments: 62,
-    },
-    {
-      id: 17,
-      title: "Modern Interior Design Trends for Small Spaces",
-      image: "https://source.unsplash.com/random/300x200/?interior,apartment",
-      excerpt:
-        "Maximize functionality and style in compact living areas with these innovative design solutions and space-saving ideas.",
-      author: {
-        name: "Jessica",
-        avatar: "https://randomuser.me/api/portraits/women/42.jpg",
-        role: "Interior Designer",
-      },
-      date: "Mar 6",
-      likes: 289,
-      comments: 47,
-    },
-    {
-      id: 18,
-      title: "The Rise of E-Sports: From Hobby to Professional Career",
-      image: "https://source.unsplash.com/random/300x200/?gaming,tournament",
-      excerpt:
-        "How competitive gaming evolved into a billion-dollar industry with professional leagues, sponsorships, and global tournaments.",
-      author: {
-        name: "Ryan",
-        avatar: "https://randomuser.me/api/portraits/men/18.jpg",
-        role: "E-Sports Analyst",
-      },
-      date: "Mar 3",
-      likes: 467,
-      comments: 82,
-    },
-  ];
+  // Data state
+  const [articles, setArticles] = useState([]);
+  const [authors, setAuthors] = useState([]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInputValue, setPageInputValue] = useState(currentPage.toString());
   const articlesPerPage = 12; // 12 items per page (3 rows of 4 columns)
+
+  // Extract search query from URL on component mount and when URL changes
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const query = params.get("q");
+    if (query) {
+      setSearchQuery(query);
+    }
+  }, [location.search]);
+
+  // Fetch all articles and authors on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch articles
+        const articlesResponse = await fetch(
+          "http://localhost:3000/api/article"
+        );
+        if (!articlesResponse.ok) {
+          throw new Error("Failed to fetch articles");
+        }
+        const articlesData = await articlesResponse.json();
+
+        // Fetch authors
+        const authorsResponse = await fetch("http://localhost:3000/api/author");
+        if (!authorsResponse.ok) {
+          throw new Error("Failed to fetch authors");
+        }
+        const authorsData = await authorsResponse.json();
+
+        // Set the data
+        setArticles(articlesData.data.article);
+        setAuthors(authorsData.data.data);
+        setError(null);
+      } catch (err) {
+        setError(err.message);
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Filter articles based on search query
   useEffect(() => {
@@ -301,18 +81,33 @@ function SearchPage() {
       return;
     }
 
+    // Create combined data inside the effect to avoid dependency issues
+    const combinedArticles = articles.map((article) => {
+      const author = authors.find((author) => author.id === article.author_id);
+      return {
+        ...article,
+        author: author || {
+          name: "Unknown",
+          avatar: "https://randomuser.me/api/portraits/lego/1.jpg",
+        },
+      };
+    });
+
     const lowercaseQuery = searchQuery.toLowerCase();
-    const filteredResults = allArticles.filter(
+    const filteredResults = combinedArticles.filter(
       (article) =>
         article.title.toLowerCase().includes(lowercaseQuery) ||
-        article.excerpt.toLowerCase().includes(lowercaseQuery) ||
-        article.author.name.toLowerCase().includes(lowercaseQuery)
+        (article.content &&
+          article.content.toLowerCase().includes(lowercaseQuery)) ||
+        (article.author &&
+          article.author.name.toLowerCase().includes(lowercaseQuery))
     );
 
     setSearchResults(filteredResults);
     setCurrentPage(1);
     setPageInputValue("1");
-  }, [searchQuery]);
+    setIsSearching(true);
+  }, [searchQuery, articles, authors]);
 
   // Get total pages
   const totalPages = Math.ceil(searchResults.length / articlesPerPage);
@@ -368,9 +163,68 @@ function SearchPage() {
   // Handle search form submission
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    setIsSearching(true);
-    // The useEffect will handle the actual search
+    if (searchQuery.trim()) {
+      // Update URL with search query
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearching(true);
+    }
   };
+
+  // Format date to a more readable format
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 1) return "1d ago";
+    if (diffDays <= 7) return `${diffDays}d ago`;
+
+    const options = { month: "short", day: "numeric" };
+    return date.toLocaleDateString("en-US", options);
+  };
+
+  // Function to extract a text excerpt from HTML content
+  const getExcerpt = (content, maxLength = 100) => {
+    if (!content) return "";
+
+    // Remove HTML tags if present
+    const plainText = content.replace(/<[^>]+>/g, "");
+
+    if (plainText.length <= maxLength) return plainText;
+
+    return plainText.substring(0, maxLength) + "...";
+  };
+
+  if (loading) {
+    return (
+      <div>
+        <Navbar />
+        <div className="min-h-screen flex justify-center items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <Navbar />
+        <div className="min-h-screen flex justify-center items-center">
+          <div
+            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+            role="alert"
+          >
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{error}</span>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -410,7 +264,7 @@ function SearchPage() {
       <div className="min-h-screen bg-gray-50 pb-8">
         {/* Header */}
         <header className="flex items-center mb-5 px-4">
-          <div className="bg-blue-500 w-1 h-3 rounded-lg mx-2"></div>
+          <div className="bg-primarycus w-1 h-3 rounded-lg mx-2"></div>
           <h2 className="font-bold text-base md:text-lg">
             {searchQuery
               ? `Search Results for: "${searchQuery}" (${searchResults.length} results)`
@@ -438,7 +292,10 @@ function SearchPage() {
                 >
                   {/* Article Image */}
                   <img
-                    src={article.image}
+                    src={
+                      `http://localhost:3000/${article.thumbnail}` ||
+                      "https://source.unsplash.com/random/300x200/?article"
+                    }
                     alt={article.title}
                     className="w-full h-32 object-cover"
                   />
@@ -450,14 +307,17 @@ function SearchPage() {
                     </h3>
 
                     <p className="text-xs text-gray-500 line-clamp-2 h-8 mb-2">
-                      {article.excerpt}
+                      {getExcerpt(article.content)}
                     </p>
 
                     {/* Author & Engagement */}
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center">
                         <img
-                          src={article.author.avatar}
+                          src={
+                            `http://localhost:3000/${article.author.avatar}` ||
+                            "https://randomuser.me/api/portraits/lego/1.jpg"
+                          }
                           alt={article.author.name}
                           className="w-6 h-6 rounded-full mr-2"
                         />
@@ -466,7 +326,7 @@ function SearchPage() {
                             {article.author.name}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {article.date}
+                            {formatDate(article.published_date)}
                           </p>
                         </div>
                       </div>
@@ -517,11 +377,11 @@ function SearchPage() {
 
               <li>
                 <form onSubmit={handlePageInputSubmit}>
-                  <label htmlFor="Page">
+                  <label htmlFor="PageInput">
                     <span className="sr-only">Page</span>
                     <input
                       type="text"
-                      id="Page"
+                      id="PageInput"
                       value={pageInputValue}
                       onChange={handlePageInputChange}
                       onBlur={handlePageInputSubmit}
@@ -532,15 +392,17 @@ function SearchPage() {
               </li>
 
               <li className="flex items-center">
-                <span className="text-sm text-gray-500">of {totalPages}</span>
+                <span className="text-sm text-gray-500">
+                  of {totalPages || 1}
+                </span>
               </li>
 
               <li>
                 <button
                   onClick={goToNextPage}
-                  disabled={currentPage === totalPages}
+                  disabled={currentPage === totalPages || totalPages === 0}
                   className={`grid size-8 place-content-center rounded border border-gray-200 transition-colors ${
-                    currentPage === totalPages
+                    currentPage === totalPages || totalPages === 0
                       ? "opacity-50 cursor-not-allowed"
                       : "hover:bg-gray-50"
                   }`}

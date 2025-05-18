@@ -1,7 +1,10 @@
 import React from "react";
 import { createBrowserRouter } from "react-router-dom";
 
+import ProtectedRoute from "../components/Admin/ProtectedRoute";
+
 import Login from "../pages/Login";
+import SignUp from "../pages/SignUp";
 import ForgetPassword from "../pages/ForgetPassword";
 
 import Main from "../pages/Main";
@@ -31,6 +34,10 @@ export const Router = createBrowserRouter([
     path: "/login",
     element: <Login />,
     errorElement: <div>tes</div>,
+  },
+  {
+    path: "/signup",
+    element: <SignUp />,
   },
   {
     path: "/forget-password",
@@ -72,23 +79,43 @@ export const Router = createBrowserRouter([
 
   {
     path: "/admin/dashboard",
-    element: <Dashboard />,
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <Dashboard />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/admin/article",
-    element: <ControlArticles />,
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <ControlArticles />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/admin/banners",
-    element: <ControlBanners />,
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <ControlBanners />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/admin/categories",
-    element: <ControlCategories />,
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <ControlCategories />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/admin/authors",
-    element: <ControlAuthors />,
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <ControlAuthors />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/admin/login",

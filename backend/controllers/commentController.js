@@ -1,5 +1,6 @@
 import Comment from "./../models/comment.js";
 import ResponseAPI from "../helper/response.js";
+import jwt from "jsonwebtoken";
 
 const getAllComment = async (req, res) => {
   try {
@@ -20,20 +21,42 @@ const getAllComment = async (req, res) => {
 
 const createComment = async (req, res) => {
   try {
-    const { user_id, article_id, content } = req.body;
-    if (!user_id || !article_id || !content) {
-      return ResponseAPI.error(res, "mohon isi semua");
+    // Get token from Authorization header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const comment = await Comment.create({
-      user_id: user_id,
-      article_id: article_id,
-      content: content,
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Extract user_id from token payload
+    const user_id = decoded.id; // or decoded.user_id depending on your token structure
+
+    // Use user_id from token, not from req.body
+    const { article_id, content } = req.body;
+
+    if (!article_id || !content) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
+    }
+
+    // Create comment in DB with user_id from token
+    const newComment = await Comment.create({
+      article_id,
+      content,
+      user_id,
     });
-    return ResponseAPI.success(res, "success", {
-      comment,
+
+    return res.status(201).json({
+      success: true,
+      message: "Comment created successfully",
+      data: { comment: newComment },
     });
   } catch (error) {
-    return ResponseAPI.error(res, error.message);
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

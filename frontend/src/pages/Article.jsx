@@ -24,6 +24,25 @@ export default function Article() {
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(false);
+  const [users, setUsers] = useState({}); // Store users data with user_id as key
+  const [currentUser, setCurrentUser] = useState(null); // Store current user data
+
+  // Function to decode JWT token and extract user ID
+  const getUserIdFromToken = (token) => {
+    try {
+      // JWT tokens are split into three parts by dots
+      const payload = token.split(".")[1];
+      // The middle part is the payload, which we need to decode
+      const decodedPayload = JSON.parse(atob(payload));
+      // Extract the user ID from the payload
+      // Note: The property name might be different based on your JWT structure
+      // Common names include 'id', 'sub', 'userId', etc.
+      return decodedPayload.id || decodedPayload.sub || decodedPayload.userId;
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;
+    }
+  };
 
   // Fetch random articles for sidebar
   useEffect(() => {
@@ -99,6 +118,37 @@ export default function Article() {
     }
   }, [slug]);
 
+  // Fetch current user data
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        if (token) {
+          // Extract user ID from the JWT token instead of directly from localStorage
+          const userId = getUserIdFromToken(token);
+
+          if (userId) {
+            const response = await fetch(
+              `http://localhost:3000/api/user/${userId}`
+            );
+
+            if (response.ok) {
+              const data = await response.json();
+              if (data.success && data.data && data.data.data) {
+                setCurrentUser(data.data.data);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching current user:", err);
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
+
   // Fetch comments for the article
   useEffect(() => {
     const fetchComments = async () => {
@@ -118,6 +168,43 @@ export default function Article() {
 
         if (data.success && data.data && data.data.comments) {
           setComments(data.data.comments);
+
+          // Get unique user IDs from comments
+          const userIds = [
+            ...new Set(data.data.comments.map((comment) => comment.user_id)),
+          ];
+
+          // Fetch user data for each unique user ID
+          const userDataPromises = userIds.map((userId) =>
+            fetch(`http://localhost:3000/api/user/${userId}`)
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error(`Failed to fetch user ${userId}`);
+                }
+                return response.json();
+              })
+              .then((data) => {
+                if (data.success && data.data && data.data.data) {
+                  return { userId, userData: data.data.data };
+                }
+                return { userId, userData: null };
+              })
+              .catch((err) => {
+                console.error(`Error fetching user ${userId}:`, err);
+                return { userId, userData: null };
+              })
+          );
+
+          // Wait for all user data requests to complete
+          const usersResults = await Promise.all(userDataPromises);
+
+          // Create a users object with user_id as key
+          const usersData = {};
+          usersResults.forEach((result) => {
+            usersData[result.userId] = result.userData;
+          });
+
+          setUsers(usersData);
         }
       } catch (err) {
         console.error("Error fetching comments:", err);
@@ -129,37 +216,79 @@ export default function Article() {
     fetchComments();
   }, [article]);
 
-  const handleCommentSubmit = (e) => {
+  const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (commentText.trim() === "") return;
 
-    // You would typically send this to your API
-    // For now, we'll just add it to the local state
-    const newComment = {
-      id: Date.now(), // Temporary ID
-      content: commentText,
-      user_id: 1, // Assuming logged in user has ID 1
-      article_id: article.id,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    try {
+      // Get the user token from localStorage
+      const token = localStorage.getItem("token");
 
-    setComments([newComment, ...comments]);
-    setCommentText("");
+      if (!token) {
+        // Handle the case where the user is not logged in
+        alert("Please log in to post a comment");
+        return;
+      }
 
-    // Here you would make an API call to save the comment
-    // Example:
-    // fetch('http://localhost:3000/api/article/comment', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     content: commentText,
-    //     article_id: article.id,
-    //     user_id: 1, // You would get this from authentication context
-    //   }),
-    // })
+      // Create the request payload
+      const commentData = {
+        article_id: article.id,
+        content: commentText,
+        // The user_id will be extracted from the token on the server side
+      };
+
+      // Send the POST request to the API
+      const response = await fetch("http://localhost:3000/api/comment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(commentData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to post comment");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        // If successful, get the new comment data from the response
+        const newComment = data.data.comment;
+
+        // Add the new comment to the comments list
+        setComments([newComment, ...comments]);
+
+        // Clear the comment input
+        setCommentText("");
+
+        // If we don't have the user data for this user_id yet, fetch it
+        if (!users[newComment.user_id]) {
+          const userResponse = await fetch(
+            `http://localhost:3000/api/user/${newComment.user_id}`
+          );
+
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+
+            if (userData.success && userData.data && userData.data.data) {
+              setUsers((prevUsers) => ({
+                ...prevUsers,
+                [newComment.user_id]: userData.data.data,
+              }));
+            }
+          } else {
+            console.error("Error fetching new comment user data");
+          }
+        }
+      } else {
+        throw new Error(data.message || "Failed to post comment");
+      }
+    } catch (err) {
+      console.error("Error posting comment:", err);
+      alert("Failed to post comment: " + err.message);
+    }
   };
 
   // Format date for display
@@ -223,6 +352,23 @@ export default function Article() {
       </div>
     );
   }
+
+  // Get username display for a comment
+  const getUsernameDisplay = (userId) => {
+    const user = users[userId];
+    if (user && user.username) {
+      return user.username;
+    }
+    return `User #${userId}`; // Fallback if user data is not available
+  };
+
+  const getAvatarDisplay = (userId) => {
+    const user = users[userId];
+    if (user && user.avatar) {
+      return user.avatar;
+    }
+    return `api/placeholder/40/40`; // Fallback if user data is not available
+  };
 
   return (
     <div>
@@ -321,7 +467,15 @@ export default function Article() {
               <div className="p-4 lg:p-6 border-b">
                 <form onSubmit={handleCommentSubmit} className="flex flex-col">
                   <div className="flex items-start mb-4">
-                    <div className="w-10 h-10 rounded-full bg-blue-500 mr-3 flex-shrink-0"></div>
+                    <img
+                      src={
+                        currentUser && currentUser.avatar
+                          ? `http://localhost:3000/${currentUser.avatar}`
+                          : "http://localhost:3000/api/placeholder/40/40"
+                      }
+                      alt="Your Avatar"
+                      className="w-10 h-10 rounded-full bg-blue-500 mr-3 flex-shrink-0"
+                    />
                     <div className="flex-grow">
                       <textarea
                         value={commentText}
@@ -372,7 +526,14 @@ export default function Article() {
                         <div className="flex items-start">
                           <div className="flex-shrink-0 mr-3">
                             <img
-                              src="/api/placeholder/40/40"
+                              src={
+                                comment.user_id &&
+                                users[comment.user_id]?.avatar
+                                  ? `http://localhost:3000/${
+                                      users[comment.user_id].avatar
+                                    }`
+                                  : "http://localhost:3000/api/placeholder/40/40"
+                              }
                               alt="User Avatar"
                               className="w-10 h-10 rounded-full"
                             />
@@ -380,7 +541,7 @@ export default function Article() {
                           <div className="flex-grow">
                             <div className="flex items-center mb-1">
                               <h4 className="font-medium">
-                                User #{comment.user_id}
+                                {getUsernameDisplay(comment.user_id)}
                               </h4>
                               <span className="text-xs text-gray-500 ml-2">
                                 {formatRelativeDate(comment.createdAt)}
@@ -460,7 +621,8 @@ export default function Article() {
                           className="w-16 h-16 object-cover rounded-md"
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = "/api/placeholder/64/64";
+                            e.target.src =
+                              "http://localhost:3000/api/placeholder/64/64";
                           }}
                         />
                       </div>
