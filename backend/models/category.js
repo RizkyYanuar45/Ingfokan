@@ -1,8 +1,7 @@
 import { DataTypes } from "sequelize";
 import db from "./../config/database.js";
-import slugify from "slugify";
 
-const category = db.define("category", {
+const Category = db.define("Category", {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -23,4 +22,4 @@ const category = db.define("category", {
   },
 });
 
-export default category;
+export default Category;

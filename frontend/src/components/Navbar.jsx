@@ -154,7 +154,9 @@ function Navbar() {
     // Check if avatar starts with 'uploads\' or 'uploads/'
     if (
       user.avatar.startsWith("uploads\\") ||
-      user.avatar.startsWith("uploads/")
+      user.avatar.startsWith("uploads/") ||
+      user.avatar.startsWith("images\\") ||
+      user.avatar.startsWith("images/")
     ) {
       const path = user.avatar.replace("\\", "/");
       return `http://localhost:3000/${path}`;
@@ -327,14 +329,6 @@ function Navbar() {
       {isMenuOpen && (
         <div className="absolute top-16 left-0 right-0 bg-white shadow-md md:hidden z-20">
           <nav className="flex flex-col py-4">
-            <button className="flex gap-2 items-center px-5 py-3 text-base font-medium text-stone-700">
-              <span>Categories</span>
-              <ChevronDown className="h-4 w-4" />
-            </button>
-            <button className="flex gap-2 items-center px-5 py-3 text-base font-medium text-stone-700">
-              <span>Authors</span>
-              <ChevronDown className="h-4 w-4" />
-            </button>
             <NavLink
               to={"/contact-us"}
               className="px-5 py-3 text-base font-medium text-stone-700"

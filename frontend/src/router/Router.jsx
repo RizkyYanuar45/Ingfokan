@@ -16,6 +16,7 @@ import AboutUs from "../pages/AboutUs";
 import NotFound from "../pages/NotFound";
 import NotAuthorized from "../pages/NotAuthorized";
 import SearchPage from "../pages/SearchPage";
+import UserFavorites from "../pages/UserFavorites";
 
 import Test from "../pages/Admin/Test";
 import Dashboard from "../pages/Admin/Dashboard";
@@ -38,6 +39,10 @@ export const Router = createBrowserRouter([
   {
     path: "/signup",
     element: <SignUp />,
+  },
+  {
+    path: "/user-favorites",
+    element: <UserFavorites />,
   },
   {
     path: "/forget-password",

@@ -1,4 +1,6 @@
 import Author from "../models/author.js";
+import Article from "../models/article.js";
+import Category from "../models/category.js";
 import ResponseAPI from "../helper/response.js";
 import slugify from "slugify";
 import fs from "fs";
@@ -16,6 +18,42 @@ const getAllAuthor = async (req, res) => {
     return ResponseAPI.error(
       res,
       "gagal mendapatkan semua author",
+      400,
+      error.message
+    );
+  }
+};
+
+const getAuthorWithHisArticles = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const author = await Author.findOne({
+      where: { id: id },
+      include: [
+        {
+          model: Article,
+          as: "articles",
+          attributes: ["id", "title", "content", "createdAt", "thumbnail"],
+          include: [
+            {
+              model: Category,
+              as: "category",
+              attributes: ["id", "name"],
+            },
+          ],
+        },
+      ],
+    });
+    if (!author) {
+      return ResponseAPI.notFound(res, "author tidak ditemukan");
+    }
+    return ResponseAPI.success(res, "berhasil mendapatkan author", {
+      data: author,
+    });
+  } catch (error) {
+    return ResponseAPI.error(
+      res,
+      "gagal mendapatkan author",
       400,
       error.message
     );
@@ -146,6 +184,7 @@ export {
   getAllAuthor,
   getAuthorById,
   getAuthorBySlug,
+  getAuthorWithHisArticles,
   createAuthor,
   updateAuthor,
   deleteAuthor,

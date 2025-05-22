@@ -8,9 +8,11 @@ import category from "../models/category.js";
 import favorite from "../models/favorite.js";
 import Comment from "../models/comment.js";
 import article from "../models/article.js";
-
+import setupAssociations from "../config/association.js";
 const seeder = async () => {
   try {
+    setupAssociations();
+
     await sequelize.sync({ force: true }); //ini agar bila ada tabel sebelumnya akan dihapus kemudian dibuatkan
 
     console.log("tabel direstart");
@@ -20,6 +22,7 @@ const seeder = async () => {
       name: "Jane Doe",
       email: "jane.doe@example.com",
       password: encryptedPassword,
+      avatar: "images/janedoe.jpg",
       role: "admin",
       username: "JD",
     });

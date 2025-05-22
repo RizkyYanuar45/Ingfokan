@@ -1,10 +1,11 @@
 import express from "express";
 import {
-  getAllArticle,
+  getAllArticleWithAuthorAndCategory,
   getAllById,
   createArticle,
   updateArticle,
   deleteArticle,
+  getArticleWithAuthorAndCategory,
   getArticlesBySlug,
   getArticleComments,
   getArticlesByCategory,
@@ -14,7 +15,8 @@ import upload from "./../middleware/upload.js";
 
 const routes = express.Router();
 
-routes.get("/", getAllArticle);
+routes.get("/", getAllArticleWithAuthorAndCategory);
+routes.get("/author-category/:slug", getArticleWithAuthorAndCategory);
 routes.get("/slug/:slug", getArticlesBySlug);
 routes.get("/comment/:id", getArticleComments);
 routes.get("/category", getArticlesByCategory);

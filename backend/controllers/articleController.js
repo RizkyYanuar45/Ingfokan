@@ -1,9 +1,10 @@
 import Article from "../models/article.js";
 import Comment from "../models/comment.js";
+import Author from "../models/author.js";
+import Category from "../models/category.js";
 import ResponseAPI from "../helper/response.js";
 import fs from "fs";
 import slugify from "slugify";
-import { Op } from "sequelize"; // Menambahkan import Op dari sequelize
 
 const generateUniqueSlug = async (baseSlug, excludeId = null) => {
   let slug = baseSlug;
@@ -45,6 +46,34 @@ const getAllArticle = async (req, res) => {
   }
 };
 
+const getAllArticleWithAuthorAndCategory = async (req, res) => {
+  try {
+    const articles = await Article.findAll({
+      include: [
+        {
+          model: Author,
+          as: "author",
+          attributes: ["id", "name", "avatar", "slug"],
+        },
+        {
+          model: Category,
+          as: "category",
+          attributes: ["id", "name", "slug"],
+        },
+      ],
+      order: [["published_date", "DESC"]],
+    });
+    if (!articles || articles.length === 0) {
+      return ResponseAPI.notFound(res, "article tidak ditemukan");
+    }
+    return ResponseAPI.success(res, "Semua artikel berhasil didapatkan", {
+      articles,
+    });
+  } catch (error) {
+    return ResponseAPI.error(res, error.message);
+  }
+};
+
 const getAllById = async (req, res) => {
   try {
     const id = req.params.id;
@@ -79,6 +108,37 @@ const getArticlesByCategory = async (req, res) => {
   } catch (error) {
     console.error("Error fetching articles by category:", error);
     return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const getArticleWithAuthorAndCategory = async (req, res) => {
+  try {
+    const slug = req.params.slug;
+    const article = await Article.findOne({
+      where: { slug: slug },
+      include: [
+        {
+          model: Author,
+          as: "author",
+          attributes: ["id", "name", "email", "avatar", "slug"],
+        },
+        {
+          model: Category,
+          as: "category",
+          attributes: ["id", "name", "thumbnail", "slug"],
+        },
+      ],
+    });
+
+    if (!article) {
+      return ResponseAPI.notFound(res, "article tidak ditemukan");
+    }
+
+    return ResponseAPI.success(res, "Artikel berhasil didapatkan", {
+      article,
+    });
+  } catch (error) {
+    return ResponseAPI.error(res, error.message);
   }
 };
 
@@ -249,11 +309,12 @@ const deleteArticle = async (req, res) => {
 };
 
 export {
-  getAllArticle,
+  getAllArticleWithAuthorAndCategory,
   getAllById,
   createArticle,
   updateArticle,
   deleteArticle,
+  getArticleWithAuthorAndCategory,
   getArticlesBySlug,
   getArticlesByCategory,
   getArticlesByAuthor,

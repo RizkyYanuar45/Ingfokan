@@ -18,8 +18,10 @@ function Main() {
       <Carousel />
 
       <PopularPost />
+
       <NewPost />
       {/* <RandomCategory /> */}
+      <RandomCategory />
       <RandomCategory />
 
       {/* Footer */}

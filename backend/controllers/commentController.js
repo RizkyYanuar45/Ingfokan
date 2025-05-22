@@ -1,4 +1,5 @@
 import Comment from "./../models/comment.js";
+import User from "./../models/user.js";
 import ResponseAPI from "../helper/response.js";
 import jwt from "jsonwebtoken";
 
@@ -7,6 +8,30 @@ const getAllComment = async (req, res) => {
     const { article_id } = req.body;
     const comment = await Comment.findAll({
       where: { article_id: article_id },
+    });
+    if (!comment) {
+      return ResponseAPI.notFound(res, "tidak ada komentar");
+    }
+    return ResponseAPI.success(res, "success", {
+      comment,
+    });
+  } catch (error) {
+    return ResponseAPI.error(res, error.message);
+  }
+};
+
+const getCommentWithUser = async (req, res) => {
+  try {
+    const articleId = req.params.articleId;
+    const comment = await Comment.findAll({
+      where: { article_id: articleId },
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "name", "avatar"],
+        },
+      ],
     });
     if (!comment) {
       return ResponseAPI.notFound(res, "tidak ada komentar");
@@ -72,4 +97,4 @@ const deleteComment = async (req, res) => {
   }
 };
 
-export { createComment, deleteComment, getAllComment };
+export { createComment, deleteComment, getAllComment, getCommentWithUser };

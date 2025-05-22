@@ -11,7 +11,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
-function SearchPage() {
+function UserFavorites() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,8 +20,9 @@ function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Data state - now only need articles since they include author data
+  // Data state
   const [articles, setArticles] = useState([]);
+  const [authors, setAuthors] = useState([]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,33 +38,40 @@ function SearchPage() {
     }
   }, [location.search]);
 
-  // Fetch all articles on component mount
+  // Fetch all articles and authors on component mount
   useEffect(() => {
-    const fetchArticles = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch("http://localhost:3000/api/article");
-        if (!response.ok) {
+        // Fetch articles
+        const articlesResponse = await fetch(
+          "http://localhost:3000/api/article"
+        );
+        if (!articlesResponse.ok) {
           throw new Error("Failed to fetch articles");
         }
-        const data = await response.json();
+        const articlesData = await articlesResponse.json();
 
-        if (data.success) {
-          // Articles already include author and category data
-          setArticles(data.data.articles);
-          setError(null);
-        } else {
-          throw new Error("Failed to fetch articles");
+        // Fetch authors
+        const authorsResponse = await fetch("http://localhost:3000/api/author");
+        if (!authorsResponse.ok) {
+          throw new Error("Failed to fetch authors");
         }
+        const authorsData = await authorsResponse.json();
+
+        // Set the data
+        setArticles(articlesData.data.article);
+        setAuthors(authorsData.data.data);
+        setError(null);
       } catch (err) {
         setError(err.message);
-        console.error("Error fetching articles:", err);
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchArticles();
+    fetchData();
   }, []);
 
   // Filter articles based on search query
@@ -73,23 +81,33 @@ function SearchPage() {
       return;
     }
 
+    // Create combined data inside the effect to avoid dependency issues
+    const combinedArticles = articles.map((article) => {
+      const author = authors.find((author) => author.id === article.author_id);
+      return {
+        ...article,
+        author: author || {
+          name: "Unknown",
+          avatar: "https://randomuser.me/api/portraits/lego/1.jpg",
+        },
+      };
+    });
+
     const lowercaseQuery = searchQuery.toLowerCase();
-    const filteredResults = articles.filter(
+    const filteredResults = combinedArticles.filter(
       (article) =>
         article.title.toLowerCase().includes(lowercaseQuery) ||
         (article.content &&
           article.content.toLowerCase().includes(lowercaseQuery)) ||
-        (article.author?.name &&
-          article.author.name.toLowerCase().includes(lowercaseQuery)) ||
-        (article.category?.name &&
-          article.category.name.toLowerCase().includes(lowercaseQuery))
+        (article.author &&
+          article.author.name.toLowerCase().includes(lowercaseQuery))
     );
 
     setSearchResults(filteredResults);
     setCurrentPage(1);
     setPageInputValue("1");
     setIsSearching(true);
-  }, [searchQuery, articles]);
+  }, [searchQuery, articles, authors]);
 
   // Get total pages
   const totalPages = Math.ceil(searchResults.length / articlesPerPage);
@@ -217,7 +235,7 @@ function SearchPage() {
             <a>Home</a>
           </li>
           <li>
-            <a>Search</a>
+            <a>Bookmarks</a>
           </li>
         </ul>
       </div>
@@ -246,7 +264,7 @@ function SearchPage() {
       <div className="min-h-screen bg-gray-50 pb-8">
         {/* Header */}
         <header className="flex items-center mb-5 px-4">
-          <div className="bg-blue-500 w-1 h-3 rounded-lg mx-2"></div>
+          <div className="bg-primarycus w-1 h-3 rounded-lg mx-2"></div>
           <h2 className="font-bold text-base md:text-lg">
             {searchQuery
               ? `Search Results for: "${searchQuery}" (${searchResults.length} results)`
@@ -275,9 +293,8 @@ function SearchPage() {
                   {/* Article Image */}
                   <img
                     src={
-                      article.thumbnail
-                        ? `http://localhost:3000/${article.thumbnail}`
-                        : "/api/placeholder/300/200"
+                      `http://localhost:3000/${article.thumbnail}` ||
+                      "https://source.unsplash.com/random/300x200/?article"
                     }
                     alt={article.title}
                     className="w-full h-32 object-cover"
@@ -298,16 +315,15 @@ function SearchPage() {
                       <div className="flex items-center">
                         <img
                           src={
-                            article.author?.avatar
-                              ? `http://localhost:3000/${article.author.avatar}`
-                              : "/api/placeholder/24/24"
+                            `http://localhost:3000/${article.author.avatar}` ||
+                            "https://randomuser.me/api/portraits/lego/1.jpg"
                           }
-                          alt={article.author?.name || "Unknown Author"}
+                          alt={article.author.name}
                           className="w-6 h-6 rounded-full mr-2"
                         />
                         <div>
                           <p className="text-xs font-medium">
-                            {article.author?.name || "Unknown Author"}
+                            {article.author.name}
                           </p>
                           <p className="text-xs text-gray-500">
                             {formatDate(article.published_date)}
@@ -334,7 +350,7 @@ function SearchPage() {
                 Enter a search term to find articles
               </p>
               <p className="text-sm text-gray-500 mt-2">
-                You can search by title, content, author name, or category
+                You can search by title, content, or author name
               </p>
             </div>
           )}
@@ -404,4 +420,4 @@ function SearchPage() {
   );
 }
 
-export default SearchPage;
+export default UserFavorites;

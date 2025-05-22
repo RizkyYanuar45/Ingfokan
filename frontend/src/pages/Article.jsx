@@ -16,6 +16,7 @@ export default function Article() {
   const { slug } = useParams(); // Get slug from URL params
   const [article, setArticle] = useState(null);
   const [author, setAuthor] = useState(null);
+  const [category, setCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [randomArticles, setRandomArticles] = useState([]);
@@ -24,7 +25,6 @@ export default function Article() {
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(false);
-  const [users, setUsers] = useState({}); // Store users data with user_id as key
   const [currentUser, setCurrentUser] = useState(null); // Store current user data
 
   // Function to decode JWT token and extract user ID
@@ -74,35 +74,39 @@ export default function Article() {
     fetchRandomArticles();
   }, []);
 
-  // Fetch article data and then author data
+  // Fetch article data with author and category using the new combined endpoint
   useEffect(() => {
-    const fetchArticleAndAuthor = async () => {
+    const fetchArticleData = async () => {
       setLoading(true);
       try {
-        // Fetch article data using slug
-        const articleResponse = await fetch(
-          `http://localhost:3000/api/article/slug/${slug}`
+        // Fetch article data with author and category using the new combined endpoint
+        const response = await fetch(
+          `http://localhost:3000/api/article/author-category/${slug}`
         );
 
-        if (!articleResponse.ok) {
+        if (!response.ok) {
           throw new Error("Failed to fetch article data");
         }
 
-        const articleData = await articleResponse.json();
-        setArticle(articleData.data.article);
+        const data = await response.json();
 
-        // Fetch author data using author_id from article
-        if (articleData.data.article.author_id) {
-          const authorResponse = await fetch(
-            `http://localhost:3000/api/author/${articleData.data.article.author_id}`
-          );
+        if (data.success && data.data && data.data.article) {
+          const articleData = data.data.article;
 
-          if (!authorResponse.ok) {
-            throw new Error("Failed to fetch author data");
+          // Set article data
+          setArticle(articleData);
+
+          // Set author data from the nested author object
+          if (articleData.author) {
+            setAuthor(articleData.author);
           }
 
-          const authorData = await authorResponse.json();
-          setAuthor(authorData.data.data);
+          // Set category data from the nested category object
+          if (articleData.category) {
+            setCategory(articleData.category);
+          }
+        } else {
+          throw new Error("Invalid response format");
         }
 
         setLoading(false);
@@ -114,7 +118,7 @@ export default function Article() {
     };
 
     if (slug) {
-      fetchArticleAndAuthor();
+      fetchArticleData();
     }
   }, [slug]);
 
@@ -149,15 +153,15 @@ export default function Article() {
     fetchCurrentUser();
   }, []);
 
-  // Fetch comments for the article
+  // Fetch comments with user data for the article
   useEffect(() => {
-    const fetchComments = async () => {
+    const fetchCommentsWithUsers = async () => {
       if (!article || !article.id) return;
 
       setLoadingComments(true);
       try {
         const response = await fetch(
-          `http://localhost:3000/api/article/comment/${article.id}`
+          `http://localhost:3000/api/comment/user/${article.id}`
         );
 
         if (!response.ok) {
@@ -166,45 +170,8 @@ export default function Article() {
 
         const data = await response.json();
 
-        if (data.success && data.data && data.data.comments) {
-          setComments(data.data.comments);
-
-          // Get unique user IDs from comments
-          const userIds = [
-            ...new Set(data.data.comments.map((comment) => comment.user_id)),
-          ];
-
-          // Fetch user data for each unique user ID
-          const userDataPromises = userIds.map((userId) =>
-            fetch(`http://localhost:3000/api/user/${userId}`)
-              .then((response) => {
-                if (!response.ok) {
-                  throw new Error(`Failed to fetch user ${userId}`);
-                }
-                return response.json();
-              })
-              .then((data) => {
-                if (data.success && data.data && data.data.data) {
-                  return { userId, userData: data.data.data };
-                }
-                return { userId, userData: null };
-              })
-              .catch((err) => {
-                console.error(`Error fetching user ${userId}:`, err);
-                return { userId, userData: null };
-              })
-          );
-
-          // Wait for all user data requests to complete
-          const usersResults = await Promise.all(userDataPromises);
-
-          // Create a users object with user_id as key
-          const usersData = {};
-          usersResults.forEach((result) => {
-            usersData[result.userId] = result.userData;
-          });
-
-          setUsers(usersData);
+        if (data.success && data.data && data.data.comment) {
+          setComments(data.data.comment);
         }
       } catch (err) {
         console.error("Error fetching comments:", err);
@@ -213,7 +180,7 @@ export default function Article() {
       }
     };
 
-    fetchComments();
+    fetchCommentsWithUsers();
   }, [article]);
 
   const handleCommentSubmit = async (e) => {
@@ -262,26 +229,6 @@ export default function Article() {
 
         // Clear the comment input
         setCommentText("");
-
-        // If we don't have the user data for this user_id yet, fetch it
-        if (!users[newComment.user_id]) {
-          const userResponse = await fetch(
-            `http://localhost:3000/api/user/${newComment.user_id}`
-          );
-
-          if (userResponse.ok) {
-            const userData = await userResponse.json();
-
-            if (userData.success && userData.data && userData.data.data) {
-              setUsers((prevUsers) => ({
-                ...prevUsers,
-                [newComment.user_id]: userData.data.data,
-              }));
-            }
-          } else {
-            console.error("Error fetching new comment user data");
-          }
-        }
       } else {
         throw new Error(data.message || "Failed to post comment");
       }
@@ -354,20 +301,18 @@ export default function Article() {
   }
 
   // Get username display for a comment
-  const getUsernameDisplay = (userId) => {
-    const user = users[userId];
-    if (user && user.username) {
-      return user.username;
+  const getUsernameDisplay = (comment) => {
+    if (comment.user && comment.user.name) {
+      return comment.user.name;
     }
-    return `User #${userId}`; // Fallback if user data is not available
+    return `User #${comment.user_id}`; // Fallback if user data is not available
   };
 
-  const getAvatarDisplay = (userId) => {
-    const user = users[userId];
-    if (user && user.avatar) {
-      return user.avatar;
+  const getAvatarDisplay = (comment) => {
+    if (comment.user && comment.user.avatar) {
+      return `http://localhost:3000/${comment.user.avatar}`;
     }
-    return `api/placeholder/40/40`; // Fallback if user data is not available
+    return `http://localhost:3000/api/placeholder/40/40`; // Fallback if user data is not available
   };
 
   return (
@@ -382,6 +327,15 @@ export default function Article() {
               <h1 className="text-2xl md:text-3xl font-bold p-4 lg:p-6">
                 {article.title}
               </h1>
+
+              {/* Category Badge */}
+              {category && (
+                <div className="px-4 lg:px-6 pb-2">
+                  <span className="inline-block bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                    {category.name}
+                  </span>
+                </div>
+              )}
 
               {/* Hero Image */}
               <div className="relative">
@@ -418,9 +372,7 @@ export default function Article() {
                     <p className="font-medium">
                       {author?.name || "Unknown Author"}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      {author?.role || "Writer"}
-                    </p>
+                    <p className="text-xs text-gray-500">Writer</p>
                   </div>
                   <div className="ml-auto flex space-x-3">
                     <button
@@ -526,14 +478,7 @@ export default function Article() {
                         <div className="flex items-start">
                           <div className="flex-shrink-0 mr-3">
                             <img
-                              src={
-                                comment.user_id &&
-                                users[comment.user_id]?.avatar
-                                  ? `http://localhost:3000/${
-                                      users[comment.user_id].avatar
-                                    }`
-                                  : "http://localhost:3000/api/placeholder/40/40"
-                              }
+                              src={getAvatarDisplay(comment)}
                               alt="User Avatar"
                               className="w-10 h-10 rounded-full"
                             />
@@ -541,7 +486,7 @@ export default function Article() {
                           <div className="flex-grow">
                             <div className="flex items-center mb-1">
                               <h4 className="font-medium">
-                                {getUsernameDisplay(comment.user_id)}
+                                {getUsernameDisplay(comment)}
                               </h4>
                               <span className="text-xs text-gray-500 ml-2">
                                 {formatRelativeDate(comment.createdAt)}
@@ -603,6 +548,31 @@ export default function Article() {
                 <p className="text-sm text-gray-600 mt-3">{author.bio}</p>
               )}
             </div>
+
+            {/* Category Section */}
+            {category && (
+              <div className="bg-white p-4 rounded-lg shadow-md mb-4">
+                <h3 className="font-bold text-lg mb-2">Category</h3>
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-lg bg-gray-200 mr-3 flex-shrink-0">
+                    <img
+                      src={`http://localhost:3000/${category.thumbnail}`}
+                      alt={category.name}
+                      className="w-12 h-12 object-cover rounded-lg"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src =
+                          "http://localhost:3000/api/placeholder/48/48";
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <p className="font-medium capitalize">{category.name}</p>
+                    <p className="text-sm text-gray-500">Category</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Random Posts */}
             <div className="bg-white p-4 rounded-lg shadow-md mb-4">

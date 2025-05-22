@@ -26,4 +26,5 @@ const favorite = db.define("favorite", {
     },
   },
 });
+
 export default favorite;

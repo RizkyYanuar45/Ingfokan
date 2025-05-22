@@ -9,6 +9,7 @@ import cateoryRoutes from "./routes/categoryRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
 import favoriteRoutes from "./routes/favoriteRoutes.js";
 import articleRoutes from "./routes/articleRoutes.js";
+import setupAssociations from "./config/association.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -26,6 +27,9 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/images", express.static(path.join(__dirname, "images")));
 
 app.use(express.json());
+
+setupAssociations();
+
 app.use(urlencoded({ extended: true }));
 app.use(cors());
 

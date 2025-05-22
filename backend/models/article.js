@@ -49,9 +49,4 @@ const article = db.define("Article", {
   },
 });
 
-article.associate = (models) => {
-  article.belongsTo(models.category, { foreignKey: "category_id" });
-  article.belongsTo(models.author, { foreignKey: "author_id" });
-};
-
 export default article;

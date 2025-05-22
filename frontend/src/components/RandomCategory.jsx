@@ -6,13 +6,12 @@ function RandomCategory() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [articles, setArticles] = useState([]);
-  const [authors, setAuthors] = useState({});
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch categories and then articles filtered by random category
+  // Convert string to title case
   function toTitleCase(str) {
     return str
       .toLowerCase()
@@ -20,6 +19,8 @@ function RandomCategory() {
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
   }
+
+  // Fetch categories and articles
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -45,12 +46,41 @@ function RandomCategory() {
           return;
         }
 
-        // Pilih satu kategori secara acak
-        const randomIndex = Math.floor(Math.random() * allCategories.length);
-        const randomCategory = allCategories[randomIndex];
+        // Recursive function to select random category excluding "trending"
+        const selectRandomCategory = (categories, depth = 0) => {
+          // Prevent infinite recursion (max 100 attempts)
+          if (depth > 100) {
+            // Fallback: filter and get first non-trending category
+            const nonTrendingCategories = categories.filter(
+              (cat) => cat.name !== "trending"
+            );
+            return nonTrendingCategories.length > 0
+              ? nonTrendingCategories[0]
+              : null;
+          }
+
+          const randomIndex = Math.floor(Math.random() * categories.length);
+          const selectedCategory = categories[randomIndex];
+
+          // If trending, recursively try again
+          if (selectedCategory.name === "trending") {
+            return selectRandomCategory(categories, depth + 1);
+          }
+
+          return selectedCategory;
+        };
+
+        const randomCategory = selectRandomCategory(allCategories);
+
+        if (!randomCategory) {
+          setError("No suitable categories found");
+          setLoading(false);
+          return;
+        }
+
         setSelectedCategory(randomCategory);
 
-        // Fetch all articles
+        // Fetch all articles (now includes author and category data)
         const articleResponse = await fetch(
           "http://localhost:3000/api/article"
         );
@@ -60,14 +90,14 @@ function RandomCategory() {
           throw new Error("Failed to fetch articles");
         }
 
-        const allArticles = articleResult.data.article || [];
+        const allArticles = articleResult.data.articles || [];
 
-        // Filter artikel berdasarkan category_id yang sesuai dengan kategori yang dipilih
+        // Filter articles by the selected random category
         const filteredArticles = allArticles.filter(
           (article) => article.category_id === randomCategory.id
         );
 
-        // Urutkan artikel berdasarkan published_date terbaru dan ambil 6 artikel pertama
+        // Sort articles by published_date (newest first) and take first 6
         const sortedArticles = filteredArticles
           .sort(
             (a, b) =>
@@ -77,9 +107,6 @@ function RandomCategory() {
           .slice(0, 6);
 
         setArticles(sortedArticles);
-
-        // Fetch author info untuk artikel yang sudah difilter dan diurutkan
-        await fetchAuthors(sortedArticles);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -90,29 +117,7 @@ function RandomCategory() {
     fetchData();
   }, []);
 
-  // Fetch author information for each article
-  const fetchAuthors = async (articles) => {
-    const authorsData = {};
-
-    for (const article of articles) {
-      try {
-        const response = await fetch(
-          `http://localhost:3000/api/author/${article.author_id}`
-        );
-        const result = await response.json();
-
-        if (result.success) {
-          authorsData[article.author_id] = result.data.data;
-        }
-      } catch (err) {
-        console.error(`Error fetching author ${article.author_id}:`, err);
-      }
-    }
-
-    setAuthors(authorsData);
-  };
-
-  // Fungsi untuk membuat excerpt dari konten HTML
+  // Create excerpt from HTML content
   const createExcerpt = (htmlContent, maxLength = 80) => {
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = htmlContent;
@@ -223,7 +228,6 @@ function RandomCategory() {
             style={{ transform: getTranslateValue() }}
           >
             {articles.map((article) => {
-              const author = authors[article.author_id] || {};
               return (
                 <div
                   key={article.id}
@@ -250,8 +254,8 @@ function RandomCategory() {
                         <div className="flex items-center">
                           <img
                             src={
-                              author.avatar
-                                ? `http://localhost:3000/${author.avatar}`
+                              article.author?.avatar
+                                ? `http://localhost:3000/${article.author.avatar}`
                                 : "/api/placeholder/32/32"
                             }
                             alt=""
@@ -261,7 +265,7 @@ function RandomCategory() {
                           />
                           <div className="flex flex-col ml-2">
                             <h2 className="font-bold text-sm md:text-base">
-                              {author.name || "Unknown Author"}
+                              {article.author?.name || "Unknown Author"}
                             </h2>
                             <p className="font-light text-xs md:text-sm">
                               {formatDate(article.published_date)}

@@ -6,11 +6,10 @@ function PopularPost() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [articles, setArticles] = useState([]);
-  const [authors, setAuthors] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch articles with category === trend
+  // Fetch articles - now using single API endpoint
   useEffect(() => {
     const fetchArticles = async () => {
       try {
@@ -18,21 +17,18 @@ function PopularPost() {
         const result = await response.json();
 
         if (result.success) {
-          const allArticles = result.data.article;
+          const allArticles = result.data.articles;
 
-          // Urutkan artikel berdasarkan published_date terbaru
+          // Sort articles by published_date (newest first) and take first 6
           const sortedArticles = allArticles
             .sort(
               (a, b) =>
                 new Date(b.published_date).getTime() -
                 new Date(a.published_date).getTime()
             )
-            .slice(0, 6); // Ambil 6 artikel terbaru
+            .slice(0, 6);
 
           setArticles(sortedArticles);
-
-          // Fetch author info untuk artikel yang sudah diurutkan
-          await fetchAuthors(sortedArticles);
         } else {
           setError("Failed to fetch articles");
         }
@@ -46,38 +42,16 @@ function PopularPost() {
     fetchArticles();
   }, []);
 
-  // Fetch author information for each article
-  const fetchAuthors = async (articles) => {
-    const authorsData = {};
-
-    for (const article of articles) {
-      try {
-        const response = await fetch(
-          `http://localhost:3000/api/author/${article.author_id}`
-        );
-        const result = await response.json();
-
-        if (result.success) {
-          authorsData[article.author_id] = result.data.data;
-        }
-      } catch (err) {
-        console.error(`Error fetching author ${article.author_id}:`, err);
-      }
-    }
-
-    setAuthors(authorsData);
-  };
-
-  // Fungsi untuk membuat excerpt dari konten HTML
+  // Function to create excerpt from HTML content
   const createExcerpt = (htmlContent, maxLength = 80) => {
-    // Buat elemen div sementara untuk parsing HTML
+    // Create temporary div element for HTML parsing
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = htmlContent;
 
-    // Ambil text content saja (tanpa tag HTML)
+    // Get text content only (without HTML tags)
     const textContent = tempDiv.textContent || tempDiv.innerText || "";
 
-    // Batasi panjang text dan tambahkan ellipsis jika terpotong
+    // Limit text length and add ellipsis if truncated
     if (textContent.length <= maxLength) {
       return textContent;
     }
@@ -176,7 +150,7 @@ function PopularPost() {
       </div>
 
       {articles.length === 0 ? (
-        <div className="text-center py-8">No trend articles found</div>
+        <div className="text-center py-8">No articles found</div>
       ) : (
         <div className="overflow-hidden">
           <div
@@ -184,7 +158,10 @@ function PopularPost() {
             style={{ transform: getTranslateValue() }}
           >
             {articles.map((article) => {
-              const author = authors[article.author_id] || {};
+              // Author and category data are now embedded in the article object
+              const author = article.author || {};
+              const category = article.category || {};
+
               return (
                 <div
                   key={article.id}
@@ -207,6 +184,14 @@ function PopularPost() {
                       <p className="text-sm md:text-base text-gray-600 line-clamp-2">
                         {createExcerpt(article.content)}
                       </p>
+
+                      {/* Category badge (optional) */}
+                      {category.name && (
+                        <div className="badge badge-outline text-xs">
+                          {category.name}
+                        </div>
+                      )}
+
                       <div className="card-actions justify-between items-center bg-gray-200 p-2 md:p-3 rounded-xl mt-3 md:mt-4">
                         <div className="flex items-center">
                           <img

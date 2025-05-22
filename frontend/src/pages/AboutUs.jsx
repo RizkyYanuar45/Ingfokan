@@ -31,45 +31,22 @@ export default function AboutUs() {
             <img
               src={Office}
               alt="Office"
-              className="w-full h-auto md:w-[744px] md:h-[444px] object-cover rounded-lg order-first md:order-last"
+              className="w-full h-auto md:w-[544px] md:h-[244px] object-cover rounded-lg order-first md:order-last"
             />
             <p className="p-3 sm:p-5 text-sm sm:text-base order-last md:order-first">
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. At, qui
-              officiis? Dolore error libero perferendis suscipit fugit ipsa
-              dolorem. Iste eaque incidunt atque, porro quidem debitis, minus
-              illo sapiente illum expedita optio aliquid similique beatae iure,
-              itaque cum! Eveniet impedit quo libero excepturi quis expedita
-              sapiente facere quod possimus, consequatur voluptate explicabo ad,
-              et ut, voluptates dolor? Alias maiores esse quae temporibus fuga
-              natus architecto, aliquid praesentium id veritatis, laborum error
-              aliquam blanditiis. Temporibus laudantium incidunt maiores, vel
-              quaerat est quia similique facilis voluptatum facere eveniet
-              laboriosam libero consequatur corporis soluta corrupti eaque? Quam
-              optio facilis tenetur quisquam eveniet nobis accusantium
-              necessitatibus iste adipisci debitis placeat inventore deserunt
-              modi sapiente aspernatur ab, magnam hic nostrum eum doloremque
-              similique nulla doloribus aperiam! Quibusdam, reprehenderit rerum
-              quod nesciunt dicta dignissimos unde sit placeat officiis expedita
-              quo laudantium et quis tenetur laboriosam nobis exercitationem
-              nisi iusto necessitatibus rem omnis. Aliquam voluptas quisquam,
-              laudantium iste itaque cum veritatis expedita sapiente fugiat nemo
-              earum tenetur, cupiditate porro enim, voluptatum rem. Cupiditate
-              maiores numquam non illum provident iusto harum voluptates ipsa
-              fugit? Atque magni, enim ipsa perferendis pariatur assumenda, fuga
-              vel minus adipisci soluta sapiente dolores molestias dignissimos
-              sunt quaerat officiis recusandae? Eius rerum, asperiores labore
-              atque aut at adipisci qui? Laudantium excepturi maxime neque omnis
-              voluptatibus, repellendus esse nihil porro eos rerum blanditiis
-              eius! Magnam laudantium adipisci ad? Quibusdam, incidunt quis.
-              Delectus non, temporibus atque officia omnis fugiat eaque, sequi
-              molestiae corporis cum deleniti inventore in laudantium sint
-              beatae quos voluptatum. Harum commodi et facere magni consectetur
-              quis enim, aut reiciendis veniam sapiente velit reprehenderit
-              delectus vel esse nostrum ad quos dolores ducimus? Temporibus,
-              dolor, consectetur inventore cupiditate numquam maiores rerum
-              voluptates eos, impedit ea odio possimus! Porro, animi quidem
-              tempora ea dicta sequi quas, sint maiores ratione nulla impedit
-              ipsam? Cum odit aperiam error.
+              Ingfokan adalah perusahaan media digital yang bergerak di bidang
+              penyediaan informasi terkini, akurat, dan terpercaya. Kami hadir
+              untuk menjawab kebutuhan masyarakat akan akses informasi yang
+              cepat dan mudah dipahami dalam berbagai bidang seperti berita
+              harian, edukasi, gaya hidup, teknologi, bisnis, hingga hiburan.
+              Dengan mengusung semangat “Memberi Tahu, Membuka Wawasan,”
+              Ingfokan berkomitmen untuk menjadi sumber informasi yang tidak
+              hanya relevan tetapi juga berdampak. Kami menyajikan konten dengan
+              integritas, objektivitas, dan dedikasi terhadap keakuratan, serta
+              menjunjung tinggi nilai transparansi dalam setiap pemberitaan.
+              Didukung oleh tim redaksi profesional dan teknologi informasi
+              terkini, Ingfokan terus berinovasi untuk menyajikan konten yang
+              segar, interaktif, dan dapat diakses kapan saja dan di mana saja.
             </p>
           </div>
         </div>
@@ -80,6 +57,8 @@ export default function AboutUs() {
             src={Office}
             alt="Office"
             className="w-full h-auto sm:w-[840px] sm:h-[297px] object-cover rounded-lg"
+            height={24}
+            width={24}
           />
         </div>
 

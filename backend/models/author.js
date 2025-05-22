@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import db from "../config/database.js";
 
-const author = db.define("author", {
+const Author = db.define("Author", {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -24,4 +24,4 @@ const author = db.define("author", {
   },
 });
 
-export default author;
+export default Author;

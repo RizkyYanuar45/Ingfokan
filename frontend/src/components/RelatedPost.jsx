@@ -6,97 +6,64 @@ function RelatedPost({ authorId }) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [articles, setArticles] = useState([]);
-  const [authors, setAuthors] = useState({});
+  const [author, setAuthor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch articles related to author
+  // Fetch author with their articles using the new combined endpoint
   useEffect(() => {
-    const fetchArticles = async () => {
+    const fetchAuthorWithArticles = async () => {
       try {
-        // Use the correct API endpoint for fetching articles by author ID
         const response = await fetch(
-          `http://localhost:3000/api/article/author?author_id=${authorId}`
+          `http://localhost:3000/api/author/articles/${authorId}`
         );
 
         if (!response.ok) {
           throw new Error(`API responded with status: ${response.status}`);
         }
 
-        // Based on the provided response example, the data is an array directly
-        const articlesData = await response.json();
+        const data = await response.json();
 
-        if (Array.isArray(articlesData)) {
-          // Sort articles by published_date (newest first)
-          const sortedArticles = articlesData
-            .sort(
-              (a, b) =>
-                new Date(b.published_date).getTime() -
-                new Date(a.published_date).getTime()
-            )
-            .slice(0, 6); // Take up to 6 newest articles
+        if (data.success && data.data && data.data.data) {
+          const authorData = data.data.data;
 
-          setArticles(sortedArticles);
+          // Set author information
+          setAuthor(authorData);
 
-          // Fetch author info after articles are loaded
-          if (sortedArticles.length > 0) {
-            await fetchAuthors(sortedArticles);
+          // Set articles from the author data
+          if (authorData.articles && Array.isArray(authorData.articles)) {
+            // Sort articles by createdAt (newest first) and take up to 6 articles
+            const sortedArticles = authorData.articles
+              .sort(
+                (a, b) =>
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime()
+              )
+              .slice(0, 6);
+
+            setArticles(sortedArticles);
+          } else {
+            setArticles([]);
           }
         } else {
           setError("Invalid response format from API");
-          console.error("Unexpected API response:", articlesData);
+          console.error("Unexpected API response:", data);
         }
       } catch (err) {
-        setError("Error fetching articles: " + err.message);
-        console.error("Error fetching articles:", err);
+        setError("Error fetching author articles: " + err.message);
+        console.error("Error fetching author articles:", err);
       } finally {
         setLoading(false);
       }
     };
 
     if (authorId) {
-      fetchArticles();
+      fetchAuthorWithArticles();
     } else {
       setLoading(false);
       setError("Author ID is required");
     }
   }, [authorId]);
-
-  // Fetch author information for each article
-  const fetchAuthors = async (articlesData) => {
-    const authorsData = {};
-    const uniqueAuthorIds = [
-      ...new Set(articlesData.map((article) => article.author_id)),
-    ];
-
-    for (const authorId of uniqueAuthorIds) {
-      if (!authorId) continue;
-
-      try {
-        const response = await fetch(
-          `http://localhost:3000/api/author/${authorId}`
-        );
-
-        if (!response.ok) {
-          console.error(
-            `Failed to fetch author ${authorId}: ${response.status}`
-          );
-          continue;
-        }
-
-        const result = await response.json();
-
-        if (result.success && result.data && result.data.data) {
-          // Store author data correctly according to the API response structure
-          authorsData[authorId] = result.data.data;
-        }
-      } catch (err) {
-        console.error(`Error fetching author ${authorId}:`, err);
-      }
-    }
-
-    setAuthors(authorsData);
-  };
 
   // Create excerpt from HTML content
   const createExcerpt = (htmlContent, maxLength = 80) => {
@@ -194,7 +161,7 @@ function RelatedPost({ authorId }) {
         <div className="flex items-center">
           <div className="bg-primarycus w-1 h-3 rounded-4xl mx-2"></div>
           <h2 className="font-bold text-base md:text-lg">
-            {"Related Post By " + (authors[authorId]?.name || "Unknown Author")}
+            {"Related Post By " + (author?.name || "Unknown Author")}
           </h2>
         </div>
 
@@ -227,7 +194,6 @@ function RelatedPost({ authorId }) {
             style={{ transform: getTranslateValue() }}
           >
             {articles.map((article) => {
-              const author = authors[article.author_id] || {};
               return (
                 <div
                   key={article.id}
@@ -251,6 +217,16 @@ function RelatedPost({ authorId }) {
                       <h2 className="card-title text-base md:text-lg font-bold">
                         {article.title || "Untitled Article"}
                       </h2>
+
+                      {/* Category Badge */}
+                      {article.category && (
+                        <div className="mb-2">
+                          <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full capitalize">
+                            {article.category.name}
+                          </span>
+                        </div>
+                      )}
+
                       <p className="text-sm md:text-base text-gray-600 line-clamp-2">
                         {createExcerpt(article.content)}
                       </p>
@@ -258,21 +234,21 @@ function RelatedPost({ authorId }) {
                         <div className="flex items-center">
                           <img
                             src={
-                              author.avatar
+                              author?.avatar
                                 ? `http://localhost:3000/${author.avatar}`
                                 : "/api/placeholder/32/32"
                             }
-                            alt={author.name || "Author avatar"}
+                            alt={author?.name || "Author avatar"}
                             width={32}
                             height={32}
                             className="w-8 h-8 md:w-10 md:h-10 rounded-xl"
                           />
                           <div className="flex flex-col ml-2">
                             <h2 className="font-bold text-sm md:text-base">
-                              {author.name || "Unknown Author"}
+                              {author?.name || "Unknown Author"}
                             </h2>
                             <p className="font-light text-xs md:text-sm">
-                              {formatDate(article.published_date)}
+                              {formatDate(article.createdAt)}
                             </p>
                           </div>
                         </div>

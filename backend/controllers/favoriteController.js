@@ -16,6 +16,23 @@ const getAllFavorite = async (req, res) => {
   }
 };
 
+const getFavoriteByUserId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await Favorite.findAll({
+      where: { user_id: id },
+    });
+    if (!result) {
+      return ResponseAPI.notFound(res, "belum ada yang di favoritkan");
+    }
+    return ResponseAPI.success(res, "success", {
+      result,
+    });
+  } catch (error) {
+    return ResponseAPI.error(res, error.message);
+  }
+};
+
 const createFavorite = async (req, res) => {
   try {
     const { user_id, article_id } = req.body;
@@ -40,4 +57,4 @@ const deleteFavorite = async (req, res) => {
   }
 };
 
-export { getAllFavorite, createFavorite, deleteFavorite };
+export { getAllFavorite, getFavoriteByUserId, createFavorite, deleteFavorite };
