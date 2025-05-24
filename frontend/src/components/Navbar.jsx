@@ -394,7 +394,7 @@ function Navbar() {
                 </a>
                 <a
                   href="/signup"
-                  className="block w-full py-2 text-center text-base font-medium text-white bg-blue-600 rounded-lg"
+                  className="block w-full py-2 text-center text-base font-medium text-white bg-secondarycus  hover:bg-primarycus rounded-lg"
                 >
                   Sign Up
                 </a>

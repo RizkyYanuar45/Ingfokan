@@ -187,7 +187,7 @@ function PopularPost() {
 
                       {/* Category badge (optional) */}
                       {category.name && (
-                        <div className="badge badge-outline text-xs">
+                        <div className="badge badge-outline text-xs text-white bg-secondarycus">
                           {category.name}
                         </div>
                       )}

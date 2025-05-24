@@ -221,7 +221,7 @@ function RelatedPost({ authorId }) {
                       {/* Category Badge */}
                       {article.category && (
                         <div className="mb-2">
-                          <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full capitalize">
+                          <span className="inline-block bg-orange-100 text-orange-800 text-xs font-medium px-2 py-1 rounded-full capitalize">
                             {article.category.name}
                           </span>
                         </div>

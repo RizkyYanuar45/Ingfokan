@@ -101,12 +101,12 @@ export default function Dashboard() {
         const categoriesData = await categoriesResponse.json();
 
         // Update state with fetched data
-        setTotalArticles(articlesData.data.article.length);
+        setTotalArticles(articlesData.data.articles.length);
         setTotalUsers(usersData.data.data.length);
         setTotalAuthors(authorsData.data.data.length);
         setTotalCategories(categoriesData.data.category.length);
 
-        const articles = articlesData.data.article;
+        const articles = articlesData.data.articles;
 
         // Sort articles by most recent and take top 5
         const sortedArticles = articles.sort((a, b) => b.id - a.id).slice(0, 5);

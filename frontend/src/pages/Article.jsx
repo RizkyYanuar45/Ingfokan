@@ -1,69 +1,37 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import {
-  Heart,
-  MessageCircle,
-  Share2,
-  BookmarkPlus,
-  ChevronRight,
-  Send,
-} from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import RelatedPost from "../components/RelatedPost";
+import ArticleContent from "../components/ArticlePage/ArticleContent";
+import CommentSection from "../components/ArticlePage/CommentSection";
+import Sidebar from "../components/ArticlePage/SideBarComponent";
+import { getUserIdFromToken } from "../utils/getUserIdFromToken";
 
 export default function Article() {
-  const { slug } = useParams(); // Get slug from URL params
+  const { slug } = useParams();
   const [article, setArticle] = useState(null);
   const [author, setAuthor] = useState(null);
   const [category, setCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [randomArticles, setRandomArticles] = useState([]);
-
-  const [isLiked, setIsLiked] = useState(false);
-  const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null); // Store current user data
-
-  // Function to decode JWT token and extract user ID
-  const getUserIdFromToken = (token) => {
-    try {
-      // JWT tokens are split into three parts by dots
-      const payload = token.split(".")[1];
-      // The middle part is the payload, which we need to decode
-      const decodedPayload = JSON.parse(atob(payload));
-      // Extract the user ID from the payload
-      // Note: The property name might be different based on your JWT structure
-      // Common names include 'id', 'sub', 'userId', etc.
-      return decodedPayload.id || decodedPayload.sub || decodedPayload.userId;
-    } catch (error) {
-      console.error("Error decoding token:", error);
-      return null;
-    }
-  };
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Fetch random articles for sidebar
   useEffect(() => {
     const fetchRandomArticles = async () => {
       try {
         const response = await fetch("http://localhost:3000/api/article");
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch random articles");
-        }
+        if (!response.ok) throw new Error("Failed to fetch random articles");
 
         const data = await response.json();
-
-        if (data.success && data.data && data.data.article) {
-          // Get all articles
-          const allArticles = data.data.article;
-
-          // Shuffle array and take first 5
+        if (data.success && data.data && data.data.articles) {
+          const allArticles = data.data.articles;
           const shuffled = [...allArticles].sort(() => 0.5 - Math.random());
           const selected = shuffled.slice(0, 5);
-
           setRandomArticles(selected);
         }
       } catch (err) {
@@ -74,45 +42,31 @@ export default function Article() {
     fetchRandomArticles();
   }, []);
 
-  // Fetch article data with author and category using the new combined endpoint
+  // Fetch article data
   useEffect(() => {
     const fetchArticleData = async () => {
       setLoading(true);
       try {
-        // Fetch article data with author and category using the new combined endpoint
         const response = await fetch(
           `http://localhost:3000/api/article/author-category/${slug}`
         );
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch article data");
-        }
+        if (!response.ok) throw new Error("Failed to fetch article data");
 
         const data = await response.json();
-
         if (data.success && data.data && data.data.article) {
           const articleData = data.data.article;
-
-          // Set article data
           setArticle(articleData);
 
-          // Set author data from the nested author object
-          if (articleData.author) {
-            setAuthor(articleData.author);
-          }
-
-          // Set category data from the nested category object
-          if (articleData.category) {
-            setCategory(articleData.category);
-          }
+          if (articleData.author) setAuthor(articleData.author);
+          if (articleData.category) setCategory(articleData.category);
         } else {
           throw new Error("Invalid response format");
         }
-
-        setLoading(false);
       } catch (err) {
         console.error("Error fetching data:", err);
         setError(err.message);
+      } finally {
         setLoading(false);
       }
     };
@@ -127,16 +81,12 @@ export default function Article() {
     const fetchCurrentUser = async () => {
       try {
         const token = localStorage.getItem("token");
-
         if (token) {
-          // Extract user ID from the JWT token instead of directly from localStorage
           const userId = getUserIdFromToken(token);
-
           if (userId) {
             const response = await fetch(
               `http://localhost:3000/api/user/${userId}`
             );
-
             if (response.ok) {
               const data = await response.json();
               if (data.success && data.data && data.data.data) {
@@ -153,7 +103,7 @@ export default function Article() {
     fetchCurrentUser();
   }, []);
 
-  // Fetch comments with user data for the article
+  // Fetch comments
   useEffect(() => {
     const fetchCommentsWithUsers = async () => {
       if (!article || !article.id) return;
@@ -164,12 +114,9 @@ export default function Article() {
           `http://localhost:3000/api/comment/user/${article.id}`
         );
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch comments");
-        }
+        if (!response.ok) throw new Error("Failed to fetch comments");
 
         const data = await response.json();
-
         if (data.success && data.data && data.data.comment) {
           setComments(data.data.comment);
         }
@@ -183,28 +130,19 @@ export default function Article() {
     fetchCommentsWithUsers();
   }, [article]);
 
-  const handleCommentSubmit = async (e) => {
-    e.preventDefault();
-    if (commentText.trim() === "") return;
-
+  const handleCommentSubmit = async (commentText) => {
     try {
-      // Get the user token from localStorage
       const token = localStorage.getItem("token");
-
       if (!token) {
-        // Handle the case where the user is not logged in
         alert("Please log in to post a comment");
         return;
       }
 
-      // Create the request payload
       const commentData = {
         article_id: article.id,
         content: commentText,
-        // The user_id will be extracted from the token on the server side
       };
 
-      // Send the POST request to the API
       const response = await fetch("http://localhost:3000/api/comment", {
         method: "POST",
         headers: {
@@ -214,49 +152,18 @@ export default function Article() {
         body: JSON.stringify(commentData),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to post comment");
-      }
+      if (!response.ok) throw new Error("Failed to post comment");
 
       const data = await response.json();
-
       if (data.success) {
-        // If successful, get the new comment data from the response
         const newComment = data.data.comment;
-
-        // Add the new comment to the comments list
         setComments([newComment, ...comments]);
-
-        // Clear the comment input
-        setCommentText("");
       } else {
         throw new Error(data.message || "Failed to post comment");
       }
     } catch (err) {
       console.error("Error posting comment:", err);
       alert("Failed to post comment: " + err.message);
-    }
-  };
-
-  // Format date for display
-  const formatDate = (dateString) => {
-    const options = { year: "numeric", month: "long", day: "numeric" };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
-
-  // Format date as "X days ago"
-  const formatRelativeDate = (dateString) => {
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) {
-      return "Today";
-    } else if (diffDays === 1) {
-      return "1 day ago";
-    } else {
-      return `${diffDays} days ago`;
     }
   };
 
@@ -300,21 +207,6 @@ export default function Article() {
     );
   }
 
-  // Get username display for a comment
-  const getUsernameDisplay = (comment) => {
-    if (comment.user && comment.user.name) {
-      return comment.user.name;
-    }
-    return `User #${comment.user_id}`; // Fallback if user data is not available
-  };
-
-  const getAvatarDisplay = (comment) => {
-    if (comment.user && comment.user.avatar) {
-      return `http://localhost:3000/${comment.user.avatar}`;
-    }
-    return `http://localhost:3000/api/placeholder/40/40`; // Fallback if user data is not available
-  };
-
   return (
     <div>
       <Navbar />
@@ -322,333 +214,29 @@ export default function Article() {
         {/* Main Content */}
         <div className="w-full lg:w-2/3 p-4 lg:p-8">
           <div className="max-w-4xl mx-auto">
-            {/* Main Article */}
-            <article className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-              <h1 className="text-2xl md:text-3xl font-bold p-4 lg:p-6">
-                {article.title}
-              </h1>
+            <ArticleContent
+              article={article}
+              author={author}
+              category={category}
+            />
 
-              {/* Category Badge */}
-              {category && (
-                <div className="px-4 lg:px-6 pb-2">
-                  <span className="inline-block bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                    {category.name}
-                  </span>
-                </div>
-              )}
-
-              {/* Hero Image */}
-              <div className="relative">
-                <img
-                  src={
-                    `http://localhost:3000/${article.thumbnail}` ||
-                    "/api/placeholder/800/400"
-                  }
-                  alt={article.title}
-                  className="w-full h-auto object-cover"
-                />
-                <div className="absolute bottom-4 left-4 bg-white bg-opacity-70 p-2 rounded-full">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-800">
-                      {formatDate(article.published_date)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Article Content */}
-              <div className="p-4 lg:p-6">
-                <div className="flex items-center mb-4">
-                  <div className="w-10 h-10 rounded-full bg-red-500 mr-3">
-                    {author?.avatar && (
-                      <img
-                        src={`http://localhost:3000/${author.avatar}`}
-                        alt={author.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-medium">
-                      {author?.name || "Unknown Author"}
-                    </p>
-                    <p className="text-xs text-gray-500">Writer</p>
-                  </div>
-                  <div className="ml-auto flex space-x-3">
-                    <button
-                      onClick={() => setIsLiked(!isLiked)}
-                      className="flex items-center text-gray-500 hover:text-red-500"
-                    >
-                      <Heart
-                        className={`w-5 h-5 ${
-                          isLiked ? "fill-red-500 text-red-500" : ""
-                        }`}
-                      />
-                      <span className="ml-1 text-sm">{article.likes || 0}</span>
-                    </button>
-                    <button className="flex items-center text-gray-500 hover:text-blue-500">
-                      <MessageCircle className="w-5 h-5" />
-                      <span className="ml-1 text-sm">{comments.length}</span>
-                    </button>
-                    <button className="flex items-center text-gray-500 hover:text-green-500">
-                      <Share2 className="w-5 h-5" />
-                    </button>
-                    <button className="flex items-center text-gray-500 hover:text-purple-500">
-                      <BookmarkPlus className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-
-                <div
-                  className="text-gray-700 mb-6"
-                  dangerouslySetInnerHTML={{ __html: article.content }}
-                />
-              </div>
-            </article>
-
-            {/* Comment Section */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-              <div className="p-4 lg:p-6 border-b">
-                <h2 className="text-xl font-bold flex items-center">
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                  Comments ({comments.length})
-                </h2>
-              </div>
-
-              {/* Comment Form */}
-              <div className="p-4 lg:p-6 border-b">
-                <form onSubmit={handleCommentSubmit} className="flex flex-col">
-                  <div className="flex items-start mb-4">
-                    <img
-                      src={
-                        currentUser && currentUser.avatar
-                          ? `http://localhost:3000/${currentUser.avatar}`
-                          : "http://localhost:3000/api/placeholder/40/40"
-                      }
-                      alt="Your Avatar"
-                      className="w-10 h-10 rounded-full bg-blue-500 mr-3 flex-shrink-0"
-                    />
-                    <div className="flex-grow">
-                      <textarea
-                        value={commentText}
-                        onChange={(e) => setCommentText(e.target.value)}
-                        placeholder="Write your comment..."
-                        className="w-full border border-gray-300 rounded-lg p-3 h-24 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                      ></textarea>
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg px-4 py-2 flex items-center"
-                      disabled={commentText.trim() === ""}
-                    >
-                      <Send className="w-4 h-4 mr-2" />
-                      Post Comment
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              {/* Comments List */}
-              <div className="divide-y">
-                {loadingComments
-                  ? // Loading skeleton for comments
-                    Array(3)
-                      .fill()
-                      .map((_, index) => (
-                        <div key={index} className="p-4 lg:p-6">
-                          <div className="flex items-start">
-                            <div className="flex-shrink-0 mr-3">
-                              <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
-                            </div>
-                            <div className="flex-grow">
-                              <div className="flex items-center mb-1">
-                                <div className="bg-gray-200 animate-pulse h-4 w-24 rounded"></div>
-                                <div className="bg-gray-200 animate-pulse h-3 w-16 rounded ml-2"></div>
-                              </div>
-                              <div className="bg-gray-200 animate-pulse h-4 w-full rounded mb-3"></div>
-                              <div className="bg-gray-200 animate-pulse h-4 w-3/4 rounded"></div>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                  : comments.map((comment) => (
-                      <div key={comment.id} className="p-4 lg:p-6">
-                        <div className="flex items-start">
-                          <div className="flex-shrink-0 mr-3">
-                            <img
-                              src={getAvatarDisplay(comment)}
-                              alt="User Avatar"
-                              className="w-10 h-10 rounded-full"
-                            />
-                          </div>
-                          <div className="flex-grow">
-                            <div className="flex items-center mb-1">
-                              <h4 className="font-medium">
-                                {getUsernameDisplay(comment)}
-                              </h4>
-                              <span className="text-xs text-gray-500 ml-2">
-                                {formatRelativeDate(comment.createdAt)}
-                              </span>
-                            </div>
-                            <p className="text-gray-700 mb-3">
-                              {comment.content}
-                            </p>
-                            <div className="flex items-center text-sm text-gray-500">
-                              <button className="flex items-center mr-4 hover:text-red-500">
-                                <Heart className="w-4 h-4 mr-1" />
-                                <span>Like</span>
-                              </button>
-                              <button className="flex items-center mr-4 hover:text-blue-500">
-                                <MessageCircle className="w-4 h-4 mr-1" />
-                                <span>Reply</span>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                {!loadingComments && comments.length === 0 && (
-                  <div className="p-4 lg:p-6 text-center text-gray-500">
-                    No comments yet. Be the first to comment!
-                  </div>
-                )}
-              </div>
-            </div>
+            <CommentSection
+              comments={comments}
+              loadingComments={loadingComments}
+              currentUser={currentUser}
+              onCommentSubmit={handleCommentSubmit}
+            />
           </div>
         </div>
 
         {/* Sidebar */}
-        <div className="w-full lg:w-1/3 p-4 bg-white lg:bg-gray-50">
-          <div className="lg:sticky lg:top-4">
-            {/* Author Profile Section */}
-            <div className="bg-white p-4 rounded-lg shadow-md mb-4">
-              <div className="flex items-center">
-                <div className="w-12 h-12 rounded-full bg-red-500 mr-3">
-                  {author?.avatar && (
-                    <img
-                      src={`http://localhost:3000/${author.avatar}`}
-                      alt={author.name}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                  )}
-                </div>
-                <div>
-                  <p className="font-medium">
-                    {author?.name || "Unknown Author"}
-                  </p>
-                  <button className="mt-1 bg-red-500 text-white text-xs px-3 py-1 rounded-full">
-                    Follow
-                  </button>
-                </div>
-              </div>
-              {author?.bio && (
-                <p className="text-sm text-gray-600 mt-3">{author.bio}</p>
-              )}
-            </div>
-
-            {/* Category Section */}
-            {category && (
-              <div className="bg-white p-4 rounded-lg shadow-md mb-4">
-                <h3 className="font-bold text-lg mb-2">Category</h3>
-                <div className="flex items-center">
-                  <div className="w-12 h-12 rounded-lg bg-gray-200 mr-3 flex-shrink-0">
-                    <img
-                      src={`http://localhost:3000/${category.thumbnail}`}
-                      alt={category.name}
-                      className="w-12 h-12 object-cover rounded-lg"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src =
-                          "http://localhost:3000/api/placeholder/48/48";
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <p className="font-medium capitalize">{category.name}</p>
-                    <p className="text-sm text-gray-500">Category</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Random Posts */}
-            <div className="bg-white p-4 rounded-lg shadow-md mb-4">
-              <h3 className="font-bold text-lg mb-4">Random Posts</h3>
-
-              {randomArticles.length > 0
-                ? randomArticles.map((randomArticle) => (
-                    <div
-                      key={randomArticle.id}
-                      className="flex items-start mb-4 pb-4 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0"
-                    >
-                      <div className="w-16 h-16 bg-gray-200 rounded-md mr-3 flex-shrink-0">
-                        <img
-                          src={`http://localhost:3000/${randomArticle.thumbnail}`}
-                          alt={randomArticle.title}
-                          className="w-16 h-16 object-cover rounded-md"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src =
-                              "http://localhost:3000/api/placeholder/64/64";
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-sm">
-                          {randomArticle.title}
-                        </h4>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {formatRelativeDate(randomArticle.published_date)}
-                        </p>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-400 ml-auto flex-shrink-0 mt-2" />
-                    </div>
-                  ))
-                : // Show loading skeleton while fetching random articles
-                  Array(5)
-                    .fill()
-                    .map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex items-start mb-4 pb-4 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0"
-                      >
-                        <div className="w-16 h-16 bg-gray-200 animate-pulse rounded-md mr-3 flex-shrink-0"></div>
-                        <div className="flex-grow">
-                          <div className="bg-gray-200 animate-pulse h-4 rounded w-3/4 mb-2"></div>
-                          <div className="bg-gray-200 animate-pulse h-3 rounded w-1/3"></div>
-                        </div>
-                      </div>
-                    ))}
-            </div>
-
-            {/* Advertisement */}
-            <div className="bg-gradient-to-r from-purple-500 to-blue-600 p-6 rounded-lg shadow-md mb-4 text-white">
-              <h3 className="font-bold text-lg mb-2">Subscribe Now</h3>
-              <p className="text-sm mb-4">
-                Get exclusive travel tips and destination guides delivered to
-                your inbox
-              </p>
-              <button className="bg-white text-purple-600 font-medium py-2 px-4 rounded-lg w-full">
-                Learn More
-              </button>
-            </div>
-
-            {/* Second Advertisement */}
-            <div className="bg-gradient-to-r from-blue-500 to-cyan-400 p-6 rounded-lg shadow-md text-white">
-              <h3 className="font-bold text-lg mb-2">Summer Deals</h3>
-              <p className="text-sm mb-4">
-                Discover our exclusive summer packages with up to 30% off!
-              </p>
-              <button className="bg-white text-blue-600 font-medium py-2 px-4 rounded-lg w-full">
-                View Offers
-              </button>
-            </div>
-          </div>
-        </div>
+        <Sidebar
+          author={author}
+          category={category}
+          randomArticles={randomArticles}
+        />
       </div>
+
       <RelatedPost authorId={article.author_id} />
       <Footer />
     </div>

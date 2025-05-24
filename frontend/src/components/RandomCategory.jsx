@@ -250,6 +250,12 @@ function RandomCategory() {
                       <p className="text-sm md:text-base text-gray-600 line-clamp-2">
                         {createExcerpt(article.content)}
                       </p>
+                      {article.category && (
+                        <div className="badge badge-outline text-xs mt-2 text-white bg-secondarycus">
+                          {article.category.name}
+                        </div>
+                      )}
+
                       <div className="card-actions justify-between items-center bg-gray-200 p-2 md:p-3 rounded-xl mt-3 md:mt-4">
                         <div className="flex items-center">
                           <img

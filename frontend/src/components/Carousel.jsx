@@ -132,7 +132,7 @@ function Carousel() {
             {/* Article title and category */}
             <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black to-transparent p-4 text-white">
               {category.name && (
-                <span className="inline-block bg-blue-600 text-white text-xs px-2 py-1 rounded mb-2">
+                <span className="inline-block bg-secondarycus text-white text-xs px-2 py-1 rounded mb-2">
                   {category.name}
                 </span>
               )}
