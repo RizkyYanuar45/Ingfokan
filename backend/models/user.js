@@ -36,6 +36,14 @@ const user = db.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    reset_token: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    reset_token_expired: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
     timestamps: true,

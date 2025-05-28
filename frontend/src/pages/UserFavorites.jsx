@@ -10,8 +10,10 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { useParams } from "react-router-dom";
 
 function UserFavorites() {
+  const { idUser } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,6 +25,8 @@ function UserFavorites() {
   // Data state
   const [articles, setArticles] = useState([]);
   const [authors, setAuthors] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [favoriteArticles, setFavoriteArticles] = useState([]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -38,7 +42,7 @@ function UserFavorites() {
     }
   }, [location.search]);
 
-  // Fetch all articles and authors on component mount
+  // Fetch all data on component mount
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -59,9 +63,19 @@ function UserFavorites() {
         }
         const authorsData = await authorsResponse.json();
 
+        // Fetch user favorites
+        const favoritesResponse = await fetch(
+          `http://localhost:3000/api/favorite/user/${idUser}`
+        );
+        if (!favoritesResponse.ok) {
+          throw new Error("Failed to fetch user favorites");
+        }
+        const favoritesData = await favoritesResponse.json();
+
         // Set the data
-        setArticles(articlesData.data.article);
+        setArticles(articlesData.data.articles);
         setAuthors(authorsData.data.data);
+        setFavorites(favoritesData.data.result);
         setError(null);
       } catch (err) {
         setError(err.message);
@@ -71,30 +85,55 @@ function UserFavorites() {
       }
     };
 
-    fetchData();
-  }, []);
+    if (idUser) {
+      fetchData();
+    }
+  }, [idUser]);
 
-  // Filter articles based on search query
+  // Create favorite articles when data is loaded
+  useEffect(() => {
+    if (articles.length > 0 && authors.length > 0 && favorites.length > 0) {
+      const favoriteArticlesList = favorites
+        .map((favorite) => {
+          const article = articles.find(
+            (article) => article.id === favorite.article_id
+          );
+          if (article) {
+            const author = authors.find(
+              (author) => author.id === article.author_id
+            );
+            return {
+              ...article,
+              author: author || {
+                name: "Unknown",
+                avatar: "https://randomuser.me/api/portraits/lego/1.jpg",
+              },
+            };
+          }
+          return null;
+        })
+        .filter(Boolean); // Remove null values
+
+      setFavoriteArticles(favoriteArticlesList);
+    } else if (favorites.length === 0 && articles.length > 0) {
+      // If no favorites, set empty array
+      setFavoriteArticles([]);
+    }
+  }, [articles, authors, favorites]);
+
+  // Filter favorite articles based on search query
   useEffect(() => {
     if (searchQuery.trim() === "") {
       setSearchResults([]);
+      setIsSearching(false);
+      setCurrentPage(1);
+      setPageInputValue("1");
       return;
     }
 
-    // Create combined data inside the effect to avoid dependency issues
-    const combinedArticles = articles.map((article) => {
-      const author = authors.find((author) => author.id === article.author_id);
-      return {
-        ...article,
-        author: author || {
-          name: "Unknown",
-          avatar: "https://randomuser.me/api/portraits/lego/1.jpg",
-        },
-      };
-    });
-
+    // Search only within favorite articles
     const lowercaseQuery = searchQuery.toLowerCase();
-    const filteredResults = combinedArticles.filter(
+    const filteredResults = favoriteArticles.filter(
       (article) =>
         article.title.toLowerCase().includes(lowercaseQuery) ||
         (article.content &&
@@ -107,15 +146,16 @@ function UserFavorites() {
     setCurrentPage(1);
     setPageInputValue("1");
     setIsSearching(true);
-  }, [searchQuery, articles, authors]);
+  }, [searchQuery, favoriteArticles]);
 
-  // Get total pages
-  const totalPages = Math.ceil(searchResults.length / articlesPerPage);
+  // Get current items to display (either search results or favorites)
+  const currentItems = isSearching ? searchResults : favoriteArticles;
+  const totalPages = Math.ceil(currentItems.length / articlesPerPage);
 
-  // Get current articles
+  // Get current articles for pagination
   const indexOfLastArticle = currentPage * articlesPerPage;
   const indexOfFirstArticle = indexOfLastArticle - articlesPerPage;
-  const currentArticles = searchResults.slice(
+  const currentArticles = currentItems.slice(
     indexOfFirstArticle,
     indexOfLastArticle
   );
@@ -157,7 +197,12 @@ function UserFavorites() {
 
   // Handle search input change
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    // Reset pagination when search changes
+    setCurrentPage(1);
+    setPageInputValue("1");
   };
 
   // Handle search form submission
@@ -266,15 +311,15 @@ function UserFavorites() {
         <header className="flex items-center mb-5 px-4">
           <div className="bg-primarycus w-1 h-3 rounded-lg mx-2"></div>
           <h2 className="font-bold text-base md:text-lg">
-            {searchQuery
+            {isSearching
               ? `Search Results for: "${searchQuery}" (${searchResults.length} results)`
-              : "Search Results"}
+              : `My Favorite Articles (${favoriteArticles.length} articles)`}
           </h2>
         </header>
 
         {/* Articles Grid */}
         <main className="px-4">
-          {searchQuery && searchResults.length === 0 ? (
+          {isSearching && searchQuery && searchResults.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
               <p className="text-lg font-medium text-gray-600">
                 No results found for "{searchQuery}"
@@ -283,7 +328,16 @@ function UserFavorites() {
                 Try different keywords or browse our categories
               </p>
             </div>
-          ) : searchQuery ? (
+          ) : !isSearching && favoriteArticles.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <p className="text-lg font-medium text-gray-600">
+                No favorite articles yet
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                Start exploring articles and add them to your favorites
+              </p>
+            </div>
+          ) : currentArticles.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {currentArticles.map((article) => (
                 <div
@@ -356,8 +410,8 @@ function UserFavorites() {
           )}
         </main>
 
-        {/* Pagination Controls - Only show when we have search results */}
-        {searchResults.length > 0 && (
+        {/* Pagination Controls - Show when we have items to display */}
+        {currentItems.length > 0 && totalPages > 1 && (
           <div className="mt-6">
             <ul className="flex justify-center gap-1 text-gray-900">
               <li>

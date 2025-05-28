@@ -2,10 +2,12 @@ import React from "react";
 import { createBrowserRouter } from "react-router-dom";
 
 import ProtectedRoute from "../components/Admin/ProtectedRoute";
+import UserProtectedRoute from "../components/UserProtectedRoute";
 
 import Login from "../pages/Login";
 import SignUp from "../pages/SignUp";
 import ForgetPassword from "../pages/ForgetPassword";
+import ResetPassword from "../pages/ResetPassword";
 
 import Main from "../pages/Main";
 import Article from "../pages/Article";
@@ -41,13 +43,23 @@ export const Router = createBrowserRouter([
     element: <SignUp />,
   },
   {
-    path: "/user-favorites",
-    element: <UserFavorites />,
+    path: "/favorites/:idUser",
+    element: (
+      <UserProtectedRoute>
+        <UserFavorites />
+      </UserProtectedRoute>
+    ),
   },
+
   {
     path: "/forget-password",
     element: <ForgetPassword />,
   },
+  {
+    path: "/reset-password/:token",
+    element: <ResetPassword />,
+  },
+
   {
     path: "/article/:slug",
     element: <Article />,

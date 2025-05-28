@@ -34,7 +34,7 @@ export default function Sidebar({ author, category, randomArticles }) {
             <div>
               <p className="font-medium">{author?.name || "Unknown Author"}</p>
               <button className="mt-1 bg-red-500 text-white text-xs px-3 py-1 rounded-full">
-                Follow
+                See Author
               </button>
             </div>
           </div>

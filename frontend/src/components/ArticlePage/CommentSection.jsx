@@ -9,6 +9,8 @@ export default function CommentSection({
   onCommentSubmit,
 }) {
   const [commentText, setCommentText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const commentsPerPage = 10;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,6 +18,7 @@ export default function CommentSection({
 
     await onCommentSubmit(commentText);
     setCommentText("");
+    setCurrentPage(1); // Reset to page 1 to see the new comment
   };
 
   const formatRelativeDate = (dateString) => {
@@ -23,32 +26,47 @@ export default function CommentSection({
     const date = new Date(dateString);
     const diffTime = Math.abs(now - date);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) {
-      return "Today";
-    } else if (diffDays === 1) {
-      return "1 day ago";
-    } else {
-      return `${diffDays} days ago`;
-    }
+    return diffDays === 0
+      ? "Today"
+      : diffDays === 1
+      ? "1 day ago"
+      : `${diffDays} days ago`;
   };
 
-  const getUsernameDisplay = (comment) => {
-    if (comment.user && comment.user.name) {
-      return comment.user.name;
-    }
-    return `User #${comment.user_id}`;
-  };
+  const getUsernameDisplay = (comment) =>
+    comment.user?.username || `User #${comment.user_id}`;
 
   const getAvatarDisplay = (comment) => {
-    if (comment.user && comment.user.avatar) {
-      return `http://localhost:3000/${comment.user.avatar}`;
+    const avatar = comment.user?.avatar;
+    if (avatar) {
+      if (
+        avatar.startsWith("uploads\\") ||
+        avatar.startsWith("uploads/") ||
+        avatar.startsWith("images\\") ||
+        avatar.startsWith("images/")
+      ) {
+        const path = avatar.replace(/\\/g, "/");
+        return `http://localhost:3000/${path}`;
+      }
+      return `http://localhost:3000/${avatar}`;
     }
     return `http://localhost:3000/api/placeholder/40/40`;
   };
 
-  // Check if user is logged in
   const isLoggedIn = !!currentUser;
+
+  // Pagination logic
+  const indexOfLastComment = currentPage * commentsPerPage;
+  const indexOfFirstComment = indexOfLastComment - commentsPerPage;
+  const currentComments = comments.slice(
+    indexOfFirstComment,
+    indexOfLastComment
+  );
+  const totalPages = Math.ceil(comments.length / commentsPerPage);
+
+  const handlePrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const handleNextPage = () =>
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
@@ -59,33 +77,30 @@ export default function CommentSection({
         </h2>
       </div>
 
-      {/* Comment Form - Only show if user is logged in */}
-      {isLoggedIn && (
+      {isLoggedIn ? (
         <div className="p-4 lg:p-6 border-b">
           <form onSubmit={handleSubmit} className="flex flex-col">
             <div className="flex items-start mb-4">
               <img
                 src={
-                  currentUser && currentUser.avatar
+                  currentUser?.avatar
                     ? `http://localhost:3000/${currentUser.avatar}`
                     : "http://localhost:3000/api/placeholder/40/40"
                 }
                 alt="Your Avatar"
                 className="w-10 h-10 rounded-full bg-blue-500 mr-3 flex-shrink-0"
               />
-              <div className="flex-grow">
-                <textarea
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  placeholder="Write your comment..."
-                  className="w-full border border-gray-300 rounded-lg p-3 h-24 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                ></textarea>
-              </div>
+              <textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Write your comment..."
+                className="w-full border border-gray-300 rounded-lg p-3 h-24 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              />
             </div>
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg px-4 py-2 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-secondarycus hover:bg-primarycus text-white font-medium rounded-lg px-4 py-2 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={commentText.trim() === ""}
               >
                 <Send className="w-4 h-4 mr-2" />
@@ -94,28 +109,21 @@ export default function CommentSection({
             </div>
           </form>
         </div>
-      )}
-
-      {/* Login Message - Show if user is not logged in */}
-      {!isLoggedIn && (
-        <div className="p-4 lg:p-6 border-b bg-gray-50">
-          <div className="text-center text-gray-600">
-            <p className="mb-2">Please log in to join the discussion</p>
-            <NavLink
-              to={"/login"}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg px-4 py-2"
-            >
-              Log In
-            </NavLink>
-          </div>
+      ) : (
+        <div className="p-4 lg:p-6 border-b bg-gray-50 text-center text-gray-600">
+          <p className="mb-2">Please log in to join the discussion</p>
+          <NavLink
+            to={"/login"}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg px-4 py-2"
+          >
+            Log In
+          </NavLink>
         </div>
       )}
 
-      {/* Comments List */}
       <div className="divide-y">
         {loadingComments
-          ? // Loading skeleton for comments
-            Array(3)
+          ? Array(3)
               .fill()
               .map((_, index) => (
                 <div key={index} className="p-4 lg:p-6">
@@ -134,16 +142,14 @@ export default function CommentSection({
                   </div>
                 </div>
               ))
-          : comments.map((comment) => (
+          : currentComments.map((comment) => (
               <div key={comment.id} className="p-4 lg:p-6">
                 <div className="flex items-start">
-                  <div className="flex-shrink-0 mr-3">
-                    <img
-                      src={getAvatarDisplay(comment)}
-                      alt="User Avatar"
-                      className="w-10 h-10 rounded-full"
-                    />
-                  </div>
+                  <img
+                    src={getAvatarDisplay(comment)}
+                    alt="User Avatar"
+                    className="w-10 h-10 rounded-full mr-3"
+                  />
                   <div className="flex-grow">
                     <div className="flex items-center mb-1">
                       <h4 className="font-medium">
@@ -175,6 +181,29 @@ export default function CommentSection({
           </div>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {!loadingComments && comments.length > commentsPerPage && (
+        <div className="flex justify-center items-center p-4 border-t">
+          <button
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            className="px-4 py-2 mx-2 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 mx-2 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }

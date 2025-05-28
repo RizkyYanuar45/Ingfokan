@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChevronDown, Bookmark, Search, Menu, X } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
@@ -277,12 +277,13 @@ function Navbar() {
                 )}
               </div>
 
-              <button
+              <NavLink
+                to={`/favorites/${user.id}`}
                 className="flex justify-center items-center w-10 h-10 rounded-xl bg-neutral-100"
                 aria-label="Bookmarks"
               >
                 <Bookmark size={18} />
-              </button>
+              </NavLink>
             </div>
           ) : (
             <div className="flex gap-4 items-center">
@@ -361,12 +362,13 @@ function Navbar() {
                       {user.username || user.name}
                     </span>
                   </div>
-                  <button
+                  <NavLink
+                    to={`/favorites/${user.id}`}
                     className="flex justify-center items-center w-10 h-10 rounded-xl bg-neutral-100"
                     aria-label="Bookmarks"
                   >
                     <Bookmark size={16} />
-                  </button>
+                  </NavLink>
                 </div>
 
                 <div className="border-t border-gray-200 mt-2">

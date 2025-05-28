@@ -18,14 +18,24 @@ const seeder = async () => {
     console.log("tabel direstart");
 
     const encryptedPassword = await bcrypt.hash("password123", 10);
-    await user.create({
-      name: "Jane Doe",
-      email: "jane.doe@example.com",
-      password: encryptedPassword,
-      avatar: "images/janedoe.jpg",
-      role: "admin",
-      username: "JD",
-    });
+    await user.bulkCreate([
+      {
+        name: "Jane Doe",
+        email: "jane.doe@example.com",
+        password: encryptedPassword,
+        avatar: "images/janedoe.jpg",
+        role: "admin",
+        username: "JD",
+      },
+      {
+        name: "John Smith",
+        email: "rizkyanuar4@gmail.com",
+        password: encryptedPassword,
+        avatar: "images/johnsmith.jpg",
+        role: "user",
+        username: "John Smith Uwu",
+      },
+    ]);
     await category.bulkCreate([
       {
         name: "animal",

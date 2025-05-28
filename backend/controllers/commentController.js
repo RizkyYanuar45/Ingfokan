@@ -29,7 +29,7 @@ const getCommentWithUser = async (req, res) => {
         {
           model: User,
           as: "user",
-          attributes: ["id", "name", "avatar"],
+          attributes: ["id", "name", "avatar", "username"],
         },
       ],
     });

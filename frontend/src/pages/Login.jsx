@@ -143,14 +143,17 @@ function Login() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between">
+                <NavLink
+                  to={"/forget-password"}
+                  className="flex items-center justify-between"
+                >
                   <a
                     href="#"
                     className="text-sm font-medium text-primarycus hover:text-secondarycus transition-colors"
                   >
                     Forgot password?
                   </a>
-                </div>
+                </NavLink>
 
                 <button
                   type="submit"

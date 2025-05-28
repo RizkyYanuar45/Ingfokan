@@ -156,7 +156,13 @@ export default function Article() {
 
       const data = await response.json();
       if (data.success) {
-        const newComment = data.data.comment;
+        // Create the new comment with current user data
+        const newComment = {
+          ...data.data.comment,
+          user: currentUser, // Attach current user data to the new comment
+        };
+
+        // Add the new comment to the top of the comments list
         setComments([newComment, ...comments]);
       } else {
         throw new Error(data.message || "Failed to post comment");
@@ -218,6 +224,7 @@ export default function Article() {
               article={article}
               author={author}
               category={category}
+              user={currentUser}
             />
 
             <CommentSection

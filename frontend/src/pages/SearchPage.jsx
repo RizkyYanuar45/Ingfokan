@@ -246,7 +246,7 @@ function SearchPage() {
       <div className="min-h-screen bg-gray-50 pb-8">
         {/* Header */}
         <header className="flex items-center mb-5 px-4">
-          <div className="bg-blue-500 w-1 h-3 rounded-lg mx-2"></div>
+          <div className="bg-primarycus w-1 h-3 rounded-lg mx-2"></div>
           <h2 className="font-bold text-base md:text-lg">
             {searchQuery
               ? `Search Results for: "${searchQuery}" (${searchResults.length} results)`
