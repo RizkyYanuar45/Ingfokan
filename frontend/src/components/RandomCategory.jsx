@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ChevronRight, ChevronLeft, Bookmark } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 function RandomCategory() {
   const [startIndex, setStartIndex] = useState(0);
@@ -229,7 +230,8 @@ function RandomCategory() {
           >
             {articles.map((article) => {
               return (
-                <div
+                <NavLink
+                  to={`/article/${article.slug}`}
                   key={article.id}
                   className={`${
                     isMobile ? "w-full min-w-full" : "w-1/4 min-w-[25%]"
@@ -282,7 +284,7 @@ function RandomCategory() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </NavLink>
               );
             })}
           </div>

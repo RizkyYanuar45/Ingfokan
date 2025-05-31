@@ -44,6 +44,12 @@ function Navbar() {
     }
   };
 
+  // Function to truncate username
+  const truncateUsername = (username) => {
+    if (!username) return "";
+    return username.length > 10 ? username.substring(0, 10) + "..." : username;
+  };
+
   // Close dropdown if clicked outside
   useEffect(() => {
     function handleClickOutside(event) {
@@ -245,8 +251,11 @@ function Navbar() {
                 className="object-cover w-10 h-10 rounded-xl"
                 alt="User avatar"
               />
-              <span className="text-base font-medium text-black">
-                {user.username || user.name}
+              <span
+                className="text-base font-medium text-black"
+                title={user.username || user.name} // Show full username on hover
+              >
+                {truncateUsername(user.username || user.name)}
               </span>
               <div className="relative" ref={dropdownRef}>
                 <button
@@ -261,9 +270,12 @@ function Navbar() {
                 {isDropdownOpen && (
                   <ul className="absolute right-0 bg-white rounded-lg z-10 w-48 p-2 shadow-md">
                     <li className="py-2 px-3 hover:bg-gray-100 rounded-md">
-                      <a href="/profile" className="block w-full">
+                      <NavLink
+                        to={`/edit-profile/${user.id}`}
+                        className="block w-full"
+                      >
                         Update Profile
-                      </a>
+                      </NavLink>
                     </li>
                     <li className="py-2 px-3 hover:bg-gray-100 rounded-md">
                       <button
@@ -358,8 +370,11 @@ function Navbar() {
                       className="object-cover w-10 h-10 rounded-xl"
                       alt="User avatar"
                     />
-                    <span className="text-base font-medium text-black">
-                      {user.username || user.name}
+                    <span
+                      className="text-base font-medium text-black"
+                      title={user.username || user.name} // Show full username on hover
+                    >
+                      {truncateUsername(user.username || user.name)}
                     </span>
                   </div>
                   <NavLink
@@ -372,12 +387,12 @@ function Navbar() {
                 </div>
 
                 <div className="border-t border-gray-200 mt-2">
-                  <a
-                    href="/profile"
+                  <NavLink
+                    to={`/edit-profile/${user.id}`}
                     className="block px-5 py-3 text-base font-medium text-stone-700"
                   >
                     Update Profile
-                  </a>
+                  </NavLink>
                   <button
                     onClick={handleLogout}
                     className="block w-full text-left px-5 py-3 text-base font-medium text-red-500"

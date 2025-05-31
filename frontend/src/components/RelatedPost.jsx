@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ChevronRight, ChevronLeft, Bookmark } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 function RelatedPost({ authorId }) {
   const [startIndex, setStartIndex] = useState(0);

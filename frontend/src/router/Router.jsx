@@ -8,6 +8,7 @@ import Login from "../pages/Login";
 import SignUp from "../pages/SignUp";
 import ForgetPassword from "../pages/ForgetPassword";
 import ResetPassword from "../pages/ResetPassword";
+import EditProfilePage from "../pages/EditProfile";
 
 import Main from "../pages/Main";
 import Article from "../pages/Article";
@@ -58,6 +59,14 @@ export const Router = createBrowserRouter([
   {
     path: "/reset-password/:token",
     element: <ResetPassword />,
+  },
+  {
+    path: "/edit-profile/:idUser",
+    element: (
+      <UserProtectedRoute>
+        <EditProfilePage />
+      </UserProtectedRoute>
+    ),
   },
 
   {
@@ -136,7 +145,11 @@ export const Router = createBrowserRouter([
   },
   {
     path: "/admin/login",
-    element: <LoginAdmin />,
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <LoginAdmin />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/*",

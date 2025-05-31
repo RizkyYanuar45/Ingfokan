@@ -26,10 +26,6 @@ export default function ControlArticles() {
     title: "",
   });
 
-  // Add state for category and author names
-  const [categoryNames, setCategoryNames] = useState({});
-  const [authorNames, setAuthorNames] = useState({});
-
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -39,54 +35,10 @@ export default function ControlArticles() {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Modified to update state instead of returning directly
-  const fetchCategoryName = async (categoryId) => {
-    try {
-      const result = await fetch(
-        `${import.meta.env.VITE_API_URL}/category/${categoryId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      if (!result.ok) {
-        throw new Error("Failed to fetch category");
-      }
-      const data = await result.json();
-      setCategoryNames((prev) => ({ ...prev, [categoryId]: data.data.name }));
-    } catch (error) {
-      console.error("Error fetching category:", error);
-      setCategoryNames((prev) => ({ ...prev, [categoryId]: "Unknown" }));
-    }
-  };
-
-  // Modified to update state instead of returning directly
-  const fetchAuthorName = async (authorId) => {
-    try {
-      const result = await fetch(
-        `${import.meta.env.VITE_API_URL}/author/${authorId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      if (!result.ok) {
-        throw new Error("Failed to fetch author");
-      }
-      const data = await result.json();
-      setAuthorNames((prev) => ({ ...prev, [authorId]: data.data.data.name }));
-    } catch (error) {
-      console.error("Error fetching author:", error);
-      setAuthorNames((prev) => ({ ...prev, [authorId]: "Unknown" }));
-    }
-  };
-
   // Fetch articles data from API
   const refreshArticles = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/article`, {
+      const response = await fetch(`http://localhost:3000/api/article`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -94,9 +46,9 @@ export default function ControlArticles() {
       if (!response.ok) throw new Error("Failed to fetch articles");
       const data = await response.json();
 
-      // Make sure data.data.article exists before setting state
-      if (data.data && data.data.article) {
-        setArticles(data.data.article);
+      // Fixed: Use the correct structure from your API response
+      if (data.success && data.data && data.data.articles) {
+        setArticles(data.data.articles);
       } else {
         console.error("Invalid data structure received:", data);
         setArticles([]); // Set to empty array if the expected structure is not present
@@ -112,34 +64,7 @@ export default function ControlArticles() {
     refreshArticles();
   }, []);
 
-  // New useEffect to fetch category and author names when articles change
-  useEffect(() => {
-    if (articles && articles.length > 0) {
-      // Get unique category and author IDs
-      const categoryIds = [
-        ...new Set(articles.map((article) => article.category_id)),
-      ];
-      const authorIds = [
-        ...new Set(articles.map((article) => article.author_id)),
-      ];
-
-      // Fetch category names
-      categoryIds.forEach((categoryId) => {
-        if (!categoryNames[categoryId]) {
-          fetchCategoryName(categoryId);
-        }
-      });
-
-      // Fetch author names
-      authorIds.forEach((authorId) => {
-        if (!authorNames[authorId]) {
-          fetchAuthorName(authorId);
-        }
-      });
-    }
-  }, [articles]);
-
-  // Filter articles based on search term - fixed to use title instead of name
+  // Filter articles based on search term
   const filteredArticles = articles
     ? articles.filter((article) =>
         article.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -348,10 +273,14 @@ export default function ControlArticles() {
                           )}
                         </td>
                         <td className="px-6 text-center py-4 text-sm font-medium text-gray-900">
-                          {authorNames[article.author_id] || "Loading..."}
+                          {article.author
+                            ? article.author.name
+                            : "Unknown Author"}
                         </td>
                         <td className="px-6 text-center py-4 text-sm font-medium text-gray-900">
-                          {categoryNames[article.category_id] || "Loading..."}
+                          {article.category
+                            ? article.category.name
+                            : "Unknown Category"}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end space-x-4">
@@ -376,7 +305,7 @@ export default function ControlArticles() {
                   ) : (
                     <tr>
                       <td
-                        colSpan="6"
+                        colSpan="5"
                         className="px-6 py-8 text-center text-sm text-gray-500"
                       >
                         No articles found

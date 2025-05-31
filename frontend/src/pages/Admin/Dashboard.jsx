@@ -6,8 +6,6 @@ import TopNavigation from "../../components/Admin/TopNavigation";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [categoryNames, setCategoryNames] = useState({});
-  const [authorNames, setAuthorNames] = useState({});
 
   // State for API data
   const [totalArticles, setTotalArticles] = useState(0);
@@ -17,121 +15,55 @@ export default function Dashboard() {
   const [recentArticles, setRecentArticles] = useState([]);
 
   // Loading and error states
-
   const [error, setError] = useState(null);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Modified to update state instead of returning directly
-  const fetchCategoryName = async (categoryId) => {
-    try {
-      const result = await fetch(
-        `${import.meta.env.VITE_API_URL}/category/${categoryId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      if (!result.ok) {
-        throw new Error("Failed to fetch category");
-      }
-      const data = await result.json();
-      setCategoryNames((prev) => ({ ...prev, [categoryId]: data.data.name }));
-    } catch (error) {
-      console.error("Error fetching category:", error);
-      setCategoryNames((prev) => ({ ...prev, [categoryId]: "Unknown" }));
-    }
-  };
-
-  // Modified to update state instead of returning directly
-  const fetchAuthorName = async (authorId) => {
-    try {
-      const result = await fetch(
-        `${import.meta.env.VITE_API_URL}/author/${authorId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      if (!result.ok) {
-        throw new Error("Failed to fetch author");
-      }
-      const data = await result.json();
-      setAuthorNames((prev) => ({ ...prev, [authorId]: data.data.data.name }));
-    } catch (error) {
-      console.error("Error fetching author:", error);
-      setAuthorNames((prev) => ({ ...prev, [authorId]: "Unknown" }));
-    }
-  };
-
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // Fetch data from all endpoints
-        const [
-          articlesResponse,
-          usersResponse,
-          authorsResponse,
-          categoriesResponse,
-        ] = await Promise.all([
-          fetch("http://localhost:3000/api/article"),
-          fetch("http://localhost:3000/api/user"),
-          fetch("http://localhost:3000/api/author"),
-          fetch("http://localhost:3000/api/category"),
-        ]);
+        // Fetch only articles data since it contains author and category info
+        const articlesResponse = await fetch(
+          "http://localhost:3000/api/article"
+        );
+        const userResponse = await fetch("http://localhost:3000/api/user");
 
-        // Check if responses are ok
-        if (
-          !articlesResponse.ok ||
-          !usersResponse.ok ||
-          !authorsResponse.ok ||
-          !categoriesResponse.ok
-        ) {
-          throw new Error("One or more API requests failed");
+        // Check if response is ok
+        if (!articlesResponse.ok || !userResponse.ok) {
+          throw new Error("Failed to fetch articles data");
         }
 
-        // Parse JSON responses
+        // Parse JSON response
         const articlesData = await articlesResponse.json();
-        const usersData = await usersResponse.json();
-        const authorsData = await authorsResponse.json();
-        const categoriesData = await categoriesResponse.json();
-
-        // Update state with fetched data
-        setTotalArticles(articlesData.data.articles.length);
-        setTotalUsers(usersData.data.data.length);
-        setTotalAuthors(authorsData.data.data.length);
-        setTotalCategories(categoriesData.data.category.length);
-
         const articles = articlesData.data.articles;
+        const usersData = await userResponse.json();
+        const users = usersData.data.data;
+
+        // Update total articles count
+        setTotalArticles(articles.length);
+
+        // Calculate unique authors and categories
+        const uniqueAuthors = new Set(
+          articles.map((article) => article.author.id)
+        );
+        const uniqueCategories = new Set(
+          articles.map((article) => article.category.id)
+        );
+
+        setTotalAuthors(uniqueAuthors.size);
+        setTotalCategories(uniqueCategories.size);
+
+        // For total users, we'll use a placeholder since we can't get this from articles
+        // You might want to add a separate API call for users count only
+        setTotalUsers(users.length); // or keep existing user count if available
 
         // Sort articles by most recent and take top 5
         const sortedArticles = articles.sort((a, b) => b.id - a.id).slice(0, 5);
         setRecentArticles(sortedArticles);
-
-        // Fetch category and author names for each article
-        const uniqueCategoryIds = [
-          ...new Set(sortedArticles.map((article) => article.category_id)),
-        ];
-        const uniqueAuthorIds = [
-          ...new Set(sortedArticles.map((article) => article.author_id)),
-        ];
-
-        // Fetch all category names at once
-        for (const categoryId of uniqueCategoryIds) {
-          await fetchCategoryName(categoryId);
-        }
-
-        // Fetch all author names at once
-        for (const authorId of uniqueAuthorIds) {
-          await fetchAuthorName(authorId);
-        }
       } catch (err) {
         setError("Failed to fetch dashboard data");
-
         console.error("Dashboard data fetch error:", err);
       }
     };
@@ -263,12 +195,12 @@ export default function Dashboard() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                          {categoryNames[article.category_id] || "Loading..."}
+                          {article.category.name}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-500">
-                          {authorNames[article.author_id] || "Loading..."}
+                          {article.author.name}
                         </div>
                       </td>
                     </tr>

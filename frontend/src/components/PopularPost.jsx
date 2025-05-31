@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ChevronRight, ChevronLeft, Bookmark } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 function PopularPost() {
   const [startIndex, setStartIndex] = useState(0);
@@ -163,7 +164,8 @@ function PopularPost() {
               const category = article.category || {};
 
               return (
-                <div
+                <NavLink
+                  to={`/article/${article.slug}`}
                   key={article.id}
                   className={`${
                     isMobile ? "w-full min-w-full" : "w-1/4 min-w-[25%]"
@@ -218,7 +220,7 @@ function PopularPost() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </NavLink>
               );
             })}
           </div>
