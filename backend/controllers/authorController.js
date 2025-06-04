@@ -33,12 +33,19 @@ const getAuthorWithHisArticles = async (req, res) => {
         {
           model: Article,
           as: "articles",
-          attributes: ["id", "title", "content", "createdAt", "thumbnail"],
+          attributes: [
+            "id",
+            "title",
+            "content",
+            "createdAt",
+            "thumbnail",
+            "slug",
+          ],
           include: [
             {
               model: Category,
               as: "category",
-              attributes: ["id", "name"],
+              attributes: ["id", "name", "slug"],
             },
           ],
         },

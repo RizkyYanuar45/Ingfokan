@@ -34,14 +34,23 @@ function Navbar() {
   // Handle search form submission
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
+    e.stopPropagation(); // Prevent event bubbling
+
+    const query = searchQuery.trim();
+    if (query) {
       // Navigate to search page with query parameter
-      navigate(`/search-page?q=${encodeURIComponent(searchQuery.trim())}`);
+      navigate(`/search-page?q=${encodeURIComponent(query)}`);
+
       // Close mobile search if open
       if (isSearchOpen) {
         setIsSearchOpen(false);
       }
+
+      // Clear search query after submission (optional)
+      setSearchQuery("");
     }
+
+    return false; // Extra safety to prevent default form submission
   };
 
   // Function to truncate username
@@ -319,18 +328,24 @@ function Navbar() {
       {/* Mobile Search Bar */}
       {isSearchOpen && (
         <div className="md:hidden px-4 py-3 bg-white shadow-md">
-          <form onSubmit={handleSearchSubmit}>
+          <form onSubmit={handleSearchSubmit} method="get" role="search">
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-100 w-full">
               <Search size={16} />
               <input
                 type="text"
+                name="search"
                 placeholder="Search anything"
                 value={searchQuery}
                 onChange={handleSearchChange}
                 className="text-xs text-stone-700 text-opacity-80 flex-1 bg-transparent border-none outline-none"
                 autoFocus
+                autoComplete="off"
               />
-              <button onClick={toggleSearch}>
+              <button
+                type="button"
+                onClick={toggleSearch}
+                aria-label="Close search"
+              >
                 <X size={16} />
               </button>
             </div>

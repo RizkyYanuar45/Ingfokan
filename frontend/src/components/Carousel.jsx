@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { NavLink } from "react-router-dom";
 
 function Carousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -109,7 +110,8 @@ function Carousel() {
         const category = article.category || {};
 
         return (
-          <div
+          <NavLink
+            to={`/article/${article.slug}`}
             key={article.id}
             className={`carousel-item absolute w-full h-full transition-transform duration-300 ease-in-out ${
               index === currentSlide
@@ -170,7 +172,7 @@ function Carousel() {
                 </button>
               </div>
             </div>
-          </div>
+          </NavLink>
         );
       })}
 

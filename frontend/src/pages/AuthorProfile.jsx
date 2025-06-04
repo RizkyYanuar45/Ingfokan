@@ -1,6 +1,6 @@
 // src/App.jsx
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
 import {
   Heart,
   MessageCircle,
@@ -16,6 +16,7 @@ function AuthorProfile() {
   const { slug } = useParams(); // Get slug from URL parameters
   const [author, setAuthor] = useState(null);
   const [articles, setArticles] = useState([]);
+  const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -53,6 +54,27 @@ function AuthorProfile() {
         }
         const articlesData = await articlesResponse.json();
         setArticles(articlesData);
+
+        // Fetch banners
+        const bannersResponse = await fetch(`http://localhost:3000/api/banner`);
+        if (bannersResponse.ok) {
+          const bannersData = await bannersResponse.json();
+          if (bannersData.success) {
+            // Filter only active banners
+            const activeBanners = bannersData.data.data.filter(
+              (banner) => banner.is_active === "active"
+            );
+
+            // Randomly select one banner from active banners
+            if (activeBanners.length > 0) {
+              const randomIndex = Math.floor(
+                Math.random() * activeBanners.length
+              );
+              const selectedBanner = activeBanners[randomIndex];
+              setBanners([selectedBanner]); // Set as array with single banner
+            }
+          }
+        }
       } catch (err) {
         setError(err.message);
         console.error("Error fetching data:", err);
@@ -106,6 +128,13 @@ function AuthorProfile() {
     } else {
       // Reset to current page if invalid
       setPageInputValue(currentPage.toString());
+    }
+  };
+
+  // Handle banner click
+  const handleBannerClick = (banner) => {
+    if (banner.link) {
+      window.open(banner.link, "_blank", "noopener,noreferrer");
     }
   };
 
@@ -174,10 +203,40 @@ function AuthorProfile() {
           </li>
         </ul>
       </div>
+
+      {/* Banner Section */}
       <div className="p-6 flex items-center justify-center">
-        <div className="w-[1440px] h-32 bg-yellow-400 text-center flex items-center justify-center">
-          Banner
-        </div>
+        {banners.length > 0 ? (
+          <div className="w-full max-w-[1440px] bg-gray-100 rounded-lg overflow-hidden shadow-sm">
+            {banners.map((banner) => (
+              <div
+                key={banner.id}
+                className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
+                onClick={() => handleBannerClick(banner)}
+              >
+                <img
+                  src={`http://localhost:3000/${banner.thumbnail}`}
+                  alt="Banner"
+                  className="w-full h-auto object-contain"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    e.target.nextSibling.style.display = "flex";
+                  }}
+                />
+                <div
+                  className="w-full h-32 bg-yellow-400 text-center flex items-center justify-center text-lg font-medium"
+                  style={{ display: "none" }}
+                >
+                  Banner
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="w-full max-w-[1440px] h-32 bg-yellow-400 text-center flex items-center justify-center text-lg font-medium rounded-lg">
+            Banner
+          </div>
+        )}
       </div>
 
       <div className="bg-gray-200 w-full flex items-center justify-evenly p-4">
@@ -185,7 +244,7 @@ function AuthorProfile() {
           <img
             src={`http://localhost:3000/${author.avatar}`}
             alt={author.name}
-            className="w-12 h-12 rounded-full mr-3"
+            className="w-12 h-12 rounded-full mr-3 object-cover"
           />
           <p className="text-lg font-medium">{author.name}</p>
         </div>
@@ -212,7 +271,8 @@ function AuthorProfile() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {currentArticles.map((article) => (
-                <div
+                <NavLink
+                  to={`/article/${article.slug}`}
                   key={article.id}
                   className="bg-white rounded-md overflow-hidden shadow-sm"
                 >
@@ -242,7 +302,7 @@ function AuthorProfile() {
                         <img
                           src={`http://localhost:3000/${author.avatar}`}
                           alt={author.name}
-                          className="w-6 h-6 rounded-full mr-2"
+                          className="w-6 h-6 rounded-full mr-2 object-cover"
                         />
                         <div>
                           <p className="text-xs font-medium">{author.name}</p>
@@ -268,7 +328,7 @@ function AuthorProfile() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </NavLink>
               ))}
             </div>
           )}

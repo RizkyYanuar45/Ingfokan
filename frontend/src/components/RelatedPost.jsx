@@ -196,7 +196,8 @@ function RelatedPost({ authorId }) {
           >
             {articles.map((article) => {
               return (
-                <div
+                <NavLink
+                  to={`/article/${article.slug}`}
                   key={article.id}
                   className={`${
                     isMobile ? "w-full min-w-full" : "w-1/4 min-w-[25%]"
@@ -242,7 +243,7 @@ function RelatedPost({ authorId }) {
                             alt={author?.name || "Author avatar"}
                             width={32}
                             height={32}
-                            className="w-8 h-8 md:w-10 md:h-10 rounded-xl"
+                            className="w-8 h-8 md:w-10 md:h-10 rounded-xl object-cover"
                           />
                           <div className="flex flex-col ml-2">
                             <h2 className="font-bold text-sm md:text-base">
@@ -257,7 +258,7 @@ function RelatedPost({ authorId }) {
                       </div>
                     </div>
                   </div>
-                </div>
+                </NavLink>
               );
             })}
           </div>

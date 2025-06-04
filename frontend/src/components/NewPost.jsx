@@ -76,10 +76,13 @@ function NewPost() {
             <span className="bg-secondarycus w-1 h-3 mr-2 rounded-lg"></span>
             Trending
           </h1>
-          <button className="text-gray-500 text-sm flex items-center">
+          <NavLink
+            to={`/category/trending`}
+            className="text-gray-500 text-sm flex items-center"
+          >
             Show All
             <ChevronRight size={16} className="ml-1" />
-          </button>
+          </NavLink>
         </div>
 
         {loading ? (
@@ -130,7 +133,7 @@ function NewPost() {
                             : "/api/placeholder/24/24"
                         }
                         alt={article.author?.name || "Unknown Author"}
-                        className="w-6 h-6 rounded-full mr-2"
+                        className="w-6 h-6 rounded-full mr-2 object-cover"
                       />
                       <span className="text-xs text-gray-700">
                         {article.author?.name || "Unknown Author"}

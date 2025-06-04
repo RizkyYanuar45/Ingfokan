@@ -1,4 +1,5 @@
 import { ChevronRight } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 export default function Sidebar({ author, category, randomArticles }) {
   const formatRelativeDate = (dateString) => {
@@ -33,9 +34,12 @@ export default function Sidebar({ author, category, randomArticles }) {
             </div>
             <div>
               <p className="font-medium">{author?.name || "Unknown Author"}</p>
-              <button className="mt-1 bg-red-500 text-white text-xs px-3 py-1 rounded-full">
+              <NavLink
+                to={`/author/${author.slug}`}
+                className="mt-1 bg-red-500 text-white text-xs px-3 py-1 rounded-full"
+              >
                 See Author
-              </button>
+              </NavLink>
             </div>
           </div>
           {author?.bio && (
@@ -47,7 +51,10 @@ export default function Sidebar({ author, category, randomArticles }) {
         {category && (
           <div className="bg-white p-4 rounded-lg shadow-md mb-4">
             <h3 className="font-bold text-lg mb-2">Category</h3>
-            <div className="flex items-center">
+            <NavLink
+              to={`/category/${category.slug}`}
+              className="flex items-center"
+            >
               <div className="w-12 h-12 rounded-lg bg-gray-200 mr-3 flex-shrink-0">
                 <img
                   src={`http://localhost:3000/${category.thumbnail}`}
@@ -64,7 +71,7 @@ export default function Sidebar({ author, category, randomArticles }) {
                 <p className="font-medium capitalize">{category.name}</p>
                 <p className="text-sm text-gray-500">Category</p>
               </div>
-            </div>
+            </NavLink>
           </div>
         )}
 
@@ -74,7 +81,8 @@ export default function Sidebar({ author, category, randomArticles }) {
 
           {randomArticles.length > 0
             ? randomArticles.map((randomArticle) => (
-                <div
+                <NavLink
+                  to={`/article/${randomArticle.slug}`}
                   key={randomArticle.id}
                   className="flex items-start mb-4 pb-4 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0"
                 >
@@ -99,7 +107,7 @@ export default function Sidebar({ author, category, randomArticles }) {
                     </p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-400 ml-auto flex-shrink-0 mt-2" />
-                </div>
+                </NavLink>
               ))
             : // Show loading skeleton while fetching random articles
               Array(5)

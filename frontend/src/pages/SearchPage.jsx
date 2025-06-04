@@ -7,7 +7,7 @@ import {
   ChevronRight,
   Search,
 } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, NavLink } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
@@ -268,7 +268,8 @@ function SearchPage() {
           ) : searchQuery ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {currentArticles.map((article) => (
-                <div
+                <NavLink
+                  to={`/article/${article.slug}`}
                   key={article.id}
                   className="bg-white rounded-md overflow-hidden shadow-sm"
                 >
@@ -325,7 +326,7 @@ function SearchPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </NavLink>
               ))}
             </div>
           ) : (
