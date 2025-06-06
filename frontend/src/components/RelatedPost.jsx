@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ChevronRight, ChevronLeft, Bookmark } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { scrollToTop } from "../utils/ScrollToTop";
 
 function RelatedPost({ authorId }) {
   const [startIndex, setStartIndex] = useState(0);
@@ -197,6 +198,7 @@ function RelatedPost({ authorId }) {
             {articles.map((article) => {
               return (
                 <NavLink
+                  onClick={scrollToTop}
                   to={`/article/${article.slug}`}
                   key={article.id}
                   className={`${

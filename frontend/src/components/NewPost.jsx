@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ChevronRight, BookmarkPlus } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { scrollToTop } from "../utils/ScrollToTop";
 
 function NewPost() {
   const [articles, setArticles] = useState([]);
@@ -77,6 +78,7 @@ function NewPost() {
             Trending
           </h1>
           <NavLink
+            onClick={scrollToTop}
             to={`/category/trending`}
             className="text-gray-500 text-sm flex items-center"
           >
@@ -97,6 +99,7 @@ function NewPost() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {articles.map((article) => (
               <NavLink
+                onClick={scrollToTop}
                 to={`/article/${article.slug}`}
                 key={article.id}
                 className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"

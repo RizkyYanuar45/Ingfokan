@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ChevronRight, ChevronLeft, Bookmark } from "lucide-react";
+import { scrollToTop } from "../utils/ScrollToTop";
 import { NavLink } from "react-router-dom";
 
 function PopularPost() {
@@ -165,6 +166,7 @@ function PopularPost() {
 
               return (
                 <NavLink
+                  onClick={scrollToTop}
                   to={`/article/${article.slug}`}
                   key={article.id}
                   className={`${

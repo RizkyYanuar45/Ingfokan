@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, NavLink } from "react-router-dom";
 import {
   Heart,
   MessageCircle,
@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import Office from "../assets/Office.jpg";
+import { scrollToTop } from "../utils/ScrollToTop";
 
 function CategoryPage() {
   const { slug } = useParams(); // Get the category slug from URL parameters
@@ -20,11 +20,50 @@ function CategoryPage() {
   const [error, setError] = useState(null);
   const [articlesWithAuthors, setArticlesWithAuthors] = useState([]);
 
+  // Banner state
+  const [banner, setBanner] = useState(null);
+  const [bannerLoading, setBannerLoading] = useState(true);
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInputValue, setPageInputValue] = useState(currentPage.toString());
   const [totalPages, setTotalPages] = useState(1);
   const articlesPerPage = 12; // 12 items per page (3 rows of 4 columns)
+
+  // Fetch random banner
+  useEffect(() => {
+    const fetchBanner = async () => {
+      setBannerLoading(true);
+      try {
+        const response = await fetch("http://localhost:3000/api/banner");
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch banner: ${response.status}`);
+        }
+
+        const bannerData = await response.json();
+
+        // Get active banners only
+        const activeBanners =
+          bannerData.data?.data?.filter(
+            (banner) => banner.is_active === "active"
+          ) || [];
+
+        // Select a random banner from active banners
+        if (activeBanners.length > 0) {
+          const randomIndex = Math.floor(Math.random() * activeBanners.length);
+          setBanner(activeBanners[randomIndex]);
+        }
+      } catch (err) {
+        console.error("Error fetching banner:", err);
+        // Don't set error state for banner as it's not critical
+      } finally {
+        setBannerLoading(false);
+      }
+    };
+
+    fetchBanner();
+  }, []);
 
   // Two-step fetch process: First get category by slug, then get articles by category_id
   useEffect(() => {
@@ -170,9 +209,17 @@ function CategoryPage() {
       setPageInputValue(currentPage.toString());
     }
   };
+
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  // Handle banner click
+  const handleBannerClick = () => {
+    if (banner?.link) {
+      window.open(banner.link, "_blank", "noopener,noreferrer");
+    }
   };
 
   return (
@@ -188,11 +235,43 @@ function CategoryPage() {
           </li>
         </ul>
       </div>
+
+      {/* Banner Section */}
       <div className="p-6 flex items-center justify-center">
-        <div className="w-[1440px] h-32 bg-yellow-400 text-center  ">
-          Banner
-        </div>
+        {bannerLoading ? (
+          <div className="w-[1440px] h-32 bg-yellow-400 rounded-lg flex items-center justify-center">
+            <span className="text-gray-700">Loading banner...</span>
+          </div>
+        ) : banner ? (
+          <div
+            className={`rounded-lg overflow-hidden ${
+              banner.link ? "cursor-pointer" : ""
+            }`}
+            onClick={handleBannerClick}
+          >
+            <img
+              src={`http://localhost:3000/${banner.thumbnail.replace(
+                /\\/g,
+                "/"
+              )}`}
+              alt="Banner"
+              className="max-w-full h-auto"
+              onError={(e) => {
+                e.target.style.display = "none";
+                e.target.nextSibling.style.display = "flex";
+              }}
+            />
+            <div className="w-[1440px] h-32 bg-yellow-400 hidden items-center justify-center rounded-lg">
+              <span className="text-gray-700">Banner</span>
+            </div>
+          </div>
+        ) : (
+          <div className="w-[1440px] h-32 bg-yellow-400 rounded-lg flex items-center justify-center">
+            <span className="text-gray-700">No banner available</span>
+          </div>
+        )}
       </div>
+
       <div className=" flex">
         <h1></h1>
       </div>
@@ -222,7 +301,9 @@ function CategoryPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {currentArticles.map((article) => (
-                <div
+                <NavLink
+                  onClick={scrollToTop}
+                  to={`/article/${article.slug}`}
                   key={article.id}
                   className="bg-white rounded-md overflow-hidden shadow-sm"
                 >
@@ -265,7 +346,7 @@ function CategoryPage() {
                               : "https://placehold.co/100?text=?"
                           }
                           alt={article.author?.name || "Unknown Author"}
-                          className="w-6 h-6 rounded-full mr-2"
+                          className="w-6 h-6 rounded-full mr-2 object-cover"
                         />
                         <div>
                           <p className="text-xs font-medium">
@@ -287,7 +368,7 @@ function CategoryPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </NavLink>
               ))}
             </div>
           )}

@@ -10,6 +10,7 @@ import {
 import { useLocation, useNavigate, NavLink } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { scrollToTop } from "../utils/ScrollToTop";
 
 function SearchPage() {
   const location = useLocation();
@@ -269,6 +270,7 @@ function SearchPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {currentArticles.map((article) => (
                 <NavLink
+                  onClick={scrollToTop}
                   to={`/article/${article.slug}`}
                   key={article.id}
                   className="bg-white rounded-md overflow-hidden shadow-sm"

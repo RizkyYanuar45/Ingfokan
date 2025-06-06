@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { scrollToTop } from "../utils/ScrollToTop";
 
 function CategoriesBar() {
   // State variables
@@ -134,6 +135,7 @@ function CategoriesBar() {
           >
             {categories.map((item) => (
               <NavLink
+                onClick={scrollToTop}
                 to={`/category/${item.slug}`}
                 key={item.id}
                 className="flex-shrink-0 px-1 sm:px-2"

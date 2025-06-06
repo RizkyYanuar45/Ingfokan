@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { scrollToTop } from "../utils/ScrollToTop";
 import { NavLink } from "react-router-dom";
 
 function Carousel() {
@@ -111,6 +112,7 @@ function Carousel() {
 
         return (
           <NavLink
+            onClick={scrollToTop}
             to={`/article/${article.slug}`}
             key={article.id}
             className={`carousel-item absolute w-full h-full transition-transform duration-300 ease-in-out ${

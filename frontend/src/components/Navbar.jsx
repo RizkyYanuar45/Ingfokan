@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ChevronDown, Bookmark, Search, Menu, X } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { scrollToTop } from "../utils/ScrollToTop";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -49,7 +50,7 @@ function Navbar() {
       // Clear search query after submission (optional)
       setSearchQuery("");
     }
-
+    scrollToTop(); // Scroll to top after search
     return false; // Extra safety to prevent default form submission
   };
 
@@ -184,7 +185,7 @@ function Navbar() {
     <>
       <header className="flex justify-between items-center px-5 py-3 mx-auto my-0 h-16 max-w-[1512px] shadow-sm sticky top-0 bg-white z-100">
         <div className="flex gap-16 items-center max-md:gap-4">
-          <NavLink to={"/"} className="flex items-center">
+          <NavLink to={"/"} className="flex items-center" onClick={scrollToTop}>
             <img
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/4e2ae9fabd01951bee1bbe437117d47b03ea3cc9"
               className="object-contain h-10 w-[120px] md:h-12 md:w-[163px]"
@@ -195,12 +196,14 @@ function Navbar() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex gap-9 items-center">
             <NavLink
+              onClick={scrollToTop}
               to={"/contact-us"}
               className="text-base font-medium text-stone-700"
             >
               Contact us
             </NavLink>
             <NavLink
+              onClick={scrollToTop}
               to={"/about-us"}
               className="text-base font-medium text-stone-700"
             >
@@ -299,6 +302,7 @@ function Navbar() {
               </div>
 
               <NavLink
+                onClick={scrollToTop}
                 to={`/favorites/${user.id}`}
                 className="flex justify-center items-center w-10 h-10 rounded-xl bg-neutral-100"
                 aria-label="Bookmarks"
@@ -358,12 +362,14 @@ function Navbar() {
         <div className="absolute top-16 left-0 right-0 bg-white shadow-md md:hidden z-20">
           <nav className="flex flex-col py-4">
             <NavLink
+              onClick={scrollToTop}
               to={"/contact-us"}
               className="px-5 py-3 text-base font-medium text-stone-700"
             >
               Contact us
             </NavLink>
             <NavLink
+              onClick={scrollToTop}
               to={"/about-us"}
               className="px-5 py-3 text-base font-medium text-stone-700"
             >
@@ -393,6 +399,7 @@ function Navbar() {
                     </span>
                   </div>
                   <NavLink
+                    onClick={scrollToTop}
                     to={`/favorites/${user.id}`}
                     className="flex justify-center items-center w-10 h-10 rounded-xl bg-neutral-100"
                     aria-label="Bookmarks"

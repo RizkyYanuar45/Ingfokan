@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ChevronRight, ChevronLeft, Bookmark } from "lucide-react";
+import { scrollToTop } from "../utils/ScrollToTop";
 import { NavLink } from "react-router-dom";
 
 function RandomCategory() {
@@ -231,6 +232,7 @@ function RandomCategory() {
             {articles.map((article) => {
               return (
                 <NavLink
+                  onClick={scrollToTop}
                   to={`/article/${article.slug}`}
                   key={article.id}
                   className={`${

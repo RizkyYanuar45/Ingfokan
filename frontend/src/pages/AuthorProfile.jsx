@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { scrollToTop } from "../utils/ScrollToTop";
 
 function AuthorProfile() {
   const { slug } = useParams(); // Get slug from URL parameters
@@ -207,24 +208,29 @@ function AuthorProfile() {
       {/* Banner Section */}
       <div className="p-6 flex items-center justify-center">
         {banners.length > 0 ? (
-          <div className="w-full max-w-[1440px] bg-gray-100 rounded-lg overflow-hidden shadow-sm">
+          <div className="rounded-lg overflow-hidden shadow-sm">
             {banners.map((banner) => (
               <div
                 key={banner.id}
-                className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
+                className={`cursor-pointer transition-transform hover:scale-[1.02] ${
+                  banner.link ? "" : "cursor-default"
+                }`}
                 onClick={() => handleBannerClick(banner)}
               >
                 <img
-                  src={`http://localhost:3000/${banner.thumbnail}`}
+                  src={`http://localhost:3000/${banner.thumbnail.replace(
+                    /\\/g,
+                    "/"
+                  )}`}
                   alt="Banner"
-                  className="w-full h-auto object-contain"
+                  className="max-w-full h-auto"
                   onError={(e) => {
                     e.target.style.display = "none";
                     e.target.nextSibling.style.display = "flex";
                   }}
                 />
                 <div
-                  className="w-full h-32 bg-yellow-400 text-center flex items-center justify-center text-lg font-medium"
+                  className="w-full max-w-[1440px] h-32 bg-yellow-400 text-center flex items-center justify-center text-lg font-medium rounded-lg"
                   style={{ display: "none" }}
                 >
                   Banner
@@ -272,6 +278,7 @@ function AuthorProfile() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {currentArticles.map((article) => (
                 <NavLink
+                  onClick={scrollToTop}
                   to={`/article/${article.slug}`}
                   key={article.id}
                   className="bg-white rounded-md overflow-hidden shadow-sm"

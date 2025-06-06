@@ -1,7 +1,12 @@
 import { ChevronRight } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { scrollToTop } from "../../utils/ScrollToTop";
 
 export default function Sidebar({ author, category, randomArticles }) {
+  const [banners, setBanners] = useState([]);
+  const [isLoadingBanners, setIsLoadingBanners] = useState(true);
+
   const formatRelativeDate = (dateString) => {
     const now = new Date();
     const date = new Date(dateString);
@@ -16,6 +21,33 @@ export default function Sidebar({ author, category, randomArticles }) {
       return `${diffDays} days ago`;
     }
   };
+
+  // Fetch banners from API
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        setIsLoadingBanners(true);
+        const response = await fetch("http://localhost:3000/api/banner");
+        const result = await response.json();
+
+        if (result.success && result.data?.data) {
+          // Filter active banners and get random 2
+          const activeBanners = result.data.data.filter(
+            (banner) => banner.is_active === "active"
+          );
+          const shuffled = activeBanners.sort(() => 0.5 - Math.random());
+          setBanners(shuffled.slice(0, 2));
+        }
+      } catch (error) {
+        console.error("Error fetching banners:", error);
+        setBanners([]);
+      } finally {
+        setIsLoadingBanners(false);
+      }
+    };
+
+    fetchBanners();
+  }, []);
 
   return (
     <div className="w-full lg:w-1/3 p-4 bg-white lg:bg-gray-50">
@@ -35,6 +67,7 @@ export default function Sidebar({ author, category, randomArticles }) {
             <div>
               <p className="font-medium">{author?.name || "Unknown Author"}</p>
               <NavLink
+                onClick={scrollToTop}
                 to={`/author/${author.slug}`}
                 className="mt-1 bg-red-500 text-white text-xs px-3 py-1 rounded-full"
               >
@@ -52,6 +85,7 @@ export default function Sidebar({ author, category, randomArticles }) {
           <div className="bg-white p-4 rounded-lg shadow-md mb-4">
             <h3 className="font-bold text-lg mb-2">Category</h3>
             <NavLink
+              onClick={scrollToTop}
               to={`/category/${category.slug}`}
               className="flex items-center"
             >
@@ -82,6 +116,7 @@ export default function Sidebar({ author, category, randomArticles }) {
           {randomArticles.length > 0
             ? randomArticles.map((randomArticle) => (
                 <NavLink
+                  onClick={scrollToTop}
                   to={`/article/${randomArticle.slug}`}
                   key={randomArticle.id}
                   className="flex items-start mb-4 pb-4 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0"
@@ -126,28 +161,38 @@ export default function Sidebar({ author, category, randomArticles }) {
                 ))}
         </div>
 
-        {/* Advertisement */}
-        <div className="bg-gradient-to-r from-purple-500 to-blue-600 p-6 rounded-lg shadow-md mb-4 text-white">
-          <h3 className="font-bold text-lg mb-2">Subscribe Now</h3>
-          <p className="text-sm mb-4">
-            Get exclusive travel tips and destination guides delivered to your
-            inbox
-          </p>
-          <button className="bg-white text-purple-600 font-medium py-2 px-4 rounded-lg w-full">
-            Learn More
-          </button>
-        </div>
-
-        {/* Second Advertisement */}
-        <div className="bg-gradient-to-r from-blue-500 to-cyan-400 p-6 rounded-lg shadow-md text-white">
-          <h3 className="font-bold text-lg mb-2">Summer Deals</h3>
-          <p className="text-sm mb-4">
-            Discover our exclusive summer packages with up to 30% off!
-          </p>
-          <button className="bg-white text-blue-600 font-medium py-2 px-4 rounded-lg w-full">
-            View Offers
-          </button>
-        </div>
+        {/* Dynamic Banner Advertisements */}
+        {isLoadingBanners ? (
+          // Loading skeleton for banners
+          <>
+            <div className="bg-gray-200 animate-pulse p-6 rounded-lg shadow-md mb-4 h-32"></div>
+            <div className="bg-gray-200 animate-pulse p-6 rounded-lg shadow-md h-32"></div>
+          </>
+        ) : (
+          banners.map((banner, index) => (
+            <div key={banner.id} className="mb-4 last:mb-0">
+              <a
+                href={banner.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                  <img
+                    src={`http://localhost:3000/${banner.thumbnail}`}
+                    alt={`Banner ${banner.id}`}
+                    className="w-full h-32 object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src =
+                        "http://localhost:3000/api/placeholder/300/128";
+                    }}
+                  />
+                </div>
+              </a>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
