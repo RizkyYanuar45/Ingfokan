@@ -12,7 +12,10 @@ import SideBar from "../../components/Admin/SideBar";
 import TopNavigation from "../../components/Admin/TopNavigation";
 import CreateAuthor from "../../components/Admin/Modal/Create/CreateAuthor";
 import DeleteAuthor from "../../components/Admin/Modal/Delete/DeleteAuthor";
+
 export default function ControlAuthors() {
+  const api = import.meta.env.VITE_API_URL;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Initialize authors as an empty array
   const [authors, setAuthors] = useState([]);
@@ -244,7 +247,7 @@ export default function ControlAuthors() {
                           {author.avatar ? (
                             <div className="flex justify-center">
                               <img
-                                src={`http://localhost:3000/${author.avatar.replace(
+                                src={`${backendUrl}/${author.avatar.replace(
                                   /\\/g,
                                   "/"
                                 )}`}

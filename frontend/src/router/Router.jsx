@@ -21,7 +21,6 @@ import NotAuthorized from "../pages/NotAuthorized";
 import SearchPage from "../pages/SearchPage";
 import UserFavorites from "../pages/UserFavorites";
 
-import Test from "../pages/Admin/Test";
 import Dashboard from "../pages/Admin/Dashboard";
 import ControlArticles from "../pages/Admin/ControlArticles";
 import ControlBanners from "../pages/Admin/ControlBanners";
@@ -97,10 +96,6 @@ export const Router = createBrowserRouter([
   {
     path: "/search-page",
     element: <SearchPage />,
-  },
-  {
-    path: "/admin/test",
-    element: <Test />,
   },
 
   {

@@ -317,15 +317,6 @@ function SearchPage() {
                           </p>
                         </div>
                       </div>
-
-                      <div className="flex space-x-2">
-                        <button className="text-gray-400 hover:text-gray-600">
-                          <Heart size={14} />
-                        </button>
-                        <button className="text-gray-400 hover:text-gray-600">
-                          <MessageCircle size={14} />
-                        </button>
-                      </div>
                     </div>
                   </div>
                 </NavLink>

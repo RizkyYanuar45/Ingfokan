@@ -9,6 +9,9 @@ import Sidebar from "../components/ArticlePage/SideBarComponent";
 import { getUserIdFromToken } from "../utils/getUserIdFromToken";
 
 export default function Article() {
+  const api = import.meta.env.VITE_API_URL;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
   const { slug } = useParams();
   const [article, setArticle] = useState(null);
   const [author, setAuthor] = useState(null);
@@ -24,7 +27,7 @@ export default function Article() {
   useEffect(() => {
     const fetchRandomArticles = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/article");
+        const response = await fetch(`${api}/article`);
         if (!response.ok) throw new Error("Failed to fetch random articles");
 
         const data = await response.json();
@@ -47,9 +50,7 @@ export default function Article() {
     const fetchArticleData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          `http://localhost:3000/api/article/author-category/${slug}`
-        );
+        const response = await fetch(`${api}/article/author-category/${slug}`);
 
         if (!response.ok) throw new Error("Failed to fetch article data");
 
@@ -84,9 +85,7 @@ export default function Article() {
         if (token) {
           const userId = getUserIdFromToken(token);
           if (userId) {
-            const response = await fetch(
-              `http://localhost:3000/api/user/${userId}`
-            );
+            const response = await fetch(`${api}/user/${userId}`);
             if (response.ok) {
               const data = await response.json();
               if (data.success && data.data && data.data.data) {
@@ -110,9 +109,7 @@ export default function Article() {
 
       setLoadingComments(true);
       try {
-        const response = await fetch(
-          `http://localhost:3000/api/comment/user/${article.id}`
-        );
+        const response = await fetch(`${api}/comment/user/${article.id}`);
 
         if (!response.ok) throw new Error("Failed to fetch comments");
 
@@ -143,7 +140,7 @@ export default function Article() {
         content: commentText,
       };
 
-      const response = await fetch("http://localhost:3000/api/comment", {
+      const response = await fetch(`${api}/comment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

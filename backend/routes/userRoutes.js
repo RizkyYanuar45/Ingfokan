@@ -11,11 +11,13 @@ import {
   getUserById,
   editUser,
 } from "./../controllers/userController.js";
+import handler from "../helper/contactUsPage.js";
 import { protect } from "../middleware/authMiddleware.js";
 import upload from "../middleware/upload.js";
 const router = express.Router();
 
 router.post("/login", loginUser);
+router.post("/contact", handler); // Contact form handler
 router.post("/reset-password", resetPassword);
 router.post("/verify-reset-token/:token", verifyResetToken);
 router.post("/change-password-with-token", changePasswordWithToken);

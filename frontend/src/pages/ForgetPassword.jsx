@@ -3,6 +3,9 @@ import Office from "./../assets/Office.jpg";
 import { Mail, CheckCircle, AlertCircle } from "lucide-react";
 
 function ForgetPassword() {
+  const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
+  const backendUrl = import.meta.env.VITE_BACKEND_URL; // Ensure this is set in your .env file
+
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState(null);
@@ -20,16 +23,13 @@ function ForgetPassword() {
     setNotification(null);
 
     try {
-      const response = await fetch(
-        "http://localhost:3000/api/user/reset-password",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        }
-      );
+      const response = await fetch(`${api}/user/reset-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
 
       const data = await response.json();
 

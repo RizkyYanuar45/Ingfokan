@@ -4,9 +4,9 @@ import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
-const api = import.meta.env.VITE_API_URL;
-
 function LoginAdmin() {
+  const api = import.meta.env.VITE_API_URL;
+
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");

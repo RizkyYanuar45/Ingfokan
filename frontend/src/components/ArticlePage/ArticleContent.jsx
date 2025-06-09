@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Share2, BookmarkPlus, Bookmark } from "lucide-react";
 
 export default function ArticleContent({ article, author, category, user }) {
+  const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
+  const backendUrl = import.meta.env.VITE_BACKEND_URL; // Ensure this is set in your .env file
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isBookmarking, setIsBookmarking] = useState(false);
   const [isCheckingBookmark, setIsCheckingBookmark] = useState(false);
@@ -17,9 +19,7 @@ export default function ArticleContent({ article, author, category, user }) {
     setIsCheckingBookmark(true);
 
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/favorite/user/${user.id}`
-      );
+      const response = await fetch(`${api}/favorite/user/${user.id}`);
 
       if (response.ok) {
         const json = await response.json();
@@ -59,7 +59,7 @@ export default function ArticleContent({ article, author, category, user }) {
     setIsBookmarking(true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/favorite", {
+      const response = await fetch(`${api}/favorite`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,7 +104,7 @@ export default function ArticleContent({ article, author, category, user }) {
         <img
           src={
             article.thumbnail
-              ? `http://localhost:3000/${article.thumbnail}`
+              ? `${backendUrl}/${article.thumbnail}`
               : "/api/placeholder/800/400"
           }
           alt={article.title}
@@ -122,7 +122,7 @@ export default function ArticleContent({ article, author, category, user }) {
           <div className="w-10 h-10 rounded-full bg-red-500 mr-3">
             {author?.avatar && (
               <img
-                src={`http://localhost:3000/${author.avatar}`}
+                src={`${backendUrl}/${author.avatar}`}
                 alt={author.name}
                 className="w-10 h-10 rounded-full object-cover"
               />

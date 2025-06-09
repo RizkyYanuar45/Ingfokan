@@ -1,19 +1,15 @@
 // src/App.jsx
 import { useState, useEffect } from "react";
 import { NavLink, useParams } from "react-router-dom";
-import {
-  Heart,
-  MessageCircle,
-  ChevronLeft,
-  ChevronRight,
-  Newspaper,
-  Clock,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Newspaper, Clock } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { scrollToTop } from "../utils/ScrollToTop";
 
 function AuthorProfile() {
+  const api = import.meta.env.VITE_API_URL; // Use environment variable for API URL
+  const backendUrl = import.meta.env.VITE_BACKEND_URL; // Use environment variable for backend URL
+
   const { slug } = useParams(); // Get slug from URL parameters
   const [author, setAuthor] = useState(null);
   const [articles, setArticles] = useState([]);
@@ -32,9 +28,7 @@ function AuthorProfile() {
       setLoading(true);
       try {
         // Fetch author data
-        const authorResponse = await fetch(
-          `http://localhost:3000/api/author/slug/${slug}`
-        );
+        const authorResponse = await fetch(`${api}/author/slug/${slug}`);
         if (!authorResponse.ok) {
           throw new Error("Failed to fetch author data");
         }
@@ -48,7 +42,7 @@ function AuthorProfile() {
 
         // Fetch articles by author
         const articlesResponse = await fetch(
-          `http://localhost:3000/api/article/author?author_id=${authorData.data.data.id}`
+          `${api}/article/author?author_id=${authorData.data.data.id}`
         );
         if (!articlesResponse.ok) {
           throw new Error("Failed to fetch author's articles");
@@ -57,7 +51,7 @@ function AuthorProfile() {
         setArticles(articlesData);
 
         // Fetch banners
-        const bannersResponse = await fetch(`http://localhost:3000/api/banner`);
+        const bannersResponse = await fetch(`${api}/banner`);
         if (bannersResponse.ok) {
           const bannersData = await bannersResponse.json();
           if (bannersData.success) {
@@ -218,10 +212,7 @@ function AuthorProfile() {
                 onClick={() => handleBannerClick(banner)}
               >
                 <img
-                  src={`http://localhost:3000/${banner.thumbnail.replace(
-                    /\\/g,
-                    "/"
-                  )}`}
+                  src={`${backendUrl}/${banner.thumbnail.replace(/\\/g, "/")}`}
                   alt="Banner"
                   className="max-w-full h-auto"
                   onError={(e) => {
@@ -248,7 +239,7 @@ function AuthorProfile() {
       <div className="bg-gray-200 w-full flex items-center justify-evenly p-4">
         <div className="flex items-center">
           <img
-            src={`http://localhost:3000/${author.avatar}`}
+            src={`${backendUrl}/${author.avatar}`}
             alt={author.name}
             className="w-12 h-12 rounded-full mr-3 object-cover"
           />
@@ -285,7 +276,7 @@ function AuthorProfile() {
                 >
                   {/* Article Image */}
                   <img
-                    src={`http://localhost:3000/${article.thumbnail}`}
+                    src={`${backendUrl}/${article.thumbnail}`}
                     alt={article.title}
                     className="w-full h-32 object-cover"
                   />
@@ -307,7 +298,7 @@ function AuthorProfile() {
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center">
                         <img
-                          src={`http://localhost:3000/${author.avatar}`}
+                          src={`${backendUrl}/${author.avatar}`}
                           alt={author.name}
                           className="w-6 h-6 rounded-full mr-2 object-cover"
                         />
@@ -323,15 +314,6 @@ function AuthorProfile() {
                             })}
                           </p>
                         </div>
-                      </div>
-
-                      <div className="flex space-x-2">
-                        <button className="text-gray-400 hover:text-gray-600">
-                          <Heart size={14} />
-                        </button>
-                        <button className="text-gray-400 hover:text-gray-600">
-                          <MessageCircle size={14} />
-                        </button>
                       </div>
                     </div>
                   </div>

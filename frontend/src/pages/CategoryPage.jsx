@@ -1,18 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, NavLink } from "react-router-dom";
-import {
-  Heart,
-  MessageCircle,
-  ChevronLeft,
-  ChevronRight,
-  Newspaper,
-  Clock,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Newspaper, Clock } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { scrollToTop } from "../utils/ScrollToTop";
 
 function CategoryPage() {
+  const api = import.meta.env.VITE_API_URL; // Use environment variable for API URL
+  const backendUrl = import.meta.env.VITE_BACKEND_URL; // Use environment variable for backend URL
+
   const { slug } = useParams(); // Get the category slug from URL parameters
   const [category, setCategory] = useState(null);
   const [articles, setArticles] = useState([]);
@@ -35,7 +31,7 @@ function CategoryPage() {
     const fetchBanner = async () => {
       setBannerLoading(true);
       try {
-        const response = await fetch("http://localhost:3000/api/banner");
+        const response = await fetch(`${api}/banner`);
 
         if (!response.ok) {
           throw new Error(`Failed to fetch banner: ${response.status}`);
@@ -71,9 +67,7 @@ function CategoryPage() {
       setLoading(true);
       try {
         // Step 1: Fetch the category by slug to get its ID
-        const categoryResponse = await fetch(
-          `http://localhost:3000/api/category/slug/${slug}`
-        );
+        const categoryResponse = await fetch(`${api}/category/slug/${slug}`);
 
         if (!categoryResponse.ok) {
           throw new Error(
@@ -86,7 +80,7 @@ function CategoryPage() {
 
         // Step 2: Use the category ID to fetch all articles with that category_id
         const articlesResponse = await fetch(
-          `http://localhost:3000/api/article/category?category_id=${categoryData.data.id}`
+          `${api}/article/category?category_id=${categoryData.data.id}`
         );
 
         if (!articlesResponse.ok) {
@@ -122,7 +116,7 @@ function CategoryPage() {
           articles.map(async (article) => {
             try {
               const authorResponse = await fetch(
-                `http://localhost:3000/api/author/${article.author_id}`
+                `${api}/author/${article.author_id}`
               );
 
               if (!authorResponse.ok) {
@@ -250,10 +244,7 @@ function CategoryPage() {
             onClick={handleBannerClick}
           >
             <img
-              src={`http://localhost:3000/${banner.thumbnail.replace(
-                /\\/g,
-                "/"
-              )}`}
+              src={`${backendUrl}/${banner.thumbnail.replace(/\\/g, "/")}`}
               alt="Banner"
               className="max-w-full h-auto"
               onError={(e) => {
@@ -311,7 +302,7 @@ function CategoryPage() {
                   <img
                     src={
                       article.thumbnail
-                        ? `http://localhost:3000/${article.thumbnail.replace(
+                        ? `${backendUrl}/${article.thumbnail.replace(
                             /\\/g,
                             "/"
                           )}`
@@ -339,7 +330,7 @@ function CategoryPage() {
                         <img
                           src={
                             article.author?.avatar
-                              ? `http://localhost:3000/${article.author.avatar.replace(
+                              ? `${backendUrl}/${article.author.avatar.replace(
                                   /\\/g,
                                   "/"
                                 )}`
@@ -356,15 +347,6 @@ function CategoryPage() {
                             {formatDate(article.published_date) || "No date"}
                           </p>
                         </div>
-                      </div>
-
-                      <div className="flex space-x-2">
-                        <button className="text-gray-400 hover:text-gray-600">
-                          <Heart size={14} />
-                        </button>
-                        <button className="text-gray-400 hover:text-gray-600">
-                          <MessageCircle size={14} />
-                        </button>
                       </div>
                     </div>
                   </div>

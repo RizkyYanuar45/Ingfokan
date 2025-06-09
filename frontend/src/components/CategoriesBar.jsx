@@ -4,6 +4,9 @@ import { NavLink } from "react-router-dom";
 import { scrollToTop } from "../utils/ScrollToTop";
 
 function CategoriesBar() {
+  const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
+  const backendUrl = import.meta.env.VITE_BACKEND_URL; // Ensure this is set in your .env file
+
   // State variables
   const [startIndex, setStartIndex] = useState(0);
   const [categories, setCategories] = useState([]);
@@ -143,10 +146,7 @@ function CategoriesBar() {
               >
                 <div className="relative bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105 cursor-pointer">
                   <img
-                    src={`http://localhost:3000/${item.thumbnail.replace(
-                      /\\/g,
-                      "/"
-                    )}`}
+                    src={`${backendUrl}/${item.thumbnail.replace(/\\/g, "/")}`}
                     alt={item.name}
                     className="w-full h-16 sm:h-20 object-cover blur-[4px] "
                   />

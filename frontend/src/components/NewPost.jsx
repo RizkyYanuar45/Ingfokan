@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronRight, BookmarkPlus } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { scrollToTop } from "../utils/ScrollToTop";
 
@@ -147,9 +147,6 @@ function NewPost() {
                       <span className="text-xs text-gray-500">
                         {formatDate(article.published_date)}
                       </span>
-                      <button className="text-gray-400 hover:text-blue-500">
-                        <BookmarkPlus size={16} />
-                      </button>
                     </div>
                   </div>
                 </div>

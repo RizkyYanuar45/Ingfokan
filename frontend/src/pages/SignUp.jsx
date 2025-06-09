@@ -3,6 +3,8 @@ import Office from "./../assets/Office.jpg";
 import { Mail, Lock, User, Eye, EyeOff, UserCircle, X } from "lucide-react";
 
 function SignUp() {
+  const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -57,7 +59,7 @@ function SignUp() {
         data.append("avatar", formData.avatar);
       }
 
-      const response = await fetch("http://localhost:3000/api/user/register", {
+      const response = await fetch(`${api}/user/register`, {
         method: "POST",
         body: data,
       });

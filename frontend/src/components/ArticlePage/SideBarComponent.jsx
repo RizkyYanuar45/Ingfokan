@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { scrollToTop } from "../../utils/ScrollToTop";
 
 export default function Sidebar({ author, category, randomArticles }) {
+  const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
+  const backendUrl = import.meta.env.VITE_BACKEND_URL; // Ensure this is set in your .env file
+
   const [banners, setBanners] = useState([]);
   const [isLoadingBanners, setIsLoadingBanners] = useState(true);
 
@@ -27,7 +30,7 @@ export default function Sidebar({ author, category, randomArticles }) {
     const fetchBanners = async () => {
       try {
         setIsLoadingBanners(true);
-        const response = await fetch("http://localhost:3000/api/banner");
+        const response = await fetch(`${api}/banner`);
         const result = await response.json();
 
         if (result.success && result.data?.data) {
@@ -96,8 +99,7 @@ export default function Sidebar({ author, category, randomArticles }) {
                   className="w-12 h-12 object-cover rounded-lg"
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src =
-                      "http://localhost:3000/api/placeholder/48/48";
+                    e.target.src = `${api}/placeholder/48/48`;
                   }}
                 />
               </div>
@@ -128,8 +130,7 @@ export default function Sidebar({ author, category, randomArticles }) {
                       className="w-16 h-16 object-cover rounded-md"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src =
-                          "http://localhost:3000/api/placeholder/64/64";
+                        e.target.src = `${api}/placeholder/64/64`;
                       }}
                     />
                   </div>
@@ -184,8 +185,7 @@ export default function Sidebar({ author, category, randomArticles }) {
                     className="w-full h-32 object-cover"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src =
-                        "http://localhost:3000/api/placeholder/300/128";
+                      e.target.src = `${api}/placeholder/300/128`;
                     }}
                   />
                 </div>

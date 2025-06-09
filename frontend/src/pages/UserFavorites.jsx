@@ -13,6 +13,9 @@ import Footer from "../components/Footer";
 import { useParams } from "react-router-dom";
 
 function UserFavorites() {
+  const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
+  const backendUrl = import.meta.env.VITE_BACKEND_URL; // Ensure this is set in your .env file
+
   const { idUser } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -48,25 +51,21 @@ function UserFavorites() {
       setLoading(true);
       try {
         // Fetch articles
-        const articlesResponse = await fetch(
-          "http://localhost:3000/api/article"
-        );
+        const articlesResponse = await fetch(`${api}/article`);
         if (!articlesResponse.ok) {
           throw new Error("Failed to fetch articles");
         }
         const articlesData = await articlesResponse.json();
 
         // Fetch authors
-        const authorsResponse = await fetch("http://localhost:3000/api/author");
+        const authorsResponse = await fetch(`${api}/author`);
         if (!authorsResponse.ok) {
           throw new Error("Failed to fetch authors");
         }
         const authorsData = await authorsResponse.json();
 
         // Fetch user favorites
-        const favoritesResponse = await fetch(
-          `http://localhost:3000/api/favorite/user/${idUser}`
-        );
+        const favoritesResponse = await fetch(`${api}/favorite/user/${idUser}`);
         if (!favoritesResponse.ok) {
           throw new Error("Failed to fetch user favorites");
         }
@@ -347,7 +346,7 @@ function UserFavorites() {
                   {/* Article Image */}
                   <img
                     src={
-                      `http://localhost:3000/${article.thumbnail}` ||
+                      `${backendUrl}/${article.thumbnail}` ||
                       "https://source.unsplash.com/random/300x200/?article"
                     }
                     alt={article.title}
@@ -369,7 +368,7 @@ function UserFavorites() {
                       <div className="flex items-center">
                         <img
                           src={
-                            `http://localhost:3000/${article.author.avatar}` ||
+                            `${backendUrl}/${article.author.avatar}` ||
                             "https://randomuser.me/api/portraits/lego/1.jpg"
                           }
                           alt={article.author.name}

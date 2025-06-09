@@ -14,6 +14,8 @@ import CreateArticle from "../../components/Admin/Modal/Create/CreateArticle";
 import DeleteArticle from "../../components/Admin/Modal/Delete/DeleteArticle";
 
 export default function ControlArticles() {
+  const api = import.meta.env.VITE_API_URL;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Initialize articles as an empty array
   const [articles, setArticles] = useState([]);
@@ -38,7 +40,7 @@ export default function ControlArticles() {
   // Fetch articles data from API
   const refreshArticles = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/article`, {
+      const response = await fetch(`${api}/article`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -258,7 +260,7 @@ export default function ControlArticles() {
                           {article.thumbnail ? (
                             <div className="flex justify-center">
                               <img
-                                src={`http://localhost:3000/${article.thumbnail.replace(
+                                src={`${backendUrl}/${article.thumbnail.replace(
                                   /\\/g,
                                   "/"
                                 )}`}

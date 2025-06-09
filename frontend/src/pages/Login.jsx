@@ -4,6 +4,8 @@ import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 function Login() {
+  const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
+
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,7 +20,7 @@ function Login() {
 
     try {
       // Send login request with JSON format
-      const response = await fetch("http://localhost:3000/api/user/login", {
+      const response = await fetch(`${api}/user/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

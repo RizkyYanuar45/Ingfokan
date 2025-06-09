@@ -2,6 +2,9 @@
 import { useState, useEffect } from "react";
 
 const AuthorList = () => {
+  const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
+  const backendUrl = import.meta.env.VITE_BACKEND_URL; // Ensure this is set in your .env file
+
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -10,7 +13,7 @@ const AuthorList = () => {
     const fetchAuthors = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:3000/api/author");
+        const response = await fetch(`${api}/author`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch authors");
@@ -90,7 +93,7 @@ const AuthorList = () => {
             {/* Image Container */}
             <div className="w-16 h-16 rounded-md overflow-hidden mb-1">
               <img
-                src={`http://localhost:3000/${member.avatar}`}
+                src={`${backendUrl}/${member.avatar}`}
                 alt={member.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {

@@ -12,7 +12,10 @@ import SideBar from "../../components/Admin/SideBar";
 import TopNavigation from "../../components/Admin/TopNavigation";
 import CreateBanner from "../../components/Admin/Modal/Create/CreateBanner";
 import DeleteCategory from "../../components/Admin/Modal/Delete/DeleteBanner";
+
 export default function ControlBanners() {
+  const api = import.meta.env.VITE_API_URL;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [banners, setCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -204,7 +207,7 @@ export default function ControlBanners() {
                           {banner.thumbnail ? (
                             <div className="flex justify-center">
                               <img
-                                src={`http://localhost:3000/${banner.thumbnail.replace(
+                                src={`${backendUrl}/${banner.thumbnail.replace(
                                   /\\/g,
                                   "/"
                                 )}`}

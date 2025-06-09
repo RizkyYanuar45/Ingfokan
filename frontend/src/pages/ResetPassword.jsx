@@ -11,6 +11,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import Office from "./../assets/Office.jpg";
 
 function ResetPassword() {
+  const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
+
   const { token } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -41,7 +43,7 @@ function ResetPassword() {
 
       try {
         const response = await fetch(
-          `http://localhost:3000/api/user/verify-reset-token/${token}`,
+          `${api}/user/verify-reset-token/${token}`,
           {
             method: "POST",
             headers: {
@@ -141,20 +143,17 @@ function ResetPassword() {
     setNotification(null);
 
     try {
-      const response = await fetch(
-        "http://localhost:3000/api/user/change-password-with-token",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            token: token,
-            newPassword: formData.newPassword,
-            confirmPassword: formData.confirmPassword,
-          }),
-        }
-      );
+      const response = await fetch(`${api}/user/change-password-with-token`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token: token,
+          newPassword: formData.newPassword,
+          confirmPassword: formData.confirmPassword,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

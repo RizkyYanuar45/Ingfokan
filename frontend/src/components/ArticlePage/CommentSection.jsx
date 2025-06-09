@@ -8,7 +8,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
-
+const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
+const backendUrl = import.meta.env.VITE_BACKEND_URL; // Ensure this is set in your .env file
 // Custom Confirmation Modal Component
 function ConfirmationModal({
   isOpen,
@@ -140,12 +141,9 @@ export default function CommentSection({
     setDeletingComments((prev) => new Set([...prev, commentId]));
 
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/comment/${commentId}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetch(`${api}/comment/${commentId}`, {
+        method: "DELETE",
+      });
 
       if (response.ok) {
         if (onCommentDelete) {
@@ -209,11 +207,11 @@ export default function CommentSection({
         avatar.startsWith("images/")
       ) {
         const path = avatar.replace(/\\/g, "/");
-        return `http://localhost:3000/${path}`;
+        return `${backendUrl}/${path}`;
       }
-      return `http://localhost:3000/${avatar}`;
+      return `${backendUrl}/${avatar}`;
     }
-    return `http://localhost:3000/api/placeholder/40/40`;
+    return `${api}/placeholder/40/40`;
   };
 
   const canDeleteComment = (comment) => {
@@ -255,8 +253,8 @@ export default function CommentSection({
                 <img
                   src={
                     currentUser?.avatar
-                      ? `http://localhost:3000/${currentUser.avatar}`
-                      : "http://localhost:3000/api/placeholder/40/40"
+                      ? `${backendUrl}/${currentUser.avatar}`
+                      : `${api}/placeholder/40/40`
                   }
                   alt="Your Avatar"
                   className="w-10 h-10 rounded-full bg-blue-500 mr-3 flex-shrink-0"

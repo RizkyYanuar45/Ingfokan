@@ -84,6 +84,9 @@ const Notification = ({ type, message, isVisible, onClose }) => {
 };
 
 export default function EditProfilePage() {
+  const api = import.meta.env.VITE_API_URL;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
   const { idUser } = useParams();
 
   const [formData, setFormData] = useState({
@@ -130,9 +133,7 @@ export default function EditProfilePage() {
     const fetchUserData = async () => {
       try {
         setIsLoadingData(true);
-        const response = await fetch(
-          `http://localhost:3000/api/user/${idUser}`
-        );
+        const response = await fetch(`${api}/user/${idUser}`);
         const result = await response.json();
 
         if (result.success) {
@@ -149,7 +150,7 @@ export default function EditProfilePage() {
           // Set avatar URL - assuming the avatar path is relative to the server
           setAvatar(
             userData.avatar
-              ? `http://localhost:3000/${userData.avatar}`
+              ? `${backendUrl}/${userData.avatar}`
               : "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
           );
         } else {
@@ -221,7 +222,7 @@ export default function EditProfilePage() {
         updateData.append("avatar", avatarFile);
       }
 
-      const response = await fetch(`http://localhost:3000/api/user/${idUser}`, {
+      const response = await fetch(`${api}/user/${idUser}`, {
         method: "PATCH",
         body: updateData,
         headers: {

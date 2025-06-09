@@ -5,6 +5,9 @@ import SideBar from "../../components/Admin/SideBar";
 import TopNavigation from "../../components/Admin/TopNavigation";
 
 export default function Dashboard() {
+  const api = import.meta.env.VITE_API_URL;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // State for API data
@@ -25,10 +28,8 @@ export default function Dashboard() {
     const fetchDashboardData = async () => {
       try {
         // Fetch only articles data since it contains author and category info
-        const articlesResponse = await fetch(
-          "http://localhost:3000/api/article"
-        );
-        const userResponse = await fetch("http://localhost:3000/api/user");
+        const articlesResponse = await fetch(`${api}/article`);
+        const userResponse = await fetch(`${api}/user`);
 
         // Check if response is ok
         if (!articlesResponse.ok || !userResponse.ok) {

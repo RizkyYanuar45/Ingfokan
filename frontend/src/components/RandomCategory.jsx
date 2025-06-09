@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ChevronRight, ChevronLeft, Bookmark } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 import { scrollToTop } from "../utils/ScrollToTop";
 import { NavLink } from "react-router-dom";
 
@@ -282,7 +282,6 @@ function RandomCategory() {
                             </p>
                           </div>
                         </div>
-                        <Bookmark className="w-4 h-4 md:w-5 md:h-5 text-gray-400" />
                       </div>
                     </div>
                   </div>

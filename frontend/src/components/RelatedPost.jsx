@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronRight, ChevronLeft, Bookmark } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { scrollToTop } from "../utils/ScrollToTop";
 
@@ -256,7 +256,6 @@ function RelatedPost({ authorId }) {
                             </p>
                           </div>
                         </div>
-                        <Bookmark className="w-4 h-4 md:w-5 md:h-5 text-gray-400" />
                       </div>
                     </div>
                   </div>

@@ -12,7 +12,9 @@ import SideBar from "../../components/Admin/SideBar";
 import TopNavigation from "../../components/Admin/TopNavigation";
 import CreateCategory from "../../components/Admin/Modal/Create/CreateCategory";
 import DeleteCategory from "../../components/Admin/Modal/Delete/DeleteCategory";
+
 export default function ControlCategories() {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -234,7 +236,7 @@ export default function ControlCategories() {
                           {category.thumbnail ? (
                             <div className="flex justify-center">
                               <img
-                                src={`http://localhost:3000/${category.thumbnail.replace(
+                                src={`${backendUrl}/${category.thumbnail.replace(
                                   /\\/g,
                                   "/"
                                 )}`}
