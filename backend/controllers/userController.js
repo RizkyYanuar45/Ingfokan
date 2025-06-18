@@ -358,6 +358,22 @@ const deleteUser = async (req, res) => {
 
 const editUser = async (req, res) => {
   try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user_id = decoded.id;
+    if (user_id !== parseInt(req.params.id)) {
+      return ResponseAPI.error(
+        res,
+        "Anda tidak memiliki akses untuk mengedit user ini",
+        403
+      );
+    }
+
     const id = req.params.id;
     const updates = { ...req.body };
 

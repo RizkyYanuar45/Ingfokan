@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Share2, BookmarkPlus, Bookmark } from "lucide-react";
 
 export default function ArticleContent({ article, author, category, user }) {
-  const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
-  const backendUrl = import.meta.env.VITE_BACKEND_URL; // Ensure this is set in your .env file
+  const api = import.meta.env.VITE_API_URL;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isBookmarking, setIsBookmarking] = useState(false);
   const [isCheckingBookmark, setIsCheckingBookmark] = useState(false);
@@ -59,22 +59,44 @@ export default function ArticleContent({ article, author, category, user }) {
     setIsBookmarking(true);
 
     try {
-      const response = await fetch(`${api}/favorite`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: user.id,
-          article_id: article.id,
-        }),
-      });
+      let response;
+
+      if (isBookmarked) {
+        // Remove bookmark - menggunakan method DELETE
+        response = await fetch(`${api}/favorite/${article.id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: user.id,
+            article_id: article.id,
+          }),
+        });
+      } else {
+        // Add bookmark - menggunakan method POST
+        response = await fetch(`${api}/favorite`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: user.id,
+            article_id: article.id,
+          }),
+        });
+      }
 
       if (response.ok) {
         setIsBookmarked((prev) => !prev);
         console.log("Bookmark status updated successfully");
       } else {
-        console.error("Failed to update bookmark status");
+        const errorData = await response.text();
+        console.error(
+          "Failed to update bookmark status:",
+          response.status,
+          errorData
+        );
       }
     } catch (error) {
       console.error("Error updating bookmark:", error);

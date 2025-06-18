@@ -5,6 +5,7 @@ import Category from "../models/category.js";
 import ResponseAPI from "../helper/response.js";
 import fs from "fs";
 import slugify from "slugify";
+import { Op } from "sequelize";
 
 const generateUniqueSlug = async (baseSlug, excludeId = null) => {
   let slug = baseSlug;

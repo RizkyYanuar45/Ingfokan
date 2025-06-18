@@ -15,8 +15,14 @@ const router = express.Router();
 router.get("/", getAllCategory);
 router.get("/slug/:slug", getCategoryBySlug);
 router.get("/:id", getCategoryById);
-router.post("/", protect, upload.single("thumbnail"), createCategory);
-router.patch("/:id", upload.single("thumbnail"), updateCategory);
+router.post("/", protect, admin, upload.single("thumbnail"), createCategory);
+router.patch(
+  "/:id",
+  protect,
+  admin,
+  upload.single("thumbnail"),
+  updateCategory
+);
 router.delete("/delete/:id", protect, admin, deleteCategory);
 
 export default router;

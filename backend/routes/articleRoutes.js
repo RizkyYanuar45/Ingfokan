@@ -11,6 +11,7 @@ import {
   getArticlesByCategory,
   getArticlesByAuthor,
 } from "./../controllers/articleController.js";
+import { protect, admin } from "./../middleware/authMiddleware.js";
 import upload from "./../middleware/upload.js";
 
 const routes = express.Router();
@@ -22,8 +23,8 @@ routes.get("/comment/:id", getArticleComments);
 routes.get("/category", getArticlesByCategory);
 routes.get("/author", getArticlesByAuthor);
 routes.get("/:id", getAllById);
-routes.post("/", upload.single("thumbnail"), createArticle);
-routes.patch("/:id", upload.single("thumbnail"), updateArticle);
-routes.delete("/:id", deleteArticle);
+routes.post("/", protect, admin, upload.single("thumbnail"), createArticle);
+routes.patch("/:id", protect, admin, upload.single("thumbnail"), updateArticle);
+routes.delete("/:id", protect, admin, deleteArticle);
 
 export default routes;

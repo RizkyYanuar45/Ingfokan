@@ -48,7 +48,7 @@ const createFavorite = async (req, res) => {
 const deleteFavorite = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await Favorite.destroy({ where: { id: id } });
+    const result = await Favorite.destroy({ where: { article_id: id } });
     return ResponseAPI.success(res, "success", {
       result,
     });

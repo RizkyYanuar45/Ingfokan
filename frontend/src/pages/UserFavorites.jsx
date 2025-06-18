@@ -1,16 +1,11 @@
 // src/SearchPage.jsx
 import { useState, useEffect } from "react";
-import {
-  Heart,
-  MessageCircle,
-  ChevronLeft,
-  ChevronRight,
-  Search,
-} from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { MessageCircle, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { useLocation, useNavigate, NavLink } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useParams } from "react-router-dom";
+import { scrollToTop } from "../utils/ScrollToTop";
 
 function UserFavorites() {
   const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
@@ -339,7 +334,9 @@ function UserFavorites() {
           ) : currentArticles.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {currentArticles.map((article) => (
-                <div
+                <NavLink
+                  onClick={scrollToTop}
+                  to={`/article/${article.slug}`}
                   key={article.id}
                   className="bg-white rounded-md overflow-hidden shadow-sm"
                 >
@@ -372,7 +369,7 @@ function UserFavorites() {
                             "https://randomuser.me/api/portraits/lego/1.jpg"
                           }
                           alt={article.author.name}
-                          className="w-6 h-6 rounded-full mr-2"
+                          className="w-6 h-6 rounded-full mr-2 object-cover"
                         />
                         <div>
                           <p className="text-xs font-medium">
@@ -383,18 +380,9 @@ function UserFavorites() {
                           </p>
                         </div>
                       </div>
-
-                      <div className="flex space-x-2">
-                        <button className="text-gray-400 hover:text-gray-600">
-                          <Heart size={14} />
-                        </button>
-                        <button className="text-gray-400 hover:text-gray-600">
-                          <MessageCircle size={14} />
-                        </button>
-                      </div>
                     </div>
                   </div>
-                </div>
+                </NavLink>
               ))}
             </div>
           ) : (
