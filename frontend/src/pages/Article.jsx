@@ -83,7 +83,7 @@ export default function Article() {
       try {
         const token = localStorage.getItem("token");
         if (token) {
-          const userId = getUserIdFromToken(token);
+          const userId = getUserIdFromToken(token, "id");
           if (userId) {
             const response = await fetch(`${api}/user/${userId}`);
             if (response.ok) {

@@ -151,7 +151,7 @@ export default function EditProfilePage() {
           setAvatar(
             userData.avatar
               ? `${backendUrl}/${userData.avatar}`
-              : "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
+              : `${backendUrl}/images/default.png`
           );
         } else {
           setError("Failed to fetch user data");

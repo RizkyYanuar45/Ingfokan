@@ -148,7 +148,7 @@ function SearchPage() {
     e.preventDefault();
     if (searchQuery.trim()) {
       // Update URL with search query
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      navigate(`/search-page?q=${encodeURIComponent(searchQuery.trim())}`);
       setIsSearching(true);
     }
   };
@@ -306,7 +306,7 @@ function SearchPage() {
                               : "/api/placeholder/24/24"
                           }
                           alt={article.author?.name || "Unknown Author"}
-                          className="w-6 h-6 rounded-full mr-2"
+                          className="w-6 h-6 rounded-full mr-2 object-cover"
                         />
                         <div>
                           <p className="text-xs font-medium">

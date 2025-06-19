@@ -143,6 +143,9 @@ export default function CommentSection({
     try {
       const response = await fetch(`${api}/comment/${commentId}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
 
       if (response.ok) {
@@ -211,7 +214,7 @@ export default function CommentSection({
       }
       return `${backendUrl}/${avatar}`;
     }
-    return `${api}/placeholder/40/40`;
+    return `${backendUrl}/images/default.png`;
   };
 
   const canDeleteComment = (comment) => {
@@ -254,7 +257,7 @@ export default function CommentSection({
                   src={
                     currentUser?.avatar
                       ? `${backendUrl}/${currentUser.avatar}`
-                      : `${api}/placeholder/40/40`
+                      : `${backendUrl}/images/default.png`
                   }
                   alt="Your Avatar"
                   className="w-10 h-10 rounded-full bg-blue-500 mr-3 flex-shrink-0"

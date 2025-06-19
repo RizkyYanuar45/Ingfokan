@@ -4,25 +4,34 @@ import ResponseApi from "./../helper/response.js";
 
 const protect = async (req, res, next) => {
   try {
+    // Debug: Lihat raw Authorization header
+    console.log("Raw Authorization header:", req.header("Authorization"));
+
     // Mengambil token dari header Authorization
     let token = req.header("Authorization")?.replace("Bearer ", "");
+
+    // Debug: Lihat token setelah di-extract
+    console.log("Extracted token:", token);
+    console.log("Token length:", token?.length);
+    console.log("Token type:", typeof token);
+
     if (!token) return ResponseApi.error(res, "Tidak ada token");
 
     // Memverifikasi token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Mengambil pengguna berdasarkan ID dari token
+    // Rest of your code...
     console.log("User ID from Token:", decoded.id);
     console.log("User Email from Token:", decoded.email);
     console.log("User decoded from Token:", decoded);
     const user = await User.findOne({ where: { email: decoded.email } });
     if (!user) return ResponseApi.error(res, "User tidak ditemukan");
 
-    // Menyimpan informasi pengguna di request untuk digunakan di rute berikutnya
     req.user = user;
     next();
   } catch (error) {
-    console.error(error);
+    console.error("JWT Error:", error.message);
+    console.error("Full error:", error);
     return ResponseApi.error(res, "Token tidak valid");
   }
 };

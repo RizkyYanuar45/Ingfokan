@@ -159,7 +159,7 @@ function Carousel() {
                     <img
                       src={`${backendUrl}/${author.avatar}`}
                       alt={author.name}
-                      className="w-6 h-6 rounded-full mr-2"
+                      className="w-6 h-6 rounded-full mr-2 object-cover"
                     />
                   )}
                   <div>

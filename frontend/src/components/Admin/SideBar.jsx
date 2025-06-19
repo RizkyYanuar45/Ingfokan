@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Home, FileText, Users, X, Image, Tag, LogOut } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, NavLink } from "react-router-dom";
 
 export default function SideBar({ sidebarOpen, toggleSidebar }) {
   const location = useLocation();
@@ -87,11 +87,14 @@ export default function SideBar({ sidebarOpen, toggleSidebar }) {
           </div>
         </nav>
 
-        <div className="absolute bottom-0 w-full border-t border-indigo-700 p-4">
-          <div className="flex items-center px-4 py-2 rounded-lg hover:bg-orange-400 cursor-pointer">
+        <div className="absolute bottom-0 w-full border-t border-white p-4">
+          <NavLink
+            to={"/"}
+            className="flex items-center px-4 py-2 rounded-lg hover:bg-orange-400 cursor-pointer"
+          >
             <LogOut className="h-5 w-5 mr-3" />
             <span>Logout</span>
-          </div>
+          </NavLink>
         </div>
       </div>
     </>

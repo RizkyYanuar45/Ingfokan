@@ -320,7 +320,9 @@ function CategoryPage() {
 
                     <p className="text-xs text-gray-500 line-clamp-2 h-8 mb-2">
                       {article.content
-                        ? article.content.substring(0, 100) + "..."
+                        ? article.content
+                            .replace(/<[^>]*>/g, "")
+                            .substring(0, 100) + "..."
                         : "No excerpt available"}
                     </p>
 

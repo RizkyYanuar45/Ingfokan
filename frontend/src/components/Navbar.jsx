@@ -4,6 +4,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { scrollToTop } from "../utils/ScrollToTop";
 
 function Navbar() {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,11 +33,8 @@ function Navbar() {
     setSearchQuery(e.target.value);
   };
 
-  // Handle search form submission
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    e.stopPropagation(); // Prevent event bubbling
-
+  // Handle search execution - used by both form submission and search icon click
+  const executeSearch = () => {
     const query = searchQuery.trim();
     if (query) {
       // Navigate to search page with query parameter
@@ -47,11 +45,24 @@ function Navbar() {
         setIsSearchOpen(false);
       }
 
-      // Clear search query after submission (optional)
+      // Clear search query after submission
       setSearchQuery("");
+
+      scrollToTop(); // Scroll to top after search
     }
-    scrollToTop(); // Scroll to top after search
+  };
+
+  // Handle search form submission
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    e.stopPropagation(); // Prevent event bubbling
+    executeSearch();
     return false; // Extra safety to prevent default form submission
+  };
+
+  // Handle search button click - execute search directly (for both desktop and mobile)
+  const handleSearchClick = () => {
+    executeSearch();
   };
 
   // Function to truncate username
@@ -164,8 +175,7 @@ function Navbar() {
 
   // Determine avatar URL - handle relative paths correctly
   const getAvatarUrl = () => {
-    if (!user || !user.avatar)
-      return "https://cdn.builder.io/api/v1/image/assets/TEMP/65a45d88f10ad10c818d420053bb5bec70cff7d2";
+    if (!user || !user.avatar) return `${backendUrl}/images/default.png`;
 
     // Check if avatar starts with 'uploads\' or 'uploads/'
     if (
@@ -235,7 +245,14 @@ function Navbar() {
           <div className="flex items-center">
             <form onSubmit={handleSearchSubmit} className="flex items-center">
               <div className="flex gap-5 items-center px-4 py-3 rounded-xl bg-neutral-100">
-                <Search size={18} />
+                <button
+                  type="button"
+                  onClick={handleSearchClick}
+                  className="flex items-center justify-center"
+                  aria-label="Execute search"
+                >
+                  <Search size={18} />
+                </button>
                 <input
                   type="text"
                   placeholder="Search anything"
@@ -334,7 +351,14 @@ function Navbar() {
         <div className="md:hidden px-4 py-3 bg-white shadow-md">
           <form onSubmit={handleSearchSubmit} method="get" role="search">
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-100 w-full">
-              <Search size={16} />
+              <button
+                type="button"
+                onClick={handleSearchClick}
+                className="flex items-center justify-center"
+                aria-label="Execute search"
+              >
+                <Search size={16} />
+              </button>
               <input
                 type="text"
                 name="search"

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 import SideBar from "../../components/Admin/SideBar";
-import TopNavigation from "../../components/Admin/TopNavigation";
+
 import CreateArticle from "../../components/Admin/Modal/Create/CreateArticle";
 import DeleteArticle from "../../components/Admin/Modal/Delete/DeleteArticle";
 
@@ -151,9 +151,6 @@ export default function ControlArticles() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Navigation */}
-        <TopNavigation toggleSidebar={toggleSidebar} />
-
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto p-6 bg-gray-100">
           <div className="mb-6 flex justify-between items-center">

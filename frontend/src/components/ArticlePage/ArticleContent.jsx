@@ -27,6 +27,7 @@ export default function ArticleContent({ article, author, category, user }) {
 
         console.log("Favorite articles from API:", favoriteArticles);
         console.log("Current article ID:", article.id);
+        console.log("Current user ID:", user.id);
 
         const isCurrentArticleBookmarked = favoriteArticles.some((fav) => {
           const favId = fav.article_id;
@@ -67,6 +68,7 @@ export default function ArticleContent({ article, author, category, user }) {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
             user_id: user.id,
@@ -79,6 +81,7 @@ export default function ArticleContent({ article, author, category, user }) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
             user_id: user.id,

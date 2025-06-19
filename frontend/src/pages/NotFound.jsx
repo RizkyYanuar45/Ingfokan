@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { Home, ArrowLeft, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { scrollToTop } from "../utils/ScrollToTop";
 
 export default function NotFound() {
   const navigate = useNavigate();
@@ -38,7 +39,10 @@ export default function NotFound() {
             </button>
 
             <button
-              onClick={() => navigate("/")}
+              onClick={() => {
+                navigate("/");
+                scrollToTop();
+              }}
               className="flex items-center justify-center gap-2 px-6 py-3 bg-stone-800 text-white rounded-xl hover:bg-stone-900 transition-colors"
             >
               <Home size={18} />
