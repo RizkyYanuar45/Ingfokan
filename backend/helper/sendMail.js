@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 
-const sendEmail = async (to, subject, text) => {
-  const transporter = nodemailer.createTransport({
+const sendEmail = async (to, subject, content, isHTML = false) => {
+  const transporter = nodemailer.createTransporter({
     host: process.env.SMTP_HOST,
     port: process.env.SMTP_PORT,
     secure: true,
@@ -11,16 +11,29 @@ const sendEmail = async (to, subject, text) => {
     },
     connectionTimeout: 10000,
     tls: {
-      rejectUnauthorized: false, // 👉 Tambahkan ini
+      rejectUnauthorized: false,
     },
   });
 
-  await transporter.sendMail({
+  const mailOptions = {
     from: `"Support Ingfokan" <${process.env.SMTP_USER}>`,
     to,
     subject,
-    text,
-  });
+  };
+
+  // PERBAIKAN UTAMA: Gunakan html atau text berdasarkan parameter isHTML
+  if (isHTML) {
+    mailOptions.html = content; // Untuk HTML email
+    // Opsional: Tambahkan text fallback (strip HTML tags)
+    mailOptions.text = content
+      .replace(/<[^>]*>/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  } else {
+    mailOptions.text = content; // Untuk plain text email
+  }
+
+  await transporter.sendMail(mailOptions);
 };
 
 export default sendEmail;
