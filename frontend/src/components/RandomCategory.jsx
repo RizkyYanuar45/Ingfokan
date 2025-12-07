@@ -3,6 +3,9 @@ import { ChevronRight, ChevronLeft } from "lucide-react";
 import { scrollToTop } from "../utils/ScrollToTop";
 import { NavLink } from "react-router-dom";
 
+const api = import.meta.env.VITE_API_URL;
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
 function RandomCategory() {
   const [startIndex, setStartIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -30,9 +33,7 @@ function RandomCategory() {
 
       try {
         // Fetch all categories
-        const categoryResponse = await fetch(
-          "http://localhost:3000/api/category"
-        );
+        const categoryResponse = await fetch(`${api}/category`);
         const categoryResult = await categoryResponse.json();
 
         if (!categoryResult.success) {
@@ -83,9 +84,7 @@ function RandomCategory() {
         setSelectedCategory(randomCategory);
 
         // Fetch all articles (now includes author and category data)
-        const articleResponse = await fetch(
-          "http://localhost:3000/api/article"
-        );
+        const articleResponse = await fetch(`${api}/article`);
         const articleResult = await articleResponse.json();
 
         if (!articleResult.success) {
@@ -242,7 +241,7 @@ function RandomCategory() {
                   <div className="card bg-base-100 shadow-md rounded-xl h-full">
                     <figure>
                       <img
-                        src={`http://localhost:3000/${article.thumbnail}`}
+                        src={`${backendUrl}/${article.thumbnail}`}
                         alt={article.title}
                         className="w-full h-40 md:h-48 object-cover rounded-t-xl"
                       />
@@ -265,7 +264,7 @@ function RandomCategory() {
                           <img
                             src={
                               article.author?.avatar
-                                ? `http://localhost:3000/${article.author.avatar}`
+                                ? `${backendUrl}/${article.author.avatar}`
                                 : "/api/placeholder/32/32"
                             }
                             alt=""

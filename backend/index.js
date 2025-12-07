@@ -13,15 +13,13 @@ import setupAssociations from "./config/association.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Mendapatkan __dirname di ES module
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 dotenv.config();
 connectDB();
 const app = express();
 const port = process.env.PORT;
-
+// Mendapatkan __dirname di ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 // Konfigurasi static files yang benar
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/images", express.static(path.join(__dirname, "images")));

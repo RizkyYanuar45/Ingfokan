@@ -3,6 +3,9 @@ import { ChevronRight, ChevronLeft } from "lucide-react";
 import { scrollToTop } from "../utils/ScrollToTop";
 import { NavLink } from "react-router-dom";
 
+const api = import.meta.env.VITE_API_URL;
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
 function PopularPost() {
   const [startIndex, setStartIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -15,7 +18,7 @@ function PopularPost() {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/article");
+        const response = await fetch(`${api}/article`);
         const result = await response.json();
 
         if (result.success) {
@@ -176,7 +179,7 @@ function PopularPost() {
                   <div className="card bg-base-100 shadow-md rounded-xl h-full">
                     <figure>
                       <img
-                        src={`http://localhost:3000/${article.thumbnail}`}
+                        src={`${backendUrl}/${article.thumbnail}`}
                         alt={article.title}
                         className="w-full h-40 md:h-48 object-cover rounded-t-xl"
                       />
@@ -201,7 +204,7 @@ function PopularPost() {
                           <img
                             src={
                               author.avatar
-                                ? `http://localhost:3000/${author.avatar}`
+                                ? `${backendUrl}/${author.avatar}`
                                 : "/api/placeholder/32/32"
                             }
                             alt=""

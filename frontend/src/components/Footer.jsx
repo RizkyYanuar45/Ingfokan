@@ -3,6 +3,9 @@ import { NavLink } from "react-router-dom";
 import { scrollToTop } from "../utils/ScrollToTop";
 import Office from "../assets/Office.jpg";
 
+const api = import.meta.env.VITE_API_URL;
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
 function Footer() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,7 +14,7 @@ function Footer() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/category");
+        const response = await fetch(`${api}/category`);
         const data = await response.json();
 
         if (data.success) {

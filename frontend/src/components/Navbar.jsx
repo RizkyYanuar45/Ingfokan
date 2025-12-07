@@ -13,6 +13,7 @@ function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const api = import.meta.env.VITE_API_URL;
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -131,14 +132,11 @@ function Navbar() {
           }
 
           // Fetch user data using the ID
-          const response = await fetch(
-            `http://localhost:3000/api/user/${userId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          const response = await fetch(`${api}/user/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
           if (!response.ok) {
             throw new Error("Failed to fetch user data");
@@ -185,7 +183,7 @@ function Navbar() {
       user.avatar.startsWith("images/")
     ) {
       const path = user.avatar.replace("\\", "/");
-      return `http://localhost:3000/${path}`;
+      return `${backendUrl}/${path}`;
     }
 
     return user.avatar;

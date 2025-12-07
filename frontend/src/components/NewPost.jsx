@@ -3,6 +3,9 @@ import { ChevronRight } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { scrollToTop } from "../utils/ScrollToTop";
 
+const api = import.meta.env.VITE_API_URL;
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
 function NewPost() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,7 +14,7 @@ function NewPost() {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/article");
+        const response = await fetch(`${api}/article`);
         const data = await response.json();
 
         if (data.success) {
@@ -108,7 +111,7 @@ function NewPost() {
                   <img
                     src={
                       article.thumbnail
-                        ? `http://localhost:3000/${article.thumbnail}`
+                        ? `${backendUrl}/${article.thumbnail}`
                         : "/api/placeholder/400/200"
                     }
                     alt={article.title}
@@ -132,7 +135,7 @@ function NewPost() {
                       <img
                         src={
                           article.author?.avatar
-                            ? `http://localhost:3000/${article.author.avatar}`
+                            ? `${backendUrl}/${article.author.avatar}`
                             : "/api/placeholder/24/24"
                         }
                         alt={article.author?.name || "Unknown Author"}
