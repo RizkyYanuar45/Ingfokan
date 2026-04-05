@@ -19,7 +19,7 @@ export default function SideBar({ sidebarOpen, toggleSidebar }) {
       )}
 
       <div
-        className={`fixed inset-y-0 left-0 z-30 w-64 bg-gray-500 text-white transform transition-transform duration-300 lg:translate-x-0 lg:static lg:inset-0 ${
+        className={`fixed inset-y-0 left-0 z-30 w-64 bg-gray-500 text-white transform transition-transform duration-300 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -28,7 +28,7 @@ export default function SideBar({ sidebarOpen, toggleSidebar }) {
             <FileText className="h-8 w-8 mr-2" />
             <span className="text-xl font-bold">IngfokanAdmin</span>
           </div>
-          <button onClick={toggleSidebar} className="lg:hidden">
+          <button onClick={toggleSidebar}>
             <X className="h-6 w-6" />
           </button>
         </div>
@@ -38,7 +38,7 @@ export default function SideBar({ sidebarOpen, toggleSidebar }) {
             <Link
               to="/admin/dashboard"
               className={`flex items-center mb-4 px-4 py-2  rounded-lg ${isActive(
-                "/admin/dashboard"
+                "/admin/dashboard",
               )}`}
             >
               <Home className="h-5 w-5 mr-3" />
@@ -48,7 +48,7 @@ export default function SideBar({ sidebarOpen, toggleSidebar }) {
             <Link
               to="/admin/article"
               className={`flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400 ${isActive(
-                "/admin/article"
+                "/admin/article",
               )}`}
             >
               <FileText className="h-5 w-5 mr-3" />
@@ -58,7 +58,7 @@ export default function SideBar({ sidebarOpen, toggleSidebar }) {
             <Link
               to="/admin/categories"
               className={`flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400 ${isActive(
-                "/admin/categories"
+                "/admin/categories",
               )}`}
             >
               <Tag className="h-5 w-5 mr-3" />
@@ -68,7 +68,7 @@ export default function SideBar({ sidebarOpen, toggleSidebar }) {
             <Link
               to="/admin/banners"
               className={`flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400 ${isActive(
-                "/admin/banners"
+                "/admin/banners",
               )}`}
             >
               <Image className="h-5 w-5 mr-3" />
@@ -78,7 +78,7 @@ export default function SideBar({ sidebarOpen, toggleSidebar }) {
             <Link
               to="/admin/authors"
               className={`flex items-center mb-4 px-4 py-2 rounded-lg hover:bg-orange-400 ${isActive(
-                "/admin/authors"
+                "/admin/authors",
               )}`}
             >
               <Users className="h-5 w-5 mr-3" />

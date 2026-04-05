@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Save, X, CheckCircle, AlertCircle, XCircle } from "lucide-react";
+import {
+  Save,
+  X,
+  CheckCircle,
+  AlertCircle,
+  XCircle,
+  Sparkles,
+} from "lucide-react";
 import "quill/dist/quill.snow.css";
 import Quill from "quill";
 
@@ -22,15 +29,21 @@ export default function CreateArticle({
   const quillRef = useRef(null);
   const editorRef = useRef(null);
 
+  // AI Agent states
+  const [aiTopic, setAiTopic] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showAiInput, setShowAiInput] = useState(false);
+
+  // Logika Inisialisasi Quill - Diperbaiki agar tidak reset otomatis
   useEffect(() => {
-    // Reset state when modal opens or current category changes
     if (isModalOpen) {
       setThumbnail(null);
       setNotification(null);
-      setContent(currentArticle.content || "");
+      setAiTopic("");
+      setShowAiInput(false);
+      setIsGenerating(false);
       fetchAuthorsAndCategories();
 
-      // Initialize Quill
       if (quillRef.current && !editorRef.current) {
         const quillInstance = new Quill(quillRef.current, {
           theme: "snow",
@@ -55,7 +68,6 @@ export default function CreateArticle({
             "underline",
             "strike",
             "list",
-            "bullet",
             "indent",
             "link",
             "image",
@@ -70,61 +82,54 @@ export default function CreateArticle({
 
         editorRef.current = quillInstance;
 
-        // Setup content change listener
         quillInstance.on("text-change", () => {
           setContent(quillInstance.root.innerHTML);
         });
+      }
 
-        // Set initial content if exists
-        if (currentArticle.content) {
-          quillInstance.root.innerHTML = currentArticle.content;
+      // Sinkronisasi konten (hanya saat mode Edit atau inisialisasi awal)
+      if (editorRef.current) {
+        if (isEditing && currentArticle.content && content === "") {
+          editorRef.current.root.innerHTML = currentArticle.content;
+          setContent(currentArticle.content);
+        } else if (!isEditing && content === "") {
+          editorRef.current.setText("");
         }
       }
+    } else {
+      // Clear content when closed
+      setContent("");
+      if (editorRef.current) {
+        editorRef.current = null;
+      }
     }
-  }, [isModalOpen, currentArticle]);
+  }, [isModalOpen, isEditing]);
 
   const fetchAuthorsAndCategories = async () => {
     setLoading(true);
     try {
-      // Fetch authors and categories in parallel
       const [authorsResponse, categoriesResponse] = await Promise.all([
         fetch(`${api}/author`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }),
         fetch(`${api}/category`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }),
       ]);
 
       if (authorsResponse.ok && categoriesResponse.ok) {
         const authorsData = await authorsResponse.json();
         const categoriesData = await categoriesResponse.json();
-
         setAuthors(authorsData.data.data || []);
         setCategories(categoriesData.data.category || []);
-      } else {
-        console.error("Failed to fetch authors or categories");
-        setNotification({
-          type: "error",
-          message: "Failed to load authors or categories",
-        });
       }
     } catch (error) {
       console.error("Error fetching data:", error);
-      setNotification({
-        type: "error",
-        message: `Error loading data: ${error.message}`,
-      });
     } finally {
       setLoading(false);
     }
   };
 
-  // Clear notification after 3 seconds
   useEffect(() => {
     if (notification) {
       const timer = setTimeout(() => setNotification(null), 3000);
@@ -132,158 +137,132 @@ export default function CreateArticle({
     }
   }, [notification]);
 
-  // Handle file input changes
   const handleFileChange = (e) => {
     const file = e.target.files ? e.target.files[0] : null;
-    if (file) {
-      setThumbnail(file);
-    }
+    if (file) setThumbnail(file);
   };
 
-  // Handle form input changes
   const handleFormInputChange = (e) => {
-    const { name, value } = e.target;
-
-    // Pass directly to parent handler
-    handleInputChange({
-      target: {
-        name,
-        value,
-      },
-    });
+    handleInputChange(e);
   };
 
-  // Handle drag events
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
-
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
+    setDragActive(e.type === "dragenter" || e.type === "dragover");
   };
 
-  // Handle drop event
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       setThumbnail(e.dataTransfer.files[0]);
     }
   };
 
-  const handleCreate = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Gunakan konten langsung dari Quill untuk keamanan data
+    const finalContent = editorRef.current
+      ? editorRef.current.root.innerHTML
+      : content;
+
     const formData = new FormData();
     formData.append("title", currentArticle.title || "");
     formData.append("author_id", currentArticle.author_id || "");
     formData.append("category_id", currentArticle.category_id || "");
-    formData.append("content", content);
-    if (thumbnail) {
-      formData.append("thumbnail", thumbnail);
-    }
+    formData.append("content", finalContent);
+    if (thumbnail) formData.append("thumbnail", thumbnail);
+
+    const url = isEditing
+      ? `${api}/article/${currentArticle.id}`
+      : `${api}/article`;
+    const method = isEditing ? "PATCH" : "POST";
 
     try {
-      const response = await fetch(`${api}/article`, {
+      const response = await fetch(url, {
+        method: method,
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        body: formData,
+      });
+
+      if (response.ok) {
+        setNotification({
+          type: "success",
+          message: `Article ${isEditing ? "updated" : "created"} successfully!`,
+        });
+        refreshArticle && refreshArticle();
+        setTimeout(closeModal, 2500);
+      } else {
+        const data = await response.json();
+        setNotification({
+          type: "error",
+          message: data.message || "Failed to save article",
+        });
+      }
+    } catch (error) {
+      setNotification({ type: "error", message: error.message });
+    }
+  };
+
+  const handleGenerateWithAI = async () => {
+    if (!aiTopic.trim()) {
+      setNotification({ type: "error", message: "Please enter a topic" });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const formData = new FormData();
+      formData.append("topic", aiTopic);
+
+      const response = await fetch("http://localhost:5000/generate", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
         body: formData,
       });
 
-      const responseText = await response.text();
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (error) {
-        console.error("Error parsing response:", error);
-      }
+      const data = await response.json();
 
-      if (response.ok) {
+      if (data.success) {
+        // Clean up title (remove markdown bolding)
+        const cleanTitle = (data.title || "").replace(/\*\*/g, "");
+
+        // Update Title
+        handleInputChange({
+          target: { name: "title", value: cleanTitle },
+        });
+
+        // Format Markdown ke HTML
+        let htmlContent = data.content || "";
+        htmlContent = htmlContent
+          .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+          .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+          .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/\*(.+?)\*/g, "<em>$1</em>")
+          .replace(/\n\n/g, "<br><br>");
+
+        if (editorRef.current) {
+          editorRef.current.root.innerHTML = htmlContent;
+          setContent(htmlContent);
+          // Sinkronkan ke parent
+          handleInputChange({
+            target: { name: "content", value: htmlContent },
+          });
+        }
+
         setNotification({
           type: "success",
-          message: "Article created successfully!",
+          message: "AI Content generated successfully!",
         });
-        refreshArticle && refreshArticle();
-        setTimeout(() => {
-          closeModal();
-        }, 3000);
-      } else {
-        setNotification({
-          type: "error",
-          message: data?.message || responseText || "Failed to create Article.",
-        });
+        setShowAiInput(false);
       }
     } catch (error) {
-      setNotification({
-        type: "error",
-        message: `Error creating Article: ${error.message}`,
-      });
-    }
-  };
-
-  const handleEdit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("title", currentArticle.title || "");
-    formData.append("author_id", currentArticle.author_id || "");
-    formData.append("category_id", currentArticle.category_id || "");
-    formData.append("content", content);
-    if (thumbnail) {
-      formData.append("thumbnail", thumbnail);
-    }
-
-    try {
-      const response = await fetch(`${api}/article/${currentArticle.id}`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: formData,
-      });
-
-      let data;
-      try {
-        const responseText = await response.text();
-        data = JSON.parse(responseText);
-      } catch (error) {
-        console.error("Error parsing response:", error);
-      }
-
-      if (response.ok) {
-        setNotification({
-          type: "success",
-          message: "Article updated successfully!",
-        });
-        refreshArticle && refreshArticle();
-        setTimeout(() => {
-          closeModal();
-        }, 3000);
-      } else {
-        setNotification({
-          type: "error",
-          message: data?.message || "Failed to update article.",
-        });
-      }
-    } catch (error) {
-      setNotification({
-        type: "error",
-        message: `Error updating article: ${error.message}`,
-      });
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (isEditing) {
-      handleEdit(e);
-    } else {
-      handleCreate(e);
+      setNotification({ type: "error", message: error.message });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -292,12 +271,10 @@ export default function CreateArticle({
   return (
     <div className="fixed inset-0 z-10 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        {/* Background overlay */}
         <div className="fixed inset-0 transition-opacity" aria-hidden="true">
           <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
         </div>
 
-        {/* Modal panel */}
         <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
           <form onSubmit={handleSubmit}>
             <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
@@ -307,14 +284,60 @@ export default function CreateArticle({
                     {isEditing ? "Edit Article" : "Create New Article"}
                   </h3>
 
-                  {/* Enhanced Notification */}
+                  {/* AI Section */}
+                  {!isEditing && (
+                    <div className="mb-4">
+                      {!showAiInput ? (
+                        <button
+                          type="button"
+                          onClick={() => setShowAiInput(true)}
+                          className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-md"
+                        >
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          <span>Create with AI Agent</span>
+                        </button>
+                      ) : (
+                        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-4">
+                          <div className="flex items-center space-x-2 mb-3">
+                            <Sparkles className="h-5 w-5 text-purple-600" />
+                            <h4 className="text-sm font-semibold text-gray-800">
+                              AI Article Generator
+                            </h4>
+                          </div>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={aiTopic}
+                              onChange={(e) => setAiTopic(e.target.value)}
+                              placeholder="Enter topic..."
+                              className="flex-1 px-3 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 text-sm"
+                              disabled={isGenerating}
+                            />
+                            <button
+                              type="button"
+                              onClick={handleGenerateWithAI}
+                              disabled={isGenerating}
+                              className="px-4 py-2 bg-purple-600 text-white rounded-md text-sm font-medium"
+                            >
+                              {isGenerating ? "Generating..." : "Generate"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setShowAiInput(false)}
+                              disabled={isGenerating}
+                              className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md text-sm"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {notification && (
                     <div
-                      className={`mb-4 flex items-center justify-between p-4 rounded-md shadow-md transform transition-all duration-300 ease-in-out ${
-                        notification.type === "success"
-                          ? "bg-emerald-50 border-l-4 border-emerald-500"
-                          : "bg-red-50 border-l-4 border-red-500"
-                      }`}
+                      className={`mb-4 flex items-center justify-between p-4 rounded-md border-l-4 ${notification.type === "success" ? "bg-emerald-50 border-emerald-500" : "bg-red-50 border-red-500"}`}
                     >
                       <div className="flex items-center">
                         {notification.type === "success" ? (
@@ -323,124 +346,75 @@ export default function CreateArticle({
                           <AlertCircle className="w-5 h-5 mr-3 text-red-500" />
                         )}
                         <p
-                          className={`text-sm font-medium ${
-                            notification.type === "success"
-                              ? "text-emerald-800"
-                              : "text-red-800"
-                          }`}
+                          className={`text-sm font-medium ${notification.type === "success" ? "text-emerald-800" : "text-red-800"}`}
                         >
                           {notification.message}
                         </p>
                       </div>
-                      <button
-                        onClick={() => setNotification(null)}
-                        className="focus:outline-none"
-                        type="button"
-                      >
-                        <XCircle
-                          className={`w-4 h-4 ${
-                            notification.type === "success"
-                              ? "text-emerald-400"
-                              : "text-red-400"
-                          } hover:opacity-75 transition-opacity`}
-                        />
-                      </button>
                     </div>
                   )}
 
                   <div className="mt-2 space-y-4">
-                    {/* Title field */}
                     <div>
-                      <label
-                        htmlFor="title"
-                        className="block text-sm font-medium text-gray-700"
-                      >
+                      <label className="block text-sm font-medium text-gray-700">
                         Title
                       </label>
                       <input
                         type="text"
                         name="title"
-                        id="title"
                         value={currentArticle.title || ""}
                         onChange={handleFormInputChange}
-                        className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 border"
-                        placeholder="Enter article title"
+                        className="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 border"
                         required
                       />
                     </div>
 
-                    {/* Author dropdown */}
                     <div>
-                      <label
-                        htmlFor="author_id"
-                        className="block text-sm font-medium text-gray-700"
-                      >
+                      <label className="block text-sm font-medium text-gray-700">
                         Author
                       </label>
                       <select
                         name="author_id"
-                        id="author_id"
                         value={currentArticle.author_id || ""}
                         onChange={handleFormInputChange}
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm sm:text-sm"
                         required
                       >
                         <option value="" disabled>
                           Select an author
                         </option>
-                        {loading ? (
-                          <option value="" disabled>
-                            Loading authors...
+                        {authors.map((author) => (
+                          <option key={author.id} value={author.id}>
+                            {author.name}
                           </option>
-                        ) : (
-                          authors.map((author) => (
-                            <option key={author.id} value={author.id}>
-                              {author.name}
-                            </option>
-                          ))
-                        )}
+                        ))}
                       </select>
                     </div>
 
-                    {/* Category dropdown */}
                     <div>
-                      <label
-                        htmlFor="category_id"
-                        className="block text-sm font-medium text-gray-700"
-                      >
+                      <label className="block text-sm font-medium text-gray-700">
                         Category
                       </label>
                       <select
                         name="category_id"
-                        id="category_id"
                         value={currentArticle.category_id || ""}
                         onChange={handleFormInputChange}
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm sm:text-sm"
                         required
                       >
                         <option value="" disabled>
                           Select a category
                         </option>
-                        {loading ? (
-                          <option value="" disabled>
-                            Loading categories...
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.name}
                           </option>
-                        ) : (
-                          categories.map((category) => (
-                            <option key={category.id} value={category.id}>
-                              {category.name}
-                            </option>
-                          ))
-                        )}
+                        ))}
                       </select>
                     </div>
 
-                    {/* Quill Editor for Content */}
                     <div>
-                      <label
-                        htmlFor="content"
-                        className="block text-sm font-medium text-gray-700 mb-2"
-                      >
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
                         Content
                       </label>
                       <div className="border border-gray-300 rounded-md">
@@ -448,45 +422,20 @@ export default function CreateArticle({
                       </div>
                     </div>
 
-                    {/* Thumbnail Upload */}
                     <div>
-                      <label
-                        htmlFor="thumbnail"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
                         Thumbnail
                       </label>
                       <div
-                        className={`flex flex-col items-center rounded border ${
-                          dragActive
-                            ? "border-indigo-500 bg-indigo-50"
-                            : "border-gray-300"
-                        } p-4 text-gray-900 shadow-sm sm:p-6 transition-colors duration-200`}
                         onDragEnter={handleDrag}
                         onDragOver={handleDrag}
                         onDragLeave={handleDrag}
                         onDrop={handleDrop}
+                        className={`flex flex-col items-center rounded border ${dragActive ? "border-indigo-500 bg-indigo-50" : "border-gray-300"} p-4 text-gray-900 shadow-sm sm:p-6 transition-colors`}
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth="1.5"
-                          stroke="currentColor"
-                          className="size-6"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M7.5 7.5h-.75A2.25 2.25 0 0 0 4.5 9.75v7.5a2.25 2.25 0 0 0 2.25 2.25h7.5a2.25 2.25 0 0 0 2.25-2.25v-7.5a2.25 2.25 0 0 0-2.25-2.25h-.75m0-3-3-3m0 0-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 0 1 2.25 2.25v7.5a2.25 2.25 0 0 1-2.25 2.25h-7.5a2.25 2.25 0 0 1-2.25-2.25v-.75"
-                          />
-                        </svg>
-                        <span className="mt-4 font-medium">
-                          Upload your file(s) or drag & drop
-                        </span>
                         <label
                           htmlFor="file-upload"
-                          className="mt-2 inline-block rounded border border-gray-200 bg-gray-50 px-3 py-1.5 text-center text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-100 cursor-pointer"
+                          className="mt-2 inline-block rounded border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-100 cursor-pointer"
                         >
                           Browse files
                           <input
@@ -502,19 +451,14 @@ export default function CreateArticle({
                     </div>
                     {thumbnail && (
                       <div>
-                        <label
-                          htmlFor="preview"
-                          className="block text-sm font-medium text-gray-700 mb-1"
-                        >
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                           Preview
                         </label>
-                        <div className="mt-1">
-                          <img
-                            src={URL.createObjectURL(thumbnail)}
-                            alt="Preview"
-                            className="w-32 h-32 object-cover rounded-md border border-gray-200"
-                          />
-                        </div>
+                        <img
+                          src={URL.createObjectURL(thumbnail)}
+                          alt="Preview"
+                          className="w-32 h-32 object-cover rounded-md border border-gray-200"
+                        />
                       </div>
                     )}
                   </div>
@@ -522,22 +466,20 @@ export default function CreateArticle({
               </div>
             </div>
 
-            {/* Modal footer */}
             <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
               <button
                 type="submit"
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
+                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm"
               >
-                <Save className="h-4 w-4 mr-2" />
+                <Save className="h-4 w-4 mr-2" />{" "}
                 {isEditing ? "Update" : "Save"}
               </button>
               <button
                 type="button"
                 onClick={closeModal}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
               >
-                <X className="h-4 w-4 mr-2" />
-                Cancel
+                <X className="h-4 w-4 mr-2" /> Cancel
               </button>
             </div>
           </form>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FileText, Users, Tag, Eye } from "lucide-react";
+import { FileText, Users, Tag, Eye, Menu } from "lucide-react";
 
 import SideBar from "../../components/Admin/SideBar";
 
@@ -46,10 +46,10 @@ export default function Dashboard() {
 
         // Calculate unique authors and categories
         const uniqueAuthors = new Set(
-          articles.map((article) => article.author.id)
+          articles.map((article) => article.author.id),
         );
         const uniqueCategories = new Set(
-          articles.map((article) => article.category.id)
+          articles.map((article) => article.category.id),
         );
 
         setTotalAuthors(uniqueAuthors.size);
@@ -81,17 +81,33 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
       {/* Sidebar */}
       <SideBar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
+          sidebarOpen ? "lg:ml-64" : "ml-0"
+        }`}
+      >
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto p-6 bg-gray-100">
-          <div className="mb-6">
-            <h1 className="text-2xl font-semibold text-gray-800">Dashboard</h1>
-            <p className="text-gray-600">Welcome back, Admin!</p>
+          <div className="mb-6 flex items-center">
+            {!sidebarOpen && (
+              <button
+                onClick={toggleSidebar}
+                className="mr-4 p-2 rounded-md hover:bg-gray-200 focus:outline-none"
+              >
+                <Menu className="h-6 w-6 text-gray-600" />
+              </button>
+            )}
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-800">
+                Dashboard
+              </h1>
+              <p className="text-gray-600">Welcome back, Admin!</p>
+            </div>
           </div>
 
           {/* Stats Cards */}

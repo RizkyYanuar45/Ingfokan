@@ -33,7 +33,7 @@ const resetPassword = async (req, res) => {
         reset_token: resetToken,
         reset_token_expired: expiredAt,
       },
-      { where: { email: email } }
+      { where: { email: email } },
     );
 
     // Buat link reset password
@@ -73,14 +73,14 @@ const resetPassword = async (req, res) => {
 
     return ResponseAPI.success(
       res,
-      "Link reset password telah dikirim ke email Anda"
+      "Link reset password telah dikirim ke email Anda",
     );
   } catch (error) {
     console.error(error);
     return ResponseAPI.error(
       res,
       "Terjadi kesalahan saat mengirim email reset password",
-      500
+      500,
     );
   }
 };
@@ -116,7 +116,7 @@ const verifyResetToken = async (req, res) => {
     return ResponseAPI.error(
       res,
       "Terjadi kesalahan saat memverifikasi token reset",
-      500
+      500,
     );
   }
 };
@@ -135,7 +135,7 @@ const changePasswordWithToken = async (req, res) => {
       return ResponseAPI.error(
         res,
         "Password dan konfirmasi password tidak sama",
-        400
+        400,
       );
     }
 
@@ -164,7 +164,7 @@ const changePasswordWithToken = async (req, res) => {
         resetToken: null,
         resetTokenExpiredAt: null,
       },
-      { where: { id: user.id } }
+      { where: { id: user.id } },
     );
 
     // Kirim email konfirmasi bahwa password telah berhasil diubah
@@ -173,7 +173,7 @@ const changePasswordWithToken = async (req, res) => {
         <h2 style="color: #28a745;">Password Berhasil Diubah</h2>
         <p>Halo, ${user.name || "User"},</p>
         <p>Password akun Anda telah berhasil diubah pada ${new Date().toLocaleString(
-          "id-ID"
+          "id-ID",
         )}.</p>
         
         <div style="background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; 
@@ -190,7 +190,7 @@ const changePasswordWithToken = async (req, res) => {
       user.email,
       "Password Berhasil Diubah",
       confirmationMessage,
-      true
+      true,
     );
 
     return ResponseAPI.success(res, "Password berhasil diubah");
@@ -199,7 +199,7 @@ const changePasswordWithToken = async (req, res) => {
     return ResponseAPI.error(
       res,
       "Terjadi kesalahan saat mengubah password",
-      500
+      500,
     );
   }
 };
@@ -220,7 +220,7 @@ const cancelResetPassword = async (req, res) => {
         resetToken: null,
         resetTokenExpiredAt: null,
       },
-      { where: { id: user.id } }
+      { where: { id: user.id } },
     );
 
     return ResponseAPI.success(res, "Reset password dibatalkan");
@@ -229,8 +229,6 @@ const cancelResetPassword = async (req, res) => {
     return ResponseAPI.error(res, "Terjadi kesalahan", 500);
   }
 };
-
-// ... sisanya fungsi yang sudah ada ...
 
 const registerUser = async (req, res) => {
   try {
@@ -301,7 +299,7 @@ const loginUser = async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: "20h",
-      }
+      },
     );
 
     return ResponseAPI.success(res, "User Berhasil Login", {
@@ -370,7 +368,7 @@ const editUser = async (req, res) => {
       return ResponseAPI.error(
         res,
         "Anda tidak memiliki akses untuk mengedit user ini",
-        403
+        403,
       );
     }
 

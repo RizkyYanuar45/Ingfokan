@@ -6,6 +6,7 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  Menu,
 } from "lucide-react";
 
 import SideBar from "../../components/Admin/SideBar";
@@ -69,7 +70,7 @@ export default function ControlArticles() {
   // Filter articles based on search term
   const filteredArticles = articles
     ? articles.filter((article) =>
-        article.title.toLowerCase().includes(searchTerm.toLowerCase())
+        article.title.toLowerCase().includes(searchTerm.toLowerCase()),
       )
     : [];
 
@@ -132,10 +133,10 @@ export default function ControlArticles() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setCurrentArticle({
-      ...currentArticle,
+    setCurrentArticle((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
   };
 
   // Handler for changing items per page
@@ -145,20 +146,34 @@ export default function ControlArticles() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
       {/* Sidebar */}
       <SideBar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
+          sidebarOpen ? "lg:ml-64" : "ml-0"
+        }`}
+      >
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto p-6 bg-gray-100">
           <div className="mb-6 flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-800">
-                Articles Management
-              </h1>
-              <p className="text-gray-600">Manage all your blog articles</p>
+            <div className="flex items-center">
+              {!sidebarOpen && (
+                <button
+                  onClick={toggleSidebar}
+                  className="mr-4 p-2 rounded-md hover:bg-gray-200 focus:outline-none"
+                >
+                  <Menu className="h-6 w-6 text-gray-600" />
+                </button>
+              )}
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-800">
+                  Articles Management
+                </h1>
+                <p className="text-gray-600">Manage all your blog articles</p>
+              </div>
             </div>
             <button
               onClick={() => openModal(false)}
@@ -259,7 +274,7 @@ export default function ControlArticles() {
                               <img
                                 src={`${backendUrl}/${article.thumbnail.replace(
                                   /\\/g,
-                                  "/"
+                                  "/",
                                 )}`}
                                 alt={article.title}
                                 className="h-14 w-28 object-cover border border-gray-200"
@@ -358,7 +373,7 @@ export default function ControlArticles() {
                       <span className="font-medium">
                         {Math.min(
                           currentPage * itemsPerPage,
-                          filteredArticles.length
+                          filteredArticles.length,
                         )}
                       </span>{" "}
                       of{" "}
@@ -400,7 +415,7 @@ export default function ControlArticles() {
                           >
                             {page}
                           </button>
-                        )
+                        ),
                       )}
 
                       <button
