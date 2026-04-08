@@ -105,7 +105,7 @@ function SignUp() {
               <div className="absolute inset-0 bg-gradient-to-t from-blackcus/50 to-transparent flex items-end p-8">
                 <div className="text-white">
                   <h2 className="text-2xl font-bold mb-2">
-                    Join Ingfokan Today
+                    Join Orange News Today
                   </h2>
                   <p className="text-sm opacity-90">
                     Create your account to get started

@@ -16,7 +16,7 @@ const sendEmail = async (to, subject, content, isHTML = false) => {
   });
 
   const mailOptions = {
-    from: `"Support Ingfokan" <${process.env.SMTP_USER}>`,
+    from: `"Support Orange News" <${process.env.SMTP_USER}>`,
     to,
     subject,
   };

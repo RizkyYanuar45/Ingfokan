@@ -1,2 +1,2 @@
-# Ingfokan
+# Orange News
 Winnicode Final Project

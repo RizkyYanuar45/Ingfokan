@@ -16,9 +16,10 @@ export default function CreateArticle({
   currentArticle,
   handleInputChange,
   closeModal,
-  refreshArticle,
+  refreshArticles,
 }) {
   const api = import.meta.env.VITE_API_URL;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [thumbnail, setThumbnail] = useState(null);
   const [notification, setNotification] = useState(null);
   const [dragActive, setDragActive] = useState(false);
@@ -89,11 +90,12 @@ export default function CreateArticle({
 
       // Sinkronisasi konten (hanya saat mode Edit atau inisialisasi awal)
       if (editorRef.current) {
-        if (isEditing && currentArticle.content && content === "") {
+        if (isEditing && currentArticle.content) {
           editorRef.current.root.innerHTML = currentArticle.content;
           setContent(currentArticle.content);
-        } else if (!isEditing && content === "") {
+        } else if (!isEditing) {
           editorRef.current.setText("");
+          setContent("");
         }
       }
     } else {
@@ -193,7 +195,7 @@ export default function CreateArticle({
           type: "success",
           message: `Article ${isEditing ? "updated" : "created"} successfully!`,
         });
-        refreshArticle && refreshArticle();
+        refreshArticles && refreshArticles();
         setTimeout(closeModal, 2500);
       } else {
         const data = await response.json();
@@ -449,13 +451,20 @@ export default function CreateArticle({
                         </label>
                       </div>
                     </div>
-                    {thumbnail && (
+                    {(thumbnail || (isEditing && currentArticle.thumbnail)) && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Preview
                         </label>
                         <img
-                          src={URL.createObjectURL(thumbnail)}
+                          src={
+                            thumbnail
+                              ? URL.createObjectURL(thumbnail)
+                              : `${backendUrl}/${currentArticle.thumbnail.replace(
+                                  /\\/g,
+                                  "/",
+                                )}`
+                          }
                           alt="Preview"
                           className="w-32 h-32 object-cover rounded-md border border-gray-200"
                         />

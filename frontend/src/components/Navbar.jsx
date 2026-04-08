@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { ChevronDown, Bookmark, Search, Menu, X } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { scrollToTop } from "../utils/ScrollToTop";
+import OrangeNewsLogo from "../assets/OrangeNewsLogoV2.png";
 
 function Navbar() {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -191,13 +192,13 @@ function Navbar() {
 
   return (
     <>
-      <header className="flex justify-between items-center px-5 py-3 mx-auto my-0 h-16 max-w-[1512px] shadow-sm sticky top-0 bg-white z-100">
+      <header className="flex justify-between items-center px-5 py-3 mx-auto my-0 h-20 max-w-[1512px] shadow-sm sticky top-0 bg-white z-100">
         <div className="flex gap-16 items-center max-md:gap-4">
           <NavLink to={"/"} className="flex items-center" onClick={scrollToTop}>
             <img
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/4e2ae9fabd01951bee1bbe437117d47b03ea3cc9"
-              className="object-contain h-10 w-[120px] md:h-12 md:w-[163px]"
-              alt="Ingfokan News"
+              src={OrangeNewsLogo}
+              className="object-contain h-14 w-auto md:h-16 md:w-auto transition-transform hover:scale-105"
+              alt="Orange News"
             />
           </NavLink>
 
@@ -381,7 +382,7 @@ function Navbar() {
 
       {/* Mobile Navigation Drawer */}
       {isMenuOpen && (
-        <div className="absolute top-16 left-0 right-0 bg-white shadow-md md:hidden z-20">
+        <div className="absolute top-20 left-0 right-0 bg-white shadow-md md:hidden z-20">
           <nav className="flex flex-col py-4">
             <NavLink
               onClick={scrollToTop}

@@ -34,18 +34,18 @@ export default function AboutUs() {
               className="w-full h-auto md:w-[544px] md:h-[244px] object-cover rounded-lg order-first md:order-last"
             />
             <p className="p-3 sm:p-5 text-sm sm:text-base order-last md:order-first">
-              Ingfokan adalah perusahaan media digital yang bergerak di bidang
+              Orange adalah perusahaan media digital yang bergerak di bidang
               penyediaan informasi terkini, akurat, dan terpercaya. Kami hadir
               untuk menjawab kebutuhan masyarakat akan akses informasi yang
               cepat dan mudah dipahami dalam berbagai bidang seperti berita
               harian, edukasi, gaya hidup, teknologi, bisnis, hingga hiburan.
               Dengan mengusung semangat “Memberi Tahu, Membuka Wawasan,”
-              Ingfokan berkomitmen untuk menjadi sumber informasi yang tidak
+              Orange berkomitmen untuk menjadi sumber informasi yang tidak
               hanya relevan tetapi juga berdampak. Kami menyajikan konten dengan
               integritas, objektivitas, dan dedikasi terhadap keakuratan, serta
               menjunjung tinggi nilai transparansi dalam setiap pemberitaan.
               Didukung oleh tim redaksi profesional dan teknologi informasi
-              terkini, Ingfokan terus berinovasi untuk menyajikan konten yang
+              terkini, Orange terus berinovasi untuk menyajikan konten yang
               segar, interaktif, dan dapat diakses kapan saja dan di mana saja.
             </p>
           </div>
@@ -66,7 +66,7 @@ export default function AboutUs() {
           <div className="flex justify-start items-center mt-2 sm:mt-7 space-x-2">
             <div className="bg-primarycus w-1 h-3 rounded-lg"></div>
             <h1 className="text-lg sm:text-xl font-bold">
-              Ingfokan News Information
+              Orange News Information
             </h1>
           </div>
 
@@ -76,7 +76,7 @@ export default function AboutUs() {
               <div className="flex justify-start items-center space-x-2 mt-4 sm:mt-8">
                 <Mail className="text-gray-500 w-5 sm:w-6" />
                 <p className="text-gray-800 text-sm sm:text-base">
-                  Email: info@ingfokan.com
+                  Email: info@orangenews.com
                 </p>
               </div>
               <div className="flex justify-start items-center space-x-2 mt-4 sm:mt-8">

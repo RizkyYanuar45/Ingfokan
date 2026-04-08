@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { scrollToTop } from "../utils/ScrollToTop";
 import Office from "../assets/Office.jpg";
+import OrangeNewsLogo from "../assets/OrangeNewsLogoV2.png";
 
 const api = import.meta.env.VITE_API_URL;
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -36,7 +37,7 @@ function Footer() {
     <footer className="bg-white lg:grid lg:grid-cols-5">
       <div className="relative block h-32 lg:col-span-2 lg:h-full">
         <img
-          src={Office}
+          src={OrangeNewsLogo}
           alt=""
           className="absolute inset-0 h-full w-full object-cover"
         />
@@ -68,7 +69,7 @@ function Footer() {
                 href="#"
                 className="block text-2xl font-medium text-gray-900 hover:opacity-75 sm:text-3xl"
               >
-                info@ingfokan.com
+                info@orangenews.com
               </a>
             </p>
 
@@ -234,7 +235,7 @@ function Footer() {
             </ul>
 
             <p className="mt-8 text-xs text-gray-500 sm:mt-0">
-              &copy; 2025 Ingfokan News. All rights reserved.
+              &copy; 2025 Orange News. All rights reserved.
             </p>
           </div>
         </div>

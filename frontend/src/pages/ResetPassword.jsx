@@ -313,7 +313,7 @@ function ResetPassword() {
               <div className="absolute inset-0 bg-gradient-to-t from-blackcus/50 to-transparent flex items-end p-8">
                 <div className="text-white">
                   <h2 className="text-2xl font-bold mb-2">
-                    Welcome to Ingfokan
+                    Welcome to Orange News
                   </h2>
                   <p className="text-sm opacity-90">Your trusted information</p>
                 </div>
