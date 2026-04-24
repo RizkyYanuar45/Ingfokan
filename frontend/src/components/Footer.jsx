@@ -67,7 +67,7 @@ function Footer() {
 
               <a
                 href="#"
-                className="block text-2xl font-medium text-gray-900 hover:opacity-75 sm:text-3xl"
+                className="block text-xl font-medium text-gray-900 hover:opacity-75 sm:text-2xl"
               >
                 info@orangenews.com
               </a>

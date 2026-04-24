@@ -7,6 +7,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
+  Loader2,
+  Sparkles,
 } from "lucide-react";
 
 import SideBar from "../../components/Admin/SideBar";
@@ -27,6 +29,13 @@ export default function ControlArticles() {
   const [currentArticle, setCurrentArticle] = useState({
     id: null,
     title: "",
+  });
+
+  // Global AI Generation State
+  const [aiGeneration, setAiGeneration] = useState({
+    isGenerating: false,
+    topic: "",
+    result: null,
   });
 
   // Pagination state
@@ -131,6 +140,57 @@ export default function ControlArticles() {
     });
   };
 
+  const handleAiGenerationResult = (result) => {
+    setAiGeneration((prev) => ({
+      ...prev,
+      isGenerating: false,
+      result: result,
+    }));
+  };
+
+  const startAiGeneration = async (topic) => {
+    if (!topic.trim()) return;
+
+    setAiGeneration({
+      isGenerating: true,
+      topic: topic,
+      result: null,
+    });
+
+    try {
+      const formData = new FormData();
+      formData.append("topic", topic);
+
+      const response = await fetch("http://localhost:5000/generate", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setAiGeneration((prev) => ({
+          ...prev,
+          isGenerating: false,
+          result: data,
+        }));
+        setIsModalOpen(true);
+        setIsEditing(false);
+      } else {
+        throw new Error(data.message || "Failed to generate AI content");
+      }
+    } catch (error) {
+      console.error("AI Generation error:", error);
+      setAiGeneration((prev) => ({
+        ...prev,
+        isGenerating: false,
+        error: error.message,
+      }));
+      setIsModalOpen(true);
+      setIsEditing(false);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setCurrentArticle((prev) => ({
@@ -175,6 +235,17 @@ export default function ControlArticles() {
                 <p className="text-gray-600">Manage all your blog articles</p>
               </div>
             </div>
+
+            {/* AI Generation Global Status */}
+            {aiGeneration.isGenerating && (
+              <div className="hidden md:flex items-center bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-full animate-pulse">
+                <Loader2 className="h-4 w-4 text-indigo-600 animate-spin mr-2" />
+                <span className="text-sm font-medium text-indigo-700">
+                  AI is generating: {aiGeneration.topic}...
+                </span>
+              </div>
+            )}
+
             <button
               onClick={() => openModal(false)}
               className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
@@ -183,6 +254,16 @@ export default function ControlArticles() {
               <span>Create article</span>
             </button>
           </div>
+
+          {/* Mobile AI Status */}
+          {aiGeneration.isGenerating && (
+            <div className="md:hidden mb-4 flex items-center justify-center bg-indigo-50 border border-indigo-100 p-2 rounded-lg animate-pulse">
+              <Loader2 className="h-4 w-4 text-indigo-600 animate-spin mr-2" />
+              <span className="text-xs font-medium text-indigo-700">
+                AI is generating...
+              </span>
+            </div>
+          )}
 
           {/* Search Bar and Controls */}
           <div className="bg-white rounded-lg shadow p-4 mb-6">
@@ -447,6 +528,9 @@ export default function ControlArticles() {
         handleInputChange={handleInputChange}
         closeModal={closeModal}
         refreshArticles={refreshArticles}
+        aiGeneration={aiGeneration}
+        setAiGeneration={setAiGeneration}
+        startAiGeneration={startAiGeneration}
       />
 
       {/* Modal for Delete Article */}

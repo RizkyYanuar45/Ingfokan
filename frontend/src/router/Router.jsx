@@ -12,6 +12,7 @@ import EditProfilePage from "../pages/EditProfile";
 
 import Main from "../pages/Main";
 import Article from "../pages/Article";
+import ArticleTest from "../pages/ArticleTest";
 import AuthorProfile from "../pages/AuthorProfile";
 import CategoryPage from "../pages/CategoryPage";
 import ContactUs from "../pages/ContactUs";
@@ -71,6 +72,10 @@ export const Router = createBrowserRouter([
   {
     path: "/article/:slug",
     element: <Article />,
+  },
+  {
+    path: "/article-test/:slug",
+    element: <ArticleTest />,
   },
   {
     path: "/author/:slug",

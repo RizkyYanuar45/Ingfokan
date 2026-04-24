@@ -6,6 +6,7 @@ import {
   AlertCircle,
   XCircle,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import "quill/dist/quill.snow.css";
 import Quill from "quill";
@@ -17,6 +18,9 @@ export default function CreateArticle({
   handleInputChange,
   closeModal,
   refreshArticles,
+  aiGeneration,
+  setAiGeneration,
+  startAiGeneration,
 }) {
   const api = import.meta.env.VITE_API_URL;
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -32,7 +36,6 @@ export default function CreateArticle({
 
   // AI Agent states
   const [aiTopic, setAiTopic] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
   const [showAiInput, setShowAiInput] = useState(false);
 
   // Logika Inisialisasi Quill - Diperbaiki agar tidak reset otomatis
@@ -42,7 +45,6 @@ export default function CreateArticle({
       setNotification(null);
       setAiTopic("");
       setShowAiInput(false);
-      setIsGenerating(false);
       fetchAuthorsAndCategories();
 
       if (quillRef.current && !editorRef.current) {
@@ -139,6 +141,57 @@ export default function CreateArticle({
     }
   }, [notification]);
 
+  // Handle AI Result when it arrives
+  useEffect(() => {
+    if (isModalOpen && aiGeneration.result) {
+      const data = aiGeneration.result;
+
+      // Clean up title (remove markdown bolding)
+      const cleanTitle = (data.title || "").replace(/\*\*/g, "");
+
+      // Update Title in form
+      handleInputChange({
+        target: { name: "title", value: cleanTitle },
+      });
+
+      // Format Markdown ke HTML
+      let htmlContent = data.content || "";
+      htmlContent = htmlContent
+        .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+        .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+        .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.+?)\*/g, "<em>$1</em>")
+        .replace(/\n\n/g, "<br><br>");
+
+      if (editorRef.current) {
+        editorRef.current.root.innerHTML = htmlContent;
+        setContent(htmlContent);
+        // Sinkronkan ke parent
+        handleInputChange({
+          target: { name: "content", value: htmlContent },
+        });
+      }
+
+      setNotification({
+        type: "success",
+        message: "AI Content generated successfully!",
+      });
+
+      // Clear the result from global state so it's only applied once
+      setAiGeneration((prev) => ({ ...prev, result: null }));
+      setShowAiInput(false);
+    }
+  }, [isModalOpen, aiGeneration.result]);
+
+  // Handle AI Error
+  useEffect(() => {
+    if (isModalOpen && aiGeneration.error) {
+      setNotification({ type: "error", message: aiGeneration.error });
+      setAiGeneration((prev) => ({ ...prev, error: null }));
+    }
+  }, [isModalOpen, aiGeneration.error]);
+
   const handleFileChange = (e) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) setThumbnail(file);
@@ -215,57 +268,7 @@ export default function CreateArticle({
       return;
     }
 
-    setIsGenerating(true);
-    try {
-      const formData = new FormData();
-      formData.append("topic", aiTopic);
-
-      const response = await fetch("http://localhost:5000/generate", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Clean up title (remove markdown bolding)
-        const cleanTitle = (data.title || "").replace(/\*\*/g, "");
-
-        // Update Title
-        handleInputChange({
-          target: { name: "title", value: cleanTitle },
-        });
-
-        // Format Markdown ke HTML
-        let htmlContent = data.content || "";
-        htmlContent = htmlContent
-          .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-          .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-          .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-          .replace(/\*(.+?)\*/g, "<em>$1</em>")
-          .replace(/\n\n/g, "<br><br>");
-
-        if (editorRef.current) {
-          editorRef.current.root.innerHTML = htmlContent;
-          setContent(htmlContent);
-          // Sinkronkan ke parent
-          handleInputChange({
-            target: { name: "content", value: htmlContent },
-          });
-        }
-
-        setNotification({
-          type: "success",
-          message: "AI Content generated successfully!",
-        });
-        setShowAiInput(false);
-      }
-    } catch (error) {
-      setNotification({ type: "error", message: error.message });
-    } finally {
-      setIsGenerating(false);
-    }
+    startAiGeneration(aiTopic);
   };
 
   if (!isModalOpen) return null;
@@ -313,20 +316,27 @@ export default function CreateArticle({
                               onChange={(e) => setAiTopic(e.target.value)}
                               placeholder="Enter topic..."
                               className="flex-1 px-3 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 text-sm"
-                              disabled={isGenerating}
+                              disabled={aiGeneration.isGenerating}
                             />
                             <button
                               type="button"
                               onClick={handleGenerateWithAI}
-                              disabled={isGenerating}
-                              className="px-4 py-2 bg-purple-600 text-white rounded-md text-sm font-medium"
+                              disabled={aiGeneration.isGenerating}
+                              className="px-4 py-2 bg-purple-600 text-white rounded-md text-sm font-medium flex items-center"
                             >
-                              {isGenerating ? "Generating..." : "Generate"}
+                              {aiGeneration.isGenerating ? (
+                                <>
+                                  <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                                  <span>Generating...</span>
+                                </>
+                              ) : (
+                                "Generate"
+                              )}
                             </button>
                             <button
                               type="button"
                               onClick={() => setShowAiInput(false)}
-                              disabled={isGenerating}
+                              disabled={aiGeneration.isGenerating}
                               className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md text-sm"
                             >
                               Cancel
