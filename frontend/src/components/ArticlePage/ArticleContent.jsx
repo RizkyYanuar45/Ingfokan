@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Share2, BookmarkPlus, Bookmark } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Share2, BookmarkPlus, Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function ArticleContent({ article, author, category, user }) {
   const api = import.meta.env.VITE_API_URL;
@@ -7,6 +7,46 @@ export default function ArticleContent({ article, author, category, user }) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isBookmarking, setIsBookmarking] = useState(false);
   const [isCheckingBookmark, setIsCheckingBookmark] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const wordsPerPage = 800;
+
+  // Split content into pages roughly every 800 words
+  const pages = useMemo(() => {
+    if (!article?.content) return [];
+
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = article.content;
+    const elements = Array.from(tempDiv.childNodes);
+
+    const result = [];
+    let currentHtml = "";
+    let currentWords = 0;
+
+    elements.forEach((el) => {
+      const elText = el.textContent || "";
+      const wordCount = elText.trim().split(/\s+/).filter((w) => w.length > 0)
+        .length;
+
+      // If adding this element exceeds wordsPerPage, push current buffer to result
+      if (currentWords + wordCount > wordsPerPage && currentHtml !== "") {
+        result.push(currentHtml);
+        currentHtml = "";
+        currentWords = 0;
+      }
+
+      // Check node type to handle text nodes vs elements
+      currentHtml += el.nodeType === 3 ? el.textContent : el.outerHTML;
+      currentWords += wordCount;
+    });
+
+    if (currentHtml) result.push(currentHtml);
+    return result.length > 0 ? result : [article.content];
+  }, [article?.content]);
+
+  // Reset to page 1 when article changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [article?.id]);
 
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" };
@@ -184,9 +224,52 @@ export default function ArticleContent({ article, author, category, user }) {
         </div>
 
         <div
-          className="text-gray-700 mb-6"
-          dangerouslySetInnerHTML={{ __html: article.content }}
+          className="text-gray-700 mb-6 min-h-[300px]"
+          dangerouslySetInnerHTML={{ __html: pages[currentPage - 1] }}
         />
+
+        {/* Pagination Controls */}
+        {pages.length > 1 && (
+          <div className="flex flex-col items-center border-t border-gray-100 pt-8 mt-4">
+            <div className="flex items-center space-x-2 mb-4">
+              <span className="text-sm text-gray-500">
+                Halaman {currentPage} dari {pages.length}
+              </span>
+            </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => {
+                  setCurrentPage((prev) => Math.max(prev - 1, 1));
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                disabled={currentPage === 1}
+                className={`flex items-center px-4 py-2 rounded-lg border transition-all ${
+                  currentPage === 1
+                    ? "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed"
+                    : "bg-white text-primarycus border-primarycus hover:bg-orange-50 active:scale-95"
+                }`}
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Sebelumnya
+              </button>
+              <button
+                onClick={() => {
+                  setCurrentPage((prev) => Math.min(prev + 1, pages.length));
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                disabled={currentPage === pages.length}
+                className={`flex items-center px-4 py-2 rounded-lg border transition-all ${
+                  currentPage === pages.length
+                    ? "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed"
+                    : "bg-white text-primarycus border-primarycus hover:bg-orange-50 active:scale-95"
+                }`}
+              >
+                Berikutnya
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </article>
   );
