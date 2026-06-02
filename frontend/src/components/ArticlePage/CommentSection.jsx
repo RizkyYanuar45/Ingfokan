@@ -8,6 +8,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { getFullImageUrl } from "../../utils/imageUrl";
 const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
 const backendUrl = import.meta.env.VITE_BACKEND_URL; // Ensure this is set in your .env file
 // Custom Confirmation Modal Component
@@ -144,8 +145,10 @@ export default function CommentSection({
       const response = await fetch(`${api}/comment/${commentId}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          // Token handled by cookie, but keeping optional header support
+          ...(localStorage.getItem("token") && { Authorization: `Bearer ${localStorage.getItem("token")}` })
         },
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -202,19 +205,8 @@ export default function CommentSection({
 
   const getAvatarDisplay = (comment) => {
     const avatar = comment.user?.avatar;
-    if (avatar) {
-      if (
-        avatar.startsWith("uploads\\") ||
-        avatar.startsWith("uploads/") ||
-        avatar.startsWith("images\\") ||
-        avatar.startsWith("images/")
-      ) {
-        const path = avatar.replace(/\\/g, "/");
-        return `${backendUrl}/${path}`;
-      }
-      return `${backendUrl}/${avatar}`;
-    }
-    return `${backendUrl}/images/default.png`;
+    if (!avatar) return getFullImageUrl("images/default.png");
+    return getFullImageUrl(avatar);
   };
 
   const canDeleteComment = (comment) => {
@@ -256,8 +248,8 @@ export default function CommentSection({
                 <img
                   src={
                     currentUser?.avatar
-                      ? `${backendUrl}/${currentUser.avatar}`
-                      : `${backendUrl}/images/default.png`
+                      ? getFullImageUrl(currentUser.avatar)
+                      : getFullImageUrl("images/default.png")
                   }
                   alt="Your Avatar"
                   className="w-10 h-10 rounded-full bg-blue-500 mr-3 flex-shrink-0"

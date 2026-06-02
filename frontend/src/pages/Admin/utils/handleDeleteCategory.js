@@ -6,6 +6,7 @@ const handleDeleteCategory = async (categoryId) => {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
+    credentials: "include",
   });
   let result = await response.json();
 

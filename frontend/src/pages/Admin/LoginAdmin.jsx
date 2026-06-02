@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import Office from "./../../assets/Office.jpg";
-import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 function LoginAdmin() {
+  const { login } = useAuth();
   const api = import.meta.env.VITE_API_URL;
 
   const navigate = useNavigate();
@@ -24,27 +25,23 @@ function LoginAdmin() {
           email,
           password,
         }),
+        credentials: "include",
       });
       const data = await response.json();
-      console.log(data);
-      if (response.ok) {
+      
+      if (data.success) {
         console.log("Login successful:", data);
-      } else {
-        console.error("Login failed:", data.message);
-      }
-      const token = data.data.token;
-      localStorage.setItem("token", token);
-      setTimeout(() => {
-        const decoded = jwtDecode(token);
-
-        const role = decoded.role;
-
-        if (role === "admin") {
+        login(data.data.user);
+        
+        if (data.data.user.role === "admin") {
           navigate("/admin/dashboard");
-        } else if (role === "user") {
+        } else {
           navigate("/");
         }
-      }, 1000);
+      } else {
+        console.error("Login failed:", data.message);
+        alert(data.message || "Login failed");
+      }
     } catch (error) {
       console.error("Error during login:", error);
     }

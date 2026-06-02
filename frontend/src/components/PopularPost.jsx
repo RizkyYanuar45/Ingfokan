@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { scrollToTop } from "../utils/ScrollToTop";
 import { NavLink } from "react-router-dom";
+import { getFullImageUrl } from "../utils/imageUrl";
 
 const api = import.meta.env.VITE_API_URL;
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -179,7 +180,7 @@ function PopularPost() {
                   <div className="card bg-base-100 shadow-md rounded-xl h-full">
                     <figure>
                       <img
-                        src={`${backendUrl}/${article.thumbnail}`}
+                        src={getFullImageUrl(article.thumbnail)}
                         alt={article.title}
                         className="w-full h-40 md:h-48 object-cover rounded-t-xl"
                       />
@@ -204,7 +205,7 @@ function PopularPost() {
                           <img
                             src={
                               author.avatar
-                                ? `${backendUrl}/${author.avatar}`
+                                ? getFullImageUrl(author.avatar)
                                 : "/api/placeholder/32/32"
                             }
                             alt=""

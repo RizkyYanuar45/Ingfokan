@@ -6,9 +6,10 @@ import RelatedPost from "../components/RelatedPost";
 import ArticleContent from "../components/ArticlePage/ArticleContent";
 import CommentSection from "../components/ArticlePage/CommentSection";
 import Sidebar from "../components/ArticlePage/SideBarComponent";
-import { getUserIdFromToken } from "../utils/getUserIdFromToken";
+import { useAuth } from "../context/AuthContext";
 
 export default function Article() {
+  const { user: currentUser } = useAuth();
   const api = import.meta.env.VITE_API_URL;
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -21,13 +22,14 @@ export default function Article() {
   const [randomArticles, setRandomArticles] = useState([]);
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
 
   // Fetch random articles for sidebar
   useEffect(() => {
     const fetchRandomArticles = async () => {
       try {
-        const response = await fetch(`${api}/article`);
+        const response = await fetch(`${api}/article`, {
+          credentials: "include",
+        });
         if (!response.ok) throw new Error("Failed to fetch random articles");
 
         const data = await response.json();
@@ -50,7 +52,9 @@ export default function Article() {
     const fetchArticleData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${api}/article/author-category/${slug}`);
+        const response = await fetch(`${api}/article/author-category/${slug}`, {
+          credentials: "include",
+        });
 
         if (!response.ok) throw new Error("Failed to fetch article data");
 
@@ -77,31 +81,6 @@ export default function Article() {
     }
   }, [slug]);
 
-  // Fetch current user data
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (token) {
-          const userId = getUserIdFromToken(token, "id");
-          if (userId) {
-            const response = await fetch(`${api}/user/${userId}`);
-            if (response.ok) {
-              const data = await response.json();
-              if (data.success && data.data && data.data.data) {
-                setCurrentUser(data.data.data);
-              }
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching current user:", err);
-      }
-    };
-
-    fetchCurrentUser();
-  }, []);
-
   // Fetch comments
   useEffect(() => {
     const fetchCommentsWithUsers = async () => {
@@ -109,7 +88,9 @@ export default function Article() {
 
       setLoadingComments(true);
       try {
-        const response = await fetch(`${api}/comment/user/${article.id}`);
+        const response = await fetch(`${api}/comment/user/${article.id}`, {
+          credentials: "include",
+        });
 
         if (!response.ok) throw new Error("Failed to fetch comments");
 
@@ -129,8 +110,7 @@ export default function Article() {
 
   const handleCommentSubmit = async (commentText) => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
+      if (!currentUser) {
         alert("Please log in to post a comment");
         return;
       }
@@ -144,9 +124,11 @@ export default function Article() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          // Token handled by cookie, but keeping optional header support
+          ...(localStorage.getItem("token") && { Authorization: `Bearer ${localStorage.getItem("token")}` })
         },
         body: JSON.stringify(commentData),
+        credentials: "include",
       });
 
       if (!response.ok) throw new Error("Failed to post comment");

@@ -6,6 +6,7 @@ const handleDeleteBanner = async (bannerId) => {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
+    credentials: "include",
   });
   let result = await response.json();
 
@@ -21,6 +22,7 @@ const handleDeleteBanner = async (bannerId) => {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        credentials: "include",
       });
       const finalResult = await response.json();
       alert(finalResult.message);

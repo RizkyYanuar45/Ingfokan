@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Newspaper, Clock } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { scrollToTop } from "../utils/ScrollToTop";
+import { getFullImageUrl } from "../utils/imageUrl";
 
 function AuthorProfile() {
   const api = import.meta.env.VITE_API_URL; // Use environment variable for API URL
@@ -28,7 +29,9 @@ function AuthorProfile() {
       setLoading(true);
       try {
         // Fetch author data
-        const authorResponse = await fetch(`${api}/author/slug/${slug}`);
+        const authorResponse = await fetch(`${api}/author/slug/${slug}`, {
+          credentials: "include",
+        });
         if (!authorResponse.ok) {
           throw new Error("Failed to fetch author data");
         }
@@ -42,7 +45,10 @@ function AuthorProfile() {
 
         // Fetch articles by author
         const articlesResponse = await fetch(
-          `${api}/article/author?author_id=${authorData.data.data.id}`
+          `${api}/article/author?author_id=${authorData.data.data.id}`,
+          {
+            credentials: "include",
+          }
         );
         if (!articlesResponse.ok) {
           throw new Error("Failed to fetch author's articles");
@@ -51,7 +57,9 @@ function AuthorProfile() {
         setArticles(articlesData);
 
         // Fetch banners
-        const bannersResponse = await fetch(`${api}/banner`);
+        const bannersResponse = await fetch(`${api}/banner`, {
+          credentials: "include",
+        });
         if (bannersResponse.ok) {
           const bannersData = await bannersResponse.json();
           if (bannersData.success) {
@@ -212,9 +220,9 @@ function AuthorProfile() {
                 onClick={() => handleBannerClick(banner)}
               >
                 <img
-                  src={`${backendUrl}/${banner.thumbnail.replace(/\\/g, "/")}`}
+                  src={getFullImageUrl(banner.thumbnail)}
                   alt="Banner"
-                  className="max-w-full h-auto"
+                  className="max-width-full h-auto"
                   onError={(e) => {
                     e.target.style.display = "none";
                     e.target.nextSibling.style.display = "flex";
@@ -239,7 +247,7 @@ function AuthorProfile() {
       <div className="bg-gray-200 w-full flex items-center justify-evenly p-4">
         <div className="flex items-center">
           <img
-            src={`${backendUrl}/${author.avatar}`}
+            src={getFullImageUrl(author.avatar)}
             alt={author.name}
             className="w-12 h-12 rounded-full mr-3 object-cover"
           />
@@ -276,7 +284,7 @@ function AuthorProfile() {
                 >
                   {/* Article Image */}
                   <img
-                    src={`${backendUrl}/${article.thumbnail}`}
+                    src={getFullImageUrl(article.thumbnail)}
                     alt={article.title}
                     className="w-full h-32 object-cover"
                   />
@@ -298,7 +306,7 @@ function AuthorProfile() {
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center">
                         <img
-                          src={`${backendUrl}/${author.avatar}`}
+                          src={getFullImageUrl(author.avatar)}
                           alt={author.name}
                           className="w-6 h-6 rounded-full mr-2 object-cover"
                         />

@@ -13,6 +13,7 @@ import SideBar from "../../components/Admin/SideBar";
 
 import CreateAuthor from "../../components/Admin/Modal/Create/CreateAuthor";
 import DeleteAuthor from "../../components/Admin/Modal/Delete/DeleteAuthor";
+import { getFullImageUrl } from "../../utils/imageUrl";
 
 export default function ControlAuthors() {
   const api = import.meta.env.VITE_API_URL;
@@ -45,6 +46,7 @@ export default function ControlAuthors() {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        credentials: "include",
       });
       if (!response.ok) throw new Error("Failed to fetch authors");
       const data = await response.json();
@@ -259,10 +261,7 @@ export default function ControlAuthors() {
                           {author.avatar ? (
                             <div className="flex justify-center">
                               <img
-                                src={`${backendUrl}/${author.avatar.replace(
-                                  /\\/g,
-                                  "/"
-                                )}`}
+                                src={getFullImageUrl(author.avatar)}
                                 alt={author.name}
                                 className="h-14 w-28 object-cover border border-gray-200"
                               />

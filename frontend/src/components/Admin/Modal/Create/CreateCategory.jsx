@@ -41,6 +41,7 @@ export default function CreateCategory({
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: formData,
+        credentials: "include",
       });
 
       const responseText = await response.text();
@@ -84,6 +85,7 @@ export default function CreateCategory({
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: formData,
+        credentials: "include",
       });
       const data = await response.json();
       if (response.ok) {

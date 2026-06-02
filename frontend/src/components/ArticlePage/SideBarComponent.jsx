@@ -2,6 +2,7 @@ import { ChevronRight } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { scrollToTop } from "../../utils/ScrollToTop";
+import { getFullImageUrl } from "../../utils/imageUrl";
 
 export default function Sidebar({ author, category, randomArticles }) {
   const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
@@ -61,7 +62,7 @@ export default function Sidebar({ author, category, randomArticles }) {
             <div className="w-12 h-12 rounded-full bg-red-500 mr-3">
               {author?.avatar && (
                 <img
-                  src={`http://localhost:3000/${author.avatar}`}
+                  src={getFullImageUrl(author.avatar)}
                   alt={author.name}
                   className="w-12 h-12 rounded-full object-cover"
                 />
@@ -94,7 +95,7 @@ export default function Sidebar({ author, category, randomArticles }) {
             >
               <div className="w-12 h-12 rounded-lg bg-gray-200 mr-3 flex-shrink-0">
                 <img
-                  src={`http://localhost:3000/${category.thumbnail}`}
+                  src={getFullImageUrl(category.thumbnail)}
                   alt={category.name}
                   className="w-12 h-12 object-cover rounded-lg"
                   onError={(e) => {
@@ -125,7 +126,7 @@ export default function Sidebar({ author, category, randomArticles }) {
                 >
                   <div className="w-16 h-16 bg-gray-200 rounded-md mr-3 flex-shrink-0">
                     <img
-                      src={`http://localhost:3000/${randomArticle.thumbnail}`}
+                      src={getFullImageUrl(randomArticle.thumbnail)}
                       alt={randomArticle.title}
                       className="w-16 h-16 object-cover rounded-md"
                       onError={(e) => {
@@ -180,7 +181,7 @@ export default function Sidebar({ author, category, randomArticles }) {
               >
                 <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                   <img
-                    src={`http://localhost:3000/${banner.thumbnail}`}
+                    src={getFullImageUrl(banner.thumbnail)}
                     alt={`Banner ${banner.id}`}
                     className="w-full h-32 object-cover"
                     onError={(e) => {

@@ -13,6 +13,7 @@ import SideBar from "../../components/Admin/SideBar";
 
 import CreateBanner from "../../components/Admin/Modal/Create/CreateBanner";
 import DeleteCategory from "../../components/Admin/Modal/Delete/DeleteBanner";
+import { getFullImageUrl } from "../../utils/imageUrl";
 
 export default function ControlBanners() {
   const api = import.meta.env.VITE_API_URL;
@@ -44,6 +45,7 @@ export default function ControlBanners() {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        credentials: "include",
       });
       if (!response.ok) throw new Error("Failed to fetch banners");
       const data = await response.json();
@@ -219,10 +221,7 @@ export default function ControlBanners() {
                           {banner.thumbnail ? (
                             <div className="flex justify-center">
                               <img
-                                src={`${backendUrl}/${banner.thumbnail.replace(
-                                  /\\/g,
-                                  "/"
-                                )}`}
+                                src={getFullImageUrl(banner.thumbnail)}
                                 alt={banner.link}
                                 className="h-14 w-28 object-cover border border-gray-200"
                               />

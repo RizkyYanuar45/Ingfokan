@@ -13,6 +13,7 @@ import SideBar from "../../components/Admin/SideBar";
 
 import CreateCategory from "../../components/Admin/Modal/Create/CreateCategory";
 import DeleteCategory from "../../components/Admin/Modal/Delete/DeleteCategory";
+import { getFullImageUrl } from "../../utils/imageUrl";
 
 export default function ControlCategories() {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -43,6 +44,7 @@ export default function ControlCategories() {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        credentials: "include",
       });
       if (!response.ok) throw new Error("Failed to fetch categories");
       const data = await response.json();
@@ -248,10 +250,7 @@ export default function ControlCategories() {
                           {category.thumbnail ? (
                             <div className="flex justify-center">
                               <img
-                                src={`${backendUrl}/${category.thumbnail.replace(
-                                  /\\/g,
-                                  "/",
-                                )}`}
+                                src={getFullImageUrl(category.thumbnail)}
                                 alt={category.name}
                                 className="h-14 w-28 object-cover border border-gray-200"
                               />

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { scrollToTop } from "../utils/ScrollToTop";
+import { getFullImageUrl } from "../utils/imageUrl";
 
 const api = import.meta.env.VITE_API_URL;
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -111,7 +112,7 @@ function NewPost() {
                   <img
                     src={
                       article.thumbnail
-                        ? `${backendUrl}/${article.thumbnail}`
+                        ? getFullImageUrl(article.thumbnail)
                         : "/api/placeholder/400/200"
                     }
                     alt={article.title}
@@ -135,7 +136,7 @@ function NewPost() {
                       <img
                         src={
                           article.author?.avatar
-                            ? `${backendUrl}/${article.author.avatar}`
+                            ? getFullImageUrl(article.author.avatar)
                             : "/api/placeholder/24/24"
                         }
                         alt={article.author?.name || "Unknown Author"}

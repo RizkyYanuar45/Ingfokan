@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { scrollToTop } from "../utils/ScrollToTop";
+import { getFullImageUrl } from "../utils/imageUrl";
 
 function CategoriesBar() {
   const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
@@ -26,7 +27,9 @@ function CategoriesBar() {
 
       // Replace with your actual API URL
       const apiUrl = import.meta.env.VITE_API_URL || "/api";
-      const response = await fetch(`${apiUrl}/category`);
+      const response = await fetch(`${apiUrl}/category`, {
+        credentials: "include",
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch categories");
@@ -146,7 +149,7 @@ function CategoriesBar() {
               >
                 <div className="relative bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105 cursor-pointer">
                   <img
-                    src={`${backendUrl}/${item.thumbnail.replace(/\\/g, "/")}`}
+                    src={getFullImageUrl(item.thumbnail)}
                     alt={item.name}
                     className="w-full h-16 sm:h-20 object-cover blur-[4px] "
                   />

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import Navbar from "../components/Navbar";
+import { getFullImageUrl } from "../utils/imageUrl";
 
 // Custom Notification Component
 const Notification = ({ type, message, isVisible, onClose }) => {
@@ -133,7 +134,9 @@ export default function EditProfilePage() {
     const fetchUserData = async () => {
       try {
         setIsLoadingData(true);
-        const response = await fetch(`${api}/user/${idUser}`);
+        const response = await fetch(`${api}/user/${idUser}`, {
+          credentials: "include",
+        });
         const result = await response.json();
 
         if (result.success) {
@@ -150,8 +153,8 @@ export default function EditProfilePage() {
           // Set avatar URL - assuming the avatar path is relative to the server
           setAvatar(
             userData.avatar
-              ? `${backendUrl}/${userData.avatar}`
-              : `${backendUrl}/images/default.png`
+              ? getFullImageUrl(userData.avatar)
+              : getFullImageUrl("images/default.png")
           );
         } else {
           setError("Failed to fetch user data");
@@ -225,9 +228,7 @@ export default function EditProfilePage() {
       const response = await fetch(`${api}/user/${idUser}`, {
         method: "PATCH",
         body: updateData,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        credentials: "include",
       });
 
       const result = await response.json();

@@ -90,6 +90,7 @@ export default function CreateAuthor({
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: formData,
+        credentials: "include",
       });
 
       const responseText = await response.text();
@@ -140,6 +141,7 @@ export default function CreateAuthor({
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: formData,
+        credentials: "include",
       });
 
       let data;

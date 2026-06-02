@@ -6,6 +6,7 @@ const handleDeleteAuthor = async (authorId) => {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
+    credentials: "include",
   });
   let result = await response.json();
 

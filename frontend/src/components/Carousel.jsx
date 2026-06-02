@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { scrollToTop } from "../utils/ScrollToTop";
 import { NavLink } from "react-router-dom";
+import { getFullImageUrl } from "../utils/imageUrl";
 
 function Carousel() {
   const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
@@ -17,7 +18,9 @@ function Carousel() {
   const fetchArticleContent = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${api}/article`);
+      const response = await fetch(`${api}/article`, {
+        credentials: "include",
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -131,7 +134,7 @@ function Carousel() {
             aria-label={`${index + 1} of ${totalSlides}`}
           >
             <img
-              src={`${backendUrl}/${article.thumbnail}`}
+              src={getFullImageUrl(article.thumbnail)}
               className="w-full h-full object-cover"
               alt={article.title}
             />
@@ -157,7 +160,7 @@ function Carousel() {
                 <div className="flex items-center">
                   {author.avatar && (
                     <img
-                      src={`${backendUrl}/${author.avatar}`}
+                      src={getFullImageUrl(author.avatar)}
                       alt={author.name}
                       className="w-6 h-6 rounded-full mr-2 object-cover"
                     />

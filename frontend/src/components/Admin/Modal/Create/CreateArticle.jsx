@@ -7,9 +7,13 @@ import {
   XCircle,
   Sparkles,
   Loader2,
+  BarChart2,
+  FileText,
+  Activity,
 } from "lucide-react";
 import "quill/dist/quill.snow.css";
 import Quill from "quill";
+import { getFullImageUrl } from "../../../../utils/imageUrl";
 
 export default function CreateArticle({
   isModalOpen,
@@ -37,6 +41,7 @@ export default function CreateArticle({
   // AI Agent states
   const [aiTopic, setAiTopic] = useState("");
   const [showAiInput, setShowAiInput] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState(null);
 
   // Logika Inisialisasi Quill - Diperbaiki agar tidak reset otomatis
   useEffect(() => {
@@ -45,6 +50,7 @@ export default function CreateArticle({
       setNotification(null);
       setAiTopic("");
       setShowAiInput(false);
+      setAiAnalysis(null);
       fetchAuthorsAndCategories();
 
       if (quillRef.current && !editorRef.current) {
@@ -115,9 +121,11 @@ export default function CreateArticle({
       const [authorsResponse, categoriesResponse] = await Promise.all([
         fetch(`${api}/author`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          credentials: "include",
         }),
         fetch(`${api}/category`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          credentials: "include",
         }),
       ]);
 
@@ -172,6 +180,13 @@ export default function CreateArticle({
           target: { name: "content", value: htmlContent },
         });
       }
+
+      // Store analysis data
+      setAiAnalysis({
+        fastChecker: data.fast_checker,
+        rougeScores: data.rouge_scores,
+        rougeSummary: data.rougeScores_summary,
+      });
 
       setNotification({
         type: "success",
@@ -241,6 +256,7 @@ export default function CreateArticle({
         method: method,
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         body: formData,
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -470,14 +486,100 @@ export default function CreateArticle({
                           src={
                             thumbnail
                               ? URL.createObjectURL(thumbnail)
-                              : `${backendUrl}/${currentArticle.thumbnail.replace(
-                                  /\\/g,
-                                  "/",
-                                )}`
+                              : getFullImageUrl(currentArticle.thumbnail)
                           }
                           alt="Preview"
                           className="w-32 h-32 object-cover rounded-md border border-gray-200"
                         />
+                      </div>
+                    )}
+
+                    {/* AI Analysis Section */}
+                    {aiAnalysis && (
+                      <div className="mt-6 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl shadow-sm">
+                        <div className="flex items-center justify-between mb-4 pb-2 border-b border-blue-100">
+                          <div className="flex items-center">
+                            <div className="p-2 bg-blue-600 rounded-lg mr-3">
+                              <BarChart2 className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-gray-800 text-lg">
+                                Content Quality Analysis
+                              </h4>
+                              <p className="text-xs text-blue-600 font-medium">
+                                AI Agent Performance Metrics
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-5">
+                          {/* ROUGE Scores Grid */}
+                          <div className="grid grid-cols-3 gap-3">
+                            {aiAnalysis.rougeScores &&
+                              Object.entries(aiAnalysis.rougeScores).map(
+                                ([key, value]) => (
+                                  <div
+                                    key={key}
+                                    className="bg-white p-3 rounded-lg border border-blue-100 shadow-sm flex flex-col items-center"
+                                  >
+                                    <div className="flex items-center mb-1">
+                                      <Activity className="w-3 h-3 text-emerald-500 mr-1" />
+                                      <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
+                                        {key.replace("rouge", "ROUGE-")}
+                                      </span>
+                                    </div>
+                                    <div className="w-full mt-2 space-y-1 text-xs text-gray-700">
+                                      <p className="flex justify-between">
+                                        <span className="font-semibold">fmeasure</span>
+                                        <span>{Number(value.fmeasure || 0).toFixed(4)}</span>
+                                      </p>
+                                      <p className="flex justify-between">
+                                        <span className="font-semibold">precision</span>
+                                        <span>{Number(value.precision || 0).toFixed(4)}</span>
+                                      </p>
+                                      <p className="flex justify-between">
+                                        <span className="font-semibold">recall</span>
+                                        <span>{Number(value.recall || 0).toFixed(4)}</span>
+                                      </p>
+                                    </div>
+                                  </div>
+                                )
+                              )}
+                          </div>
+
+                          {/* Detail Analysis Sections */}
+                          <div className="grid grid-cols-1 gap-4">
+                            {/* ROUGE Summary */}
+                            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-blue-100 shadow-sm">
+                              <h5 className="font-bold text-gray-800 mb-2 flex items-center text-sm">
+                                <FileText className="w-4 h-4 mr-2 text-blue-500" />
+                                Accuracy Summary
+                              </h5>
+                              <div 
+                                className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap pl-6 italic border-l-2 border-blue-200"
+                                dangerouslySetInnerHTML={{ 
+                                  __html: aiAnalysis.rougeSummary?.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
+                                }}
+                              />
+                            </div>
+
+                            {/* Fast Checker */}
+                            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-purple-100 shadow-sm">
+                              <h5 className="font-bold text-gray-800 mb-2 flex items-center text-sm">
+                                <CheckCircle className="w-4 h-4 mr-2 text-purple-500" />
+                                Validation Report
+                              </h5>
+                              <div 
+                                className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap pl-6 border-l-2 border-purple-200"
+                                dangerouslySetInnerHTML={{ 
+                                  __html: aiAnalysis.fastChecker?.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                    .replace(/^### (.*$)/gm, '<h6 class="font-bold text-gray-800 mt-2">$1</h6>')
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>

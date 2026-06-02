@@ -21,15 +21,11 @@ function Login() {
     try {
       // Send login request with JSON format
       const response = await fetch(`${api}/user/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email, password }),
+  credentials: "include", // PENTING: Agar browser menyimpan cookie yang dikirim server
+});
 
       // Process response
       const result = await response.json();
@@ -38,8 +34,8 @@ function Login() {
         throw new Error(result.message || "Login failed");
       }
 
-      // Handle successful login based on your API response format
-      localStorage.setItem("token", result.data.token);
+      // Token sekarang disimpan di HTTP-only cookie oleh server
+      // Tidak perlu lagi menyimpannya di localStorage untuk keamanan
 
       // Redirect to dashboard or home page
       navigate("/"); // Change this to your desired redirect path

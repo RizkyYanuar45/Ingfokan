@@ -11,8 +11,10 @@ import { useLocation, useNavigate, NavLink } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { scrollToTop } from "../utils/ScrollToTop";
+import { getFullImageUrl } from "../utils/imageUrl";
 
 function SearchPage() {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,7 +45,7 @@ function SearchPage() {
     const fetchArticles = async () => {
       setLoading(true);
       try {
-        const response = await fetch("http://localhost:3000/api/article");
+        const response = await fetch(`${backendUrl}/api/article`);
         if (!response.ok) {
           throw new Error("Failed to fetch articles");
         }
@@ -279,7 +281,7 @@ function SearchPage() {
                   <img
                     src={
                       article.thumbnail
-                        ? `http://localhost:3000/${article.thumbnail}`
+                        ? getFullImageUrl(article.thumbnail)
                         : "/api/placeholder/300/200"
                     }
                     alt={article.title}
@@ -302,7 +304,7 @@ function SearchPage() {
                         <img
                           src={
                             article.author?.avatar
-                              ? `http://localhost:3000/${article.author.avatar}`
+                              ? getFullImageUrl(article.author.avatar)
                               : "/api/placeholder/24/24"
                           }
                           alt={article.author?.name || "Unknown Author"}

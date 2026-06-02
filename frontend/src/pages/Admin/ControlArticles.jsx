@@ -15,6 +15,7 @@ import SideBar from "../../components/Admin/SideBar";
 
 import CreateArticle from "../../components/Admin/Modal/Create/CreateArticle";
 import DeleteArticle from "../../components/Admin/Modal/Delete/DeleteArticle";
+import { getFullImageUrl } from "../../utils/imageUrl";
 
 export default function ControlArticles() {
   const api = import.meta.env.VITE_API_URL;
@@ -51,9 +52,7 @@ export default function ControlArticles() {
   const refreshArticles = async () => {
     try {
       const response = await fetch(`${api}/article`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        credentials: "include",
       });
       if (!response.ok) throw new Error("Failed to fetch articles");
       const data = await response.json();
@@ -353,10 +352,7 @@ export default function ControlArticles() {
                           {article.thumbnail ? (
                             <div className="flex justify-center">
                               <img
-                                src={`${backendUrl}/${article.thumbnail.replace(
-                                  /\\/g,
-                                  "/",
-                                )}`}
+                                src={getFullImageUrl(article.thumbnail)}
                                 alt={article.title}
                                 className="h-14 w-28 object-cover border border-gray-200"
                               />

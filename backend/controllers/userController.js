@@ -301,16 +301,35 @@ const loginUser = async (req, res) => {
         expiresIn: "20h",
       },
     );
+    // Set cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, // Set to false for localhost
+      sameSite: "lax",
+      maxAge: 20 * 60 * 60 * 1000, // 20 Jam
+    });
 
     return ResponseAPI.success(res, "User Berhasil Login", {
-      token: token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (error) {
     console.error(error);
     return ResponseAPI.error(res, "Terjadi kesalahan pada server", 500);
   }
 };
-
+const logoutUser = (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+  });
+  return ResponseAPI.success(res, "Berhasil logout");
+};
 const getAllUser = async (req, res) => {
   try {
     const users = await User.findAll();
@@ -407,6 +426,7 @@ export {
   changePasswordWithToken,
   cancelResetPassword,
   loginUser,
+  logoutUser,
   getAllUser,
   getUserById,
   deleteUser,

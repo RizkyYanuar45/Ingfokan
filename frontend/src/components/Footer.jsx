@@ -15,7 +15,9 @@ function Footer() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch(`${api}/category`);
+        const response = await fetch(`${api}/category`, {
+          credentials: "include",
+        });
         const data = await response.json();
 
         if (data.success) {

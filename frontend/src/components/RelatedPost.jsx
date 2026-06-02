@@ -3,7 +3,10 @@ import { ChevronRight, ChevronLeft } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { scrollToTop } from "../utils/ScrollToTop";
 
+import { getFullImageUrl } from "../utils/imageUrl";
+
 function RelatedPost({ authorId }) {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [startIndex, setStartIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -17,7 +20,7 @@ function RelatedPost({ authorId }) {
     const fetchAuthorWithArticles = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3000/api/author/articles/${authorId}`
+          `${backendUrl}/api/author/articles/${authorId}`
         );
 
         if (!response.ok) {
@@ -210,7 +213,7 @@ function RelatedPost({ authorId }) {
                       <img
                         src={
                           article.thumbnail
-                            ? `http://localhost:3000/${article.thumbnail}`
+                            ? getFullImageUrl(article.thumbnail)
                             : "/api/placeholder/400/200"
                         }
                         alt={article.title || "Article thumbnail"}
@@ -239,7 +242,7 @@ function RelatedPost({ authorId }) {
                           <img
                             src={
                               author?.avatar
-                                ? `http://localhost:3000/${author.avatar}`
+                                ? getFullImageUrl(author.avatar)
                                 : "/api/placeholder/32/32"
                             }
                             alt={author?.name || "Author avatar"}

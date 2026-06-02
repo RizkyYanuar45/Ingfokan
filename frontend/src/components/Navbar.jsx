@@ -1,20 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { ChevronDown, Bookmark, Search, Menu, X } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { scrollToTop } from "../utils/ScrollToTop";
 import OrangeNewsLogo from "../assets/OrangeNewsLogoV2.png";
+import { useAuth } from "../context/AuthContext";
+import { getFullImageUrl } from "../utils/imageUrl";
 
 function Navbar() {
+  const { user, loading, logout, verifyUser } = useAuth();
+  const location = useLocation();
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
-  const api = import.meta.env.VITE_API_URL;
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -33,6 +34,12 @@ function Navbar() {
   // Handle search input change
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    // Redirect ke home
+    window.location.href = "/";
   };
 
   // Handle search execution - used by both form submission and search icon click
@@ -87,107 +94,13 @@ function Navbar() {
   }, []);
 
   useEffect(() => {
-    const verifyToken = async () => {
-      try {
-        setLoading(true);
-
-        // Get token from localStorage
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-
-        // Decode the token to get user ID
-        // Split the token into its parts: header, payload, signature
-        const tokenParts = token.split(".");
-        if (tokenParts.length !== 3) {
-          localStorage.removeItem("token"); // Invalid token format
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-
-        // Decode the payload (second part)
-        try {
-          const payload = JSON.parse(atob(tokenParts[1]));
-
-          // Check if token is expired
-          const currentTime = Math.floor(Date.now() / 1000);
-          if (payload.exp && payload.exp < currentTime) {
-            localStorage.removeItem("token"); // Token expired
-            setUser(null);
-            setLoading(false);
-            return;
-          }
-
-          // Get user ID from token
-          const userId = payload.id || payload.userId || payload.sub;
-
-          if (!userId) {
-            setUser(null);
-            setLoading(false);
-            return;
-          }
-
-          // Fetch user data using the ID
-          const response = await fetch(`${api}/user/${userId}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to fetch user data");
-          }
-
-          const userData = await response.json();
-
-          if (userData.success) {
-            setUser(userData.data.data);
-          } else {
-            throw new Error(userData.message || "Failed to fetch user data");
-          }
-        } catch (error) {
-          console.error("Error parsing token:", error);
-          localStorage.removeItem("token");
-          setUser(null);
-        }
-      } catch (error) {
-        console.error("Authentication error:", error);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    verifyToken();
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    setIsDropdownOpen(false);
-  };
+    verifyUser();
+  }, [location.pathname]);
 
   // Determine avatar URL - handle relative paths correctly
   const getAvatarUrl = () => {
-    if (!user || !user.avatar) return `${backendUrl}/images/default.png`;
-
-    // Check if avatar starts with 'uploads\' or 'uploads/'
-    if (
-      user.avatar.startsWith("uploads\\") ||
-      user.avatar.startsWith("uploads/") ||
-      user.avatar.startsWith("images\\") ||
-      user.avatar.startsWith("images/")
-    ) {
-      const path = user.avatar.replace("\\", "/");
-      return `${backendUrl}/${path}`;
-    }
-
-    return user.avatar;
+    if (!user || !user.avatar) return getFullImageUrl("images/default.png");
+    return getFullImageUrl(user.avatar);
   };
 
   return (

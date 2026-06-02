@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Newspaper, Clock } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { scrollToTop } from "../utils/ScrollToTop";
+import { getFullImageUrl } from "../utils/imageUrl";
 
 function CategoryPage() {
   const api = import.meta.env.VITE_API_URL; // Use environment variable for API URL
@@ -31,7 +32,9 @@ function CategoryPage() {
     const fetchBanner = async () => {
       setBannerLoading(true);
       try {
-        const response = await fetch(`${api}/banner`);
+        const response = await fetch(`${api}/banner`, {
+          credentials: "include",
+        });
 
         if (!response.ok) {
           throw new Error(`Failed to fetch banner: ${response.status}`);
@@ -67,7 +70,9 @@ function CategoryPage() {
       setLoading(true);
       try {
         // Step 1: Fetch the category by slug to get its ID
-        const categoryResponse = await fetch(`${api}/category/slug/${slug}`);
+        const categoryResponse = await fetch(`${api}/category/slug/${slug}`, {
+          credentials: "include",
+        });
 
         if (!categoryResponse.ok) {
           throw new Error(
@@ -80,7 +85,10 @@ function CategoryPage() {
 
         // Step 2: Use the category ID to fetch all articles with that category_id
         const articlesResponse = await fetch(
-          `${api}/article/category?category_id=${categoryData.data.id}`
+          `${api}/article/category?category_id=${categoryData.data.id}`,
+          {
+            credentials: "include",
+          }
         );
 
         if (!articlesResponse.ok) {
@@ -116,7 +124,10 @@ function CategoryPage() {
           articles.map(async (article) => {
             try {
               const authorResponse = await fetch(
-                `${api}/author/${article.author_id}`
+                `${api}/author/${article.author_id}`,
+                {
+                  credentials: "include",
+                }
               );
 
               if (!authorResponse.ok) {
@@ -244,9 +255,9 @@ function CategoryPage() {
             onClick={handleBannerClick}
           >
             <img
-              src={`${backendUrl}/${banner.thumbnail.replace(/\\/g, "/")}`}
+              src={getFullImageUrl(banner.thumbnail)}
               alt="Banner"
-              className="max-w-full h-auto"
+              className="max-width-full h-auto"
               onError={(e) => {
                 e.target.style.display = "none";
                 e.target.nextSibling.style.display = "flex";
@@ -302,10 +313,7 @@ function CategoryPage() {
                   <img
                     src={
                       article.thumbnail
-                        ? `${backendUrl}/${article.thumbnail.replace(
-                            /\\/g,
-                            "/"
-                          )}`
+                        ? getFullImageUrl(article.thumbnail)
                         : "https://placehold.co/300x200?text=No+Image"
                     }
                     alt={article.title}
@@ -332,10 +340,7 @@ function CategoryPage() {
                         <img
                           src={
                             article.author?.avatar
-                              ? `${backendUrl}/${article.author.avatar.replace(
-                                  /\\/g,
-                                  "/"
-                                )}`
+                              ? getFullImageUrl(article.author.avatar)
                               : "https://placehold.co/100?text=?"
                           }
                           alt={article.author?.name || "Unknown Author"}

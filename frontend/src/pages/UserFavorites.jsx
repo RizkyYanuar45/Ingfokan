@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useParams } from "react-router-dom";
 import { scrollToTop } from "../utils/ScrollToTop";
+import { getFullImageUrl } from "../utils/imageUrl";
 
 function UserFavorites() {
   const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
@@ -46,21 +47,27 @@ function UserFavorites() {
       setLoading(true);
       try {
         // Fetch articles
-        const articlesResponse = await fetch(`${api}/article`);
+        const articlesResponse = await fetch(`${api}/article`, {
+          credentials: "include",
+        });
         if (!articlesResponse.ok) {
           throw new Error("Failed to fetch articles");
         }
         const articlesData = await articlesResponse.json();
 
         // Fetch authors
-        const authorsResponse = await fetch(`${api}/author`);
+        const authorsResponse = await fetch(`${api}/author`, {
+          credentials: "include",
+        });
         if (!authorsResponse.ok) {
           throw new Error("Failed to fetch authors");
         }
         const authorsData = await authorsResponse.json();
 
         // Fetch user favorites
-        const favoritesResponse = await fetch(`${api}/favorite/user/${idUser}`);
+        const favoritesResponse = await fetch(`${api}/favorite/user/${idUser}`, {
+          credentials: "include",
+        });
         if (!favoritesResponse.ok) {
           throw new Error("Failed to fetch user favorites");
         }
@@ -343,7 +350,7 @@ function UserFavorites() {
                   {/* Article Image */}
                   <img
                     src={
-                      `${backendUrl}/${article.thumbnail}` ||
+                      getFullImageUrl(article.thumbnail) ||
                       "https://source.unsplash.com/random/300x200/?article"
                     }
                     alt={article.title}
@@ -365,7 +372,7 @@ function UserFavorites() {
                       <div className="flex items-center">
                         <img
                           src={
-                            `${backendUrl}/${article.author.avatar}` ||
+                            getFullImageUrl(article.author.avatar) ||
                             "https://randomuser.me/api/portraits/lego/1.jpg"
                           }
                           alt={article.author.name}

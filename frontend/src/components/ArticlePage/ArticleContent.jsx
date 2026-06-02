@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Share2, BookmarkPlus, Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
+import { getFullImageUrl } from "../../utils/imageUrl";
 
 export default function ArticleContent({ article, author, category, user }) {
   const api = import.meta.env.VITE_API_URL;
@@ -59,7 +60,9 @@ export default function ArticleContent({ article, author, category, user }) {
     setIsCheckingBookmark(true);
 
     try {
-      const response = await fetch(`${api}/favorite/user/${user.id}`);
+      const response = await fetch(`${api}/favorite/user/${user.id}`, {
+        credentials: "include",
+      });
 
       if (response.ok) {
         const json = await response.json();
@@ -114,6 +117,7 @@ export default function ArticleContent({ article, author, category, user }) {
             user_id: user.id,
             article_id: article.id,
           }),
+          credentials: "include",
         });
       } else {
         // Add bookmark - menggunakan method POST
@@ -127,6 +131,7 @@ export default function ArticleContent({ article, author, category, user }) {
             user_id: user.id,
             article_id: article.id,
           }),
+          credentials: "include",
         });
       }
 
@@ -169,7 +174,7 @@ export default function ArticleContent({ article, author, category, user }) {
         <img
           src={
             article.thumbnail
-              ? `${backendUrl}/${article.thumbnail}`
+              ? getFullImageUrl(article.thumbnail)
               : "/api/placeholder/800/400"
           }
           alt={article.title}
@@ -187,7 +192,7 @@ export default function ArticleContent({ article, author, category, user }) {
           <div className="w-10 h-10 rounded-full bg-red-500 mr-3">
             {author?.avatar && (
               <img
-                src={`${backendUrl}/${author.avatar}`}
+                src={getFullImageUrl(author.avatar)}
                 alt={author.name}
                 className="w-10 h-10 rounded-full object-cover"
               />

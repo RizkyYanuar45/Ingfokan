@@ -1,22 +1,23 @@
 import nodemailer from "nodemailer";
 
 const sendEmail = async (to, subject, content, isHTML = false) => {
-  const transporter = nodemailer.createTransporter({
+  const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    secure: true,
+    port: parseInt(process.env.SMTP_PORT || "587"),
+    secure: process.env.SMTP_PORT == 465,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
-    connectionTimeout: 10000,
+    // Brevo/Sendinblue specific settings
+    requireTLS: true,
     tls: {
       rejectUnauthorized: false,
     },
   });
 
   const mailOptions = {
-    from: `"Support Orange News" <${process.env.SMTP_USER}>`,
+    from: `"Support Orange News" <${process.env.SMTP_SENDER || process.env.SMTP_USER}>`,
     to,
     subject,
   };
@@ -33,7 +34,14 @@ const sendEmail = async (to, subject, content, isHTML = false) => {
     mailOptions.text = content; // Untuk plain text email
   }
 
-  await transporter.sendMail(mailOptions);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully:", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("Error in sendEmail helper:", error);
+    throw error;
+  }
 };
 
 export default sendEmail;

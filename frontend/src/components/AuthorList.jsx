@@ -1,5 +1,6 @@
 // TeamSection.jsx
 import { useState, useEffect } from "react";
+import { getFullImageUrl } from "../utils/imageUrl";
 
 const AuthorList = () => {
   const api = import.meta.env.VITE_API_URL; // Ensure this is set in your .env file
@@ -13,7 +14,9 @@ const AuthorList = () => {
     const fetchAuthors = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${api}/author`);
+        const response = await fetch(`${api}/author`, {
+          credentials: "include",
+        });
 
         if (!response.ok) {
           throw new Error("Failed to fetch authors");
@@ -93,7 +96,7 @@ const AuthorList = () => {
             {/* Image Container */}
             <div className="w-16 h-16 rounded-md overflow-hidden mb-1">
               <img
-                src={`${backendUrl}/${member.avatar}`}
+                src={getFullImageUrl(member.avatar)}
                 alt={member.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {

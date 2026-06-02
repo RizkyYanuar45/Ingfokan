@@ -1,11 +1,12 @@
 import express, { urlencoded } from "express";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import connectDB from "./config/connect.js";
 import userRoutes from "./routes/userRoutes.js";
 import bannerRoutes from "./routes/bannerRoutes.js";
 import authorRoutes from "./routes/authorRoutes.js";
-import cateoryRoutes from "./routes/categoryRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
 import favoriteRoutes from "./routes/favoriteRoutes.js";
 import articleRoutes from "./routes/articleRoutes.js";
@@ -23,18 +24,22 @@ const __dirname = path.dirname(__filename);
 // Konfigurasi static files yang benar
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/images", express.static(path.join(__dirname, "images")));
+app.use(cookieParser());
 
 app.use(express.json());
 
 setupAssociations();
 
 app.use(urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+}));
 
 app.use("/api/user", userRoutes);
 app.use("/api/banner", bannerRoutes);
 app.use("/api/author", authorRoutes);
-app.use("/api/category", cateoryRoutes);
+app.use("/api/category", categoryRoutes);
 app.use("/api/comment", commentRoutes);
 app.use("/api/favorite", favoriteRoutes);
 app.use("/api/article", articleRoutes);
@@ -42,6 +47,6 @@ app.use("/api/article", articleRoutes);
 //   res.send("Hello World");
 // });
 
-app.listen(port, (req, res) => {
+app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
